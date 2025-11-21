@@ -1,0 +1,582 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PARMS - User Dashboard</title>
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Natural Styles -->
+    <link rel="stylesheet" href="{% static 'css/natural_styles.css' %}">
+
+    <style>
+        /* Natural Dashboard Specific Styles */
+        .header-title {
+            font-weight: 600;
+            color: var(--primary-green);
+            margin: 0;
+        }
+
+        .header-nav a {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            margin: 0 15px;
+            transition: var(--transition-smooth);
+        }
+
+        .header-nav a:hover {
+            color: var(--primary-green);
+        }
+
+        .user-info {
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .notification-icon {
+            color: var(--primary-green);
+            font-size: 1.2rem;
+            margin-right: 15px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .notification-icon:hover {
+            color: var(--secondary-green);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--border-light);
+            transition: var(--transition-smooth);
+        }
+
+        .user-avatar:hover {
+            border-color: var(--primary-green);
+        }
+
+        /* Natural Vehicle Selection */
+        .vehicle-selection {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid var(--border-light);
+        }
+
+        .vehicle-option {
+            text-align: center;
+            cursor: pointer;
+            padding: 20px;
+            border-radius: 8px;
+            transition: var(--transition-medium);
+            border: 2px solid var(--border-light);
+        }
+
+        .vehicle-option:hover {
+            border-color: var(--primary-green);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .vehicle-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-green);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin: 0 auto 15px;
+            transition: var(--transition-medium);
+        }
+
+        .vehicle-option:hover .vehicle-icon {
+            background: var(--secondary-green);
+            transform: scale(1.1);
+        }
+
+        .vehicle-label {
+            font-weight: 500;
+            color: var(--text-dark);
+            margin: 0;
+        }
+
+        /* Natural Parking Cards */
+        .parking-lot-card {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid var(--border-light);
+            transition: var(--transition-medium);
+        }
+
+        .parking-lot-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .parking-lot-header {
+            background: var(--light-green-bg);
+            padding: 20px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .parking-lot-title {
+            color: var(--primary-green);
+            font-weight: 600;
+            margin: 0 0 5px 0;
+        }
+
+        .parking-lot-location {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .parking-lot-body {
+            padding: 20px;
+        }
+
+        .parking-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .price-info {
+            color: var(--primary-green);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .availability-info {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .status-available {
+            color: var(--secondary-green);
+            font-weight: 500;
+        }
+
+        .status-limited {
+            color: #ffc107;
+            font-weight: 500;
+        }
+
+        .status-full {
+            color: #dc3545;
+            font-weight: 500;
+        }
+
+        /* Natural Activities Section */
+        .activities-section h5 {
+            color: var(--text-dark);
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid var(--border-light);
+            transition: var(--transition-smooth);
+        }
+
+        .activity-item:hover {
+            transform: translateX(3px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--light-green-bg);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: var(--primary-green);
+        }
+
+        .activity-content h6 {
+            margin: 0 0 4px 0;
+            font-weight: 500;
+            color: var(--text-dark);
+            font-size: 14px;
+        }
+
+        .activity-content p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+
+            .vehicle-selection {
+                padding: 20px;
+            }
+
+            .vehicle-option {
+                margin-bottom: 15px;
+            }
+
+            .parking-lot-header,
+            .parking-lot-body {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Natural Header -->
+    <header>
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <h4 class="header-title">
+                        <i class="fas fa-car me-2"></i>PARMS Dashboard
+                    </h4>
+                </div>
+                <div class="col-md-6">
+                    <nav class="header-nav text-center">
+                        <a href="/userin">Dashboard</a>
+                        <a href="/parkings">Parkings</a>
+                        <a href="/locations">Locations</a>
+                        <a href="/settings">Settings</a>
+                    </nav>
+                </div>
+                <div class="col-md-3 text-end">
+                    <div class="d-flex align-items-center justify-content-end">
+                        <i class="fas fa-bell notification-icon"></i>
+                        <span class="user-info me-3">Hello, {{ user.first_name }}</span>
+                        <a href="/logout" class="btn btn-outline-success btn-sm" onclick="return confirmLogout()">
+                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="container-fluid">
+            {% block content %}
+            <!-- Natural Vehicle Selection -->
+            <div class="vehicle-selection">
+                <h5 class="text-center mb-4">Choose Your Vehicle</h5>
+                <div class="row g-3">
+                    <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                        <div class="vehicle-option" onclick="selectVehicle('car')">
+                            <div class="vehicle-icon">
+                                <i class="fas fa-car"></i>
+                            </div>
+                            <p class="vehicle-label">Car</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                        <div class="vehicle-option" onclick="selectVehicle('motorcycle')">
+                            <div class="vehicle-icon">
+                                <i class="fas fa-motorcycle"></i>
+                            </div>
+                            <p class="vehicle-label">Motorcycle</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                        <div class="vehicle-option" onclick="selectVehicle('truck')">
+                            <div class="vehicle-icon">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <p class="vehicle-label">Truck</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                        <div class="vehicle-option" onclick="selectVehicle('bicycle')">
+                            <div class="vehicle-icon">
+                                <i class="fas fa-bicycle"></i>
+                            </div>
+                            <p class="vehicle-label">Bicycle</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                        <div class="vehicle-option" onclick="selectVehicle('bus')">
+                            <div class="vehicle-icon">
+                                <i class="fas fa-bus"></i>
+                            </div>
+                            <p class="vehicle-label">Bus</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                        <div class="vehicle-option" onclick="window.location.href='/locations'">
+                            <div class="vehicle-icon" style="background: #17a2b8;">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <p class="vehicle-label">Find Parking</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-section mb-4">
+                <div class="summary-card">
+                    <h3>45</h3>
+                    <p>Available Spots</p>
+                </div>
+                <div class="summary-card">
+                    <h3>12</h3>
+                    <p>Booked Today</p>
+                </div>
+                <div class="summary-card">
+                    <h3>$24.50</h3>
+                    <p>Total Spent</p>
+                </div>
+                <div class="summary-card">
+                    <h3>8</h3>
+                    <p>Favorite Spots</p>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Main Content -->
+                <div class="col-lg-8">
+                    <!-- Parking Lot Cards -->
+                    <h5 class="mb-3">Available Parking Lots</h5>
+                    
+                    <div class="parking-lot-card">
+                        <div class="parking-lot-header">
+                            <h6 class="parking-lot-title">Makuza Plaza Parking</h6>
+                            <p class="parking-lot-location">
+                                <i class="fas fa-map-marker-alt me-1"></i>Downtown Kigali, Zone 43
+                            </p>
+                        </div>
+                        <div class="parking-lot-body">
+                            <div class="parking-details">
+                                <div>
+                                    <div class="price-info">$2.50/hour</div>
+                                    <div class="availability-info">
+                                        <span class="status-available">Available</span> • 15 spots free
+                                    </div>
+                                </div>
+                                <a href="/slots" class="btn btn-primary">Book Now</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="parking-lot-card">
+                        <div class="parking-lot-header">
+                            <h6 class="parking-lot-title">City Center Mall</h6>
+                            <p class="parking-lot-location">
+                                <i class="fas fa-map-marker-alt me-1"></i>Kimisagara, Zone 28
+                            </p>
+                        </div>
+                        <div class="parking-lot-body">
+                            <div class="parking-details">
+                                <div>
+                                    <div class="price-info">$3.00/hour</div>
+                                    <div class="availability-info">
+                                        <span class="status-limited">Limited</span> • 3 spots free
+                                    </div>
+                                </div>
+                                <a href="/slots" class="btn btn-primary">Book Now</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="parking-lot-card">
+                        <div class="parking-lot-header">
+                            <h6 class="parking-lot-title">Airport Parking</h6>
+                            <p class="parking-lot-location">
+                                <i class="fas fa-map-marker-alt me-1"></i>Kanombe Airport, Zone 15
+                            </p>
+                        </div>
+                        <div class="parking-lot-body">
+                            <div class="parking-details">
+                                <div>
+                                    <div class="price-info">$5.00/hour</div>
+                                    <div class="availability-info">
+                                        <span class="status-full">Full</span> • 0 spots free
+                                    </div>
+                                </div>
+                                <button class="btn btn-secondary" disabled>Fully Booked</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="col-lg-4">
+                    <div class="activities-section">
+                        <h5>Recent Activities</h5>
+                        
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-car"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h6>Parking Booked - ID #1234</h6>
+                                <p><i class="fas fa-clock me-1"></i>2 hours ago • Makuza Plaza</p>
+                            </div>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h6>Payment Successful</h6>
+                                <p><i class="fas fa-dollar-sign me-1"></i>$5.00 • Card ending 4532</p>
+                            </div>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h6>Review Submitted</h6>
+                                <p><i class="fas fa-thumbs-up me-1"></i>5 stars • City Center Mall</p>
+                            </div>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h6>Reminder: Parking Expires</h6>
+                                <p><i class="fas fa-clock me-1"></i>In 30 minutes • Zone 43</p>
+                            </div>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h6>New Location Added</h6>
+                                <p><i class="fas fa-plus me-1"></i>Airport Parking • Zone 15</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endblock %}
+        </div>
+    </div>
+
+    <!-- Natural Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>PARMS</h4>
+                    <p>Making parking simple, reliable, and stress-free for everyone.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <a href="/userin">Dashboard</a>
+                    <a href="/parkings">Find Parking</a>
+                    <a href="/locations">Locations</a>
+                    <a href="/contact">Support</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Account</h4>
+                    <a href="/settings">Settings</a>
+                    <a href="/billings">Billing</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>support@parms.com</p>
+                    <p>+250 123 456 789</p>
+                    <p>Kigali, Rwanda</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 PARMS. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Natural JavaScript functionality
+        function selectVehicle(vehicleType) {
+            // Simple vehicle selection
+            console.log('Selected vehicle:', vehicleType);
+            // You can add more functionality here
+            
+            // Visual feedback
+            event.target.closest('.vehicle-option').style.borderColor = 'var(--primary-green)';
+            event.target.closest('.vehicle-option').style.background = 'rgba(25, 135, 84, 0.05)';
+            
+            setTimeout(() => {
+                event.target.closest('.vehicle-option').style.borderColor = '';
+                event.target.closest('.vehicle-option').style.background = '';
+            }, 2000);
+        }
+
+        function toggleSidebar() {
+            // Mobile sidebar toggle if needed
+            console.log('Toggle sidebar');
+        }
+
+        function confirmLogout() {
+            return confirm('Are you sure you want to logout?');
+        }
+
+        // Simple fade-in animation on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const elements = document.querySelectorAll('.parking-lot-card, .activity-item, .summary-card');
+            elements.forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    el.style.transition = 'all 0.5s ease';
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+{% extends 'dashboard.html' %}
+
+{% block content %}
+<style>
+  .main-content h1 {
+    color: #198754;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .main-content p {
+    color: #6c757d;
+    margin-bottom: 30px;
+  }
+  
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  table {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  tbody tr:hover {
+    background-color: #f8f9fa;
+  }
+  
+  select {
+    border: 2px solid #198754;
+    color: #198754;
+    font-weight: bold;
+  }
+  
+  label {
+    color: #198754;
+    font-weight: bold;
+  }
+  
+  #map {
+    border-radius: 10px;
+  }
+</style>
+
+<div class="main-content">
+  <h1>Locations</h1>
+  <p>Manage parking locations and their details.</p>
+
+  <!-- Filters Section -->
+  <div style="margin-bottom: 20px;">
+    <label for="availability-filter" style="margin-right: 10px;">Filter by Availability:</label>
+    <select id="availability-filter" onchange="filterLocations()" style="padding: 5px; border-radius: 5px; border: 1px solid #ccc;">
+      <option value="all">All</option>
+      <option value="available">Available</option>
+      <option value="full">Full</option>
+    </select>
+  </div>
+
+  <!-- Locations Table -->
+  <table style="width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);">
+    <thead style="background: linear-gradient(135deg, #198754, #20c997); color: white; text-align: left;">
+      <tr>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">#</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Location</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Total Spaces</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Available Spaces</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="location-table">
+      <!-- Static rows for now; replace with database records later -->
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">1</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">Downtown Parking</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">50</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">10</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+          <button style="padding: 8px 15px; margin-right: 8px; background: linear-gradient(135deg, #20c997, #6f9fff); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">Edit</button>
+          <button style="padding: 8px 15px; background: linear-gradient(135deg, #dc3545, #fd7e14); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">Delete</button>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">2</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">City Mall Parking</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">30</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">0</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+          <button style="padding: 8px 15px; margin-right: 8px; background: linear-gradient(135deg, #20c997, #6f9fff); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">Edit</button>
+          <button style="padding: 8px 15px; background: linear-gradient(135deg, #dc3545, #fd7e14); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Map Section -->
+  <div style="margin-top: 40px; height: 400px; border: 1px solid #ddd; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);" id="map">
+    <!-- Map will be rendered here -->
+  </div>
+</div>
+
+<script>
+  // Filter Locations
+  function filterLocations() {
+    const filter = document.getElementById('availability-filter').value.toLowerCase();
+    const table = document.getElementById('location-table');
+    const rows = table.getElementsByTagName('tr');
+
+    for (let i = 0; i < rows.length; i++) {
+      const availableCell = rows[i].getElementsByTagName('td')[3]; // Available Spaces column
+      if (availableCell) {
+        const availableSpaces = parseInt(availableCell.textContent);
+        if (
+          filter === 'all' ||
+          (filter === 'available' && availableSpaces > 0) ||
+          (filter === 'full' && availableSpaces === 0)
+        ) {
+          rows[i].style.display = '';
+        } else {
+          rows[i].style.display = 'none';
+        }
+      }
+    }
+  }
+
+  // Initialize Map (Example using Leaflet.js)
+  function initMap() {
+    const map = L.map('map').setView([51.505, -0.09], 13); // Center map (latitude, longitude)
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Example Marker: Downtown Parking
+    L.marker([51.505, -0.09]).addTo(map)
+      .bindPopup('<b>Downtown Parking</b><br>Total Spaces: 50<br>Available Spaces: 10')
+      .openPopup();
+
+    // Example Marker: City Mall Parking
+    L.marker([51.515, -0.1]).addTo(map)
+      .bindPopup('<b>City Mall Parking</b><br>Total Spaces: 30<br>Available Spaces: 0');
+  }
+
+  document.addEventListener('DOMContentLoaded', initMap);
+</script>
+<!-- Include Leaflet.js -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"></script>
+{% endblock %}

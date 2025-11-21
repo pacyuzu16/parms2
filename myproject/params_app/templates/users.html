@@ -1,0 +1,73 @@
+{% extends 'dashboard.html' %}
+
+{% block content %}
+<style>
+  .main-content h1 {
+    color: #198754;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .main-content p {
+    color: #6c757d;
+    margin-bottom: 30px;
+  }
+  
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  table {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  tbody tr:hover {
+    background-color: #f8f9fa;
+  }
+</style>
+
+<div class="main-content">
+  <h1>Users</h1>
+  <p>Manage all registered users in the system.</p>
+
+  <!-- Button to add a new user -->
+  <button onclick="addUser()" style="padding: 12px 25px; margin-bottom: 20px; background: linear-gradient(135deg, #198754, #20c997); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">Add New User</button>
+
+  <!-- Users Table -->
+  <table style="width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);">
+    <thead style="background: linear-gradient(135deg, #198754, #20c997); color: white; text-align: left;">
+      <tr>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">#</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Name</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Email</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Role</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Example rows for now; replace with database records later -->
+      {% for user in users%}
+        <tr>
+          <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{ user.id }}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{ user.username }}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{ user.email }}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #ddd;">{% if user.is_superuser %}Admin {% elif user.is_staff %}  Staff {% else %} Regular Member{% endif %}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+            <button style="padding: 8px 15px; margin-right: 8px; background: linear-gradient(135deg, #20c997, #6f9fff); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">Edit</button>
+            <button style="padding: 8px 15px; background: linear-gradient(135deg, #dc3545, #fd7e14); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">Delete</button>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+  function addUser() {
+    alert("Add User functionality will be implemented!");
+    // Replace this alert with a modal or form for adding new users
+  }
+</script>
+{% endblock %}

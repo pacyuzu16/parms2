@@ -1,0 +1,531 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .auth-section {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        padding: 2rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .auth-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(25, 135, 84, 0.05) 0%, transparent 70%);
+        animation: heroGlow 25s ease-in-out infinite alternate;
+    }
+    
+    .auth-container {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .auth-card {
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(20px);
+        border-radius: 25px;
+        padding: 3rem;
+        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(25, 135, 84, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .auth-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, var(--primary-green), var(--secondary-green), #6f9fff);
+    }
+    
+    .auth-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 35px 100px rgba(25, 135, 84, 0.15);
+    }
+    
+    .auth-image-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 25px;
+        padding: 2.5rem;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(25, 135, 84, 0.1);
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .auth-image-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(25, 135, 84, 0.03) 0%, transparent 70%);
+        animation: float 18s infinite ease-in-out;
+    }
+    
+    .auth-image-section img {
+        filter: drop-shadow(0 15px 35px rgba(25, 135, 84, 0.2));
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 2;
+        max-height: 400px;
+        object-fit: contain;
+    }
+    
+    .auth-image-section:hover img {
+        transform: scale(1.05) rotate(2deg);
+    }
+    
+    .auth-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+    
+    .auth-subtitle {
+        color: #6c757d;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 15px;
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        margin-bottom: 1rem;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary-green);
+        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15);
+        background: white;
+        transform: translateY(-2px);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.8rem;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #198754, #20c997) !important;
+        color: white !important;
+        border: none !important;
+        font-weight: 600;
+        font-size: 1.1rem;
+        border-radius: 15px;
+        padding: 1rem 2rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+    }
+    
+    .btn-success::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-success:hover::before {
+        left: 100%;
+    }
+    
+    .btn-success:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 12px 35px rgba(25, 135, 84, 0.4);
+        background: linear-gradient(135deg, #157347, #198754) !important;
+        color: white !important;
+    }
+    
+    .alert-danger {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid rgba(220, 53, 69, 0.3);
+        color: #dc3545;
+        border-radius: 15px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .auth-link {
+        color: var(--primary-green);
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .auth-link::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: -2px;
+        left: 0;
+        background: linear-gradient(90deg, var(--primary-green), var(--secondary-green));
+        transition: width 0.3s ease;
+    }
+    
+    .auth-link:hover {
+        color: var(--secondary-green);
+        transform: translateY(-1px);
+    }
+    
+    .auth-link:hover::after {
+        width: 100%;
+    }
+    
+    .image-caption {
+        color: var(--primary-green);
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 1.5rem 0;
+        position: relative;
+        z-index: 2;
+        line-height: 1.3;
+    }
+    
+    .image-description {
+        color: #6c757d;
+        font-size: 1rem;
+        line-height: 1.6;
+        position: relative;
+        z-index: 2;
+        margin-top: 1rem;
+    }
+    
+    .floating-icon {
+        position: absolute;
+        font-size: 2rem;
+        color: rgba(25, 135, 84, 0.1);
+        animation: float 12s infinite ease-in-out;
+        pointer-events: none;
+    }
+    
+    .floating-icon:nth-child(1) {
+        top: 15%;
+        left: 8%;
+        animation-delay: 0s;
+    }
+    
+    .floating-icon:nth-child(2) {
+        top: 25%;
+        right: 12%;
+        animation-delay: 3s;
+    }
+    
+    .floating-icon:nth-child(3) {
+        bottom: 35%;
+        left: 5%;
+        animation-delay: 6s;
+    }
+    
+    .floating-icon:nth-child(4) {
+        bottom: 15%;
+        right: 8%;
+        animation-delay: 9s;
+    }
+    
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-top: 2rem;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .feature-item {
+        background: rgba(25, 135, 84, 0.05);
+        border-radius: 15px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(25, 135, 84, 0.1);
+    }
+    
+    .feature-item:hover {
+        background: rgba(25, 135, 84, 0.1);
+        transform: translateY(-3px);
+    }
+    
+    .feature-item i {
+        color: var(--primary-green);
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .feature-item small {
+        color: #6c757d;
+        font-weight: 600;
+    }
+    
+    .password-strength {
+        height: 4px;
+        border-radius: 2px;
+        margin-top: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .password-weak { background: #dc3545; }
+    .password-medium { background: #ffc107; }
+    .password-strong { background: var(--primary-green); }
+</style>
+
+<!-- Floating Background Icons -->
+<div class="floating-icon"><i class="fas fa-user-plus"></i></div>
+<div class="floating-icon"><i class="fas fa-parking"></i></div>
+<div class="floating-icon"><i class="fas fa-shield-alt"></i></div>
+<div class="floating-icon"><i class="fas fa-mobile-alt"></i></div>
+
+<!-- Main Auth Section -->
+<div class="auth-section">
+    <div class="container auth-container">
+        <div class="row align-items-center g-5">
+            <!-- Left Section - Image and Info -->
+            <div class="col-lg-6">
+                <div class="auth-image-section">
+                    <img src="{% static 'imgs/parking-lot.png' %}" alt="PARMS - Smart Parking Solutions" class="img-fluid">
+                    <p class="image-caption">We are here to make parking easier than ever</p>
+                    <p class="image-description">
+                        Welcome to PARMS! Join thousands of users who have revolutionized their parking experience. 
+                        Check real-time availability, reserve spots instantly, and manage your parking preferences 
+                        for a seamless, stress-free experience every day.
+                    </p>
+                    
+                    <!-- Features Grid -->
+                    <div class="features-grid">
+                        <div class="feature-item">
+                            <i class="fas fa-clock"></i>
+                            <div><small>Real-time Updates</small></div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-mobile-alt"></i>
+                            <div><small>Mobile Ready</small></div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <div><small>Secure Platform</small></div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-support"></i>
+                            <div><small>24/7 Support</small></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Section - Signup Form -->
+            <div class="col-lg-6">
+                <div class="auth-card">
+                    <div class="text-center mb-4">
+                        <h3 class="auth-title">Join PARMS Today</h3>
+                        <p class="auth-subtitle">Already have an account? <a href="/login" class="auth-link">Sign in here</a></p>
+                    </div>
+                    
+                    <form method="POST" action="{% url 'signup' %}" id="signupForm">
+                        {% csrf_token %}
+                        
+                        {% if messages %}
+                            <div class="alert alert-danger">
+                                {% for message in messages %}
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        <span>{{ message }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <!-- Username Input -->
+                        <div class="mb-3">
+                            <label class="form-label" for="username">
+                                <i class="fas fa-user me-2 text-success"></i>Username
+                            </label>
+                            <input type="text" name="username" id="username" class="form-control" placeholder="Choose a unique username" required>
+                        </div>
+
+                        <!-- Email Input -->
+                        <div class="mb-3">
+                            <label class="form-label" for="email">
+                                <i class="fas fa-envelope me-2 text-success"></i>Email Address
+                            </label>
+                            <input type="email" name="email" id="email" class="form-control" placeholder="Enter your email address" required>
+                        </div>
+
+                        <!-- Password Input -->
+                        <div class="mb-3">
+                            <label class="form-label" for="password">
+                                <i class="fas fa-lock me-2 text-success"></i>Password
+                            </label>
+                            <input type="password" name="password" id="password" class="form-control" placeholder="Create a strong password" required>
+                            <div class="password-strength" id="passwordStrength"></div>
+                            <small class="text-muted" id="passwordFeedback">Password must be at least 8 characters long</small>
+                        </div>
+
+                        <!-- Confirm Password Input -->
+                        <div class="mb-4">
+                            <label class="form-label" for="confirmPassword">
+                                <i class="fas fa-lock me-2 text-success"></i>Confirm Password
+                            </label>
+                            <input type="password" name="confirm_password" id="confirmPassword" class="form-control" placeholder="Confirm your password" required>
+                            <small class="text-muted" id="confirmFeedback"></small>
+                        </div>
+                        
+                        <!-- Terms Agreement -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                                <label class="form-check-label" for="agreeTerms">
+                                    I agree to the <a href="#" class="auth-link">Terms of Service</a> and <a href="#" class="auth-link">Privacy Policy</a>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Signup Button -->
+                        <button type="submit" class="btn btn-success" id="signupBtn">
+                            <i class="fas fa-user-plus me-2"></i>Create My Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const passwordStrength = document.getElementById('passwordStrength');
+        const passwordFeedback = document.getElementById('passwordFeedback');
+        const confirmFeedback = document.getElementById('confirmFeedback');
+        const signupForm = document.getElementById('signupForm');
+        
+        // Password strength checker
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
+            let feedback = [];
+            
+            if (password.length >= 8) strength++;
+            else feedback.push('at least 8 characters');
+            
+            if (/[a-z]/.test(password)) strength++;
+            else feedback.push('lowercase letter');
+            
+            if (/[A-Z]/.test(password)) strength++;
+            else feedback.push('uppercase letter');
+            
+            if (/[0-9]/.test(password)) strength++;
+            else feedback.push('number');
+            
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+            else feedback.push('special character');
+            
+            // Update strength indicator
+            passwordStrength.className = 'password-strength';
+            if (strength <= 2) {
+                passwordStrength.classList.add('password-weak');
+                passwordFeedback.textContent = 'Weak - Add: ' + feedback.slice(0, 2).join(', ');
+            } else if (strength <= 3) {
+                passwordStrength.classList.add('password-medium');
+                passwordFeedback.textContent = 'Medium - Add: ' + feedback.slice(0, 1).join(', ');
+            } else {
+                passwordStrength.classList.add('password-strong');
+                passwordFeedback.textContent = 'Strong password!';
+            }
+        });
+        
+        // Confirm password checker
+        confirmPasswordInput.addEventListener('input', function() {
+            const password = passwordInput.value;
+            const confirmPassword = this.value;
+            
+            if (confirmPassword === '') {
+                confirmFeedback.textContent = '';
+                return;
+            }
+            
+            if (password === confirmPassword) {
+                confirmFeedback.textContent = '✓ Passwords match';
+                confirmFeedback.style.color = 'var(--primary-green)';
+            } else {
+                confirmFeedback.textContent = '✗ Passwords do not match';
+                confirmFeedback.style.color = '#dc3545';
+            }
+        });
+        
+        // Enhanced form interactions
+        const formInputs = document.querySelectorAll('.form-control');
+        
+        formInputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.closest('.auth-card').style.transform = 'translateY(-3px)';
+                this.closest('.auth-card').style.boxShadow = '0 40px 120px rgba(25, 135, 84, 0.2)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.closest('.auth-card').style.transform = 'translateY(-5px)';
+                this.closest('.auth-card').style.boxShadow = '0 35px 100px rgba(25, 135, 84, 0.15)';
+            });
+        });
+
+        // Form submission enhancement
+        signupForm.addEventListener('submit', function(e) {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                confirmFeedback.textContent = '✗ Passwords do not match';
+                confirmFeedback.style.color = '#dc3545';
+                confirmPasswordInput.focus();
+                return;
+            }
+            
+            const button = document.getElementById('signupBtn');
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Account...';
+            button.disabled = true;
+        });
+    });
+</script>
+
+{% endblock %}

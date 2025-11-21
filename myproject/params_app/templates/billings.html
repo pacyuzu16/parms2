@@ -1,0 +1,118 @@
+{% extends 'dashboard.html' %}
+
+{% block content %}
+<style>
+  .main-content h1 {
+    color: #198754;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .main-content p {
+    color: #6c757d;
+    margin-bottom: 30px;
+  }
+  
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  table {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  tbody tr:hover {
+    background-color: #f8f9fa;
+  }
+  
+  select {
+    border: 2px solid #198754;
+    color: #198754;
+    font-weight: bold;
+  }
+  
+  label {
+    color: #198754;
+    font-weight: bold;
+  }
+</style>
+
+<div class="main-content">
+  <h1>Billings</h1>
+  <p>Manage billing information and transactions.</p>
+
+  <!-- Button to add a new payment -->
+  <button onclick="alert('Add Payment functionality will be implemented!');" style="padding: 12px 25px; margin-bottom: 20px; background: linear-gradient(135deg, #198754, #20c997); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">Add New Payment</button>
+
+  <!-- Filters Section -->
+  <div style="margin-bottom: 20px;">
+    <label for="payment-method" style="margin-right: 10px;">Filter by Payment Method:</label>
+    <select id="payment-method" onchange="
+      const filter = this.value.toLowerCase();
+      const table = document.getElementById('billing-table');
+      const rows = table.getElementsByTagName('tr');
+      for (let i = 0; i < rows.length; i++) {
+        const methodCell = rows[i].getElementsByTagName('td')[3];
+        if (methodCell) {
+          const method = methodCell.textContent.toLowerCase();
+          if (filter === 'all' || method.includes(filter)) {
+            rows[i].style.display = '';
+          } else {
+            rows[i].style.display = 'none';
+          }
+        }
+      }
+    " style="padding: 5px; border-radius: 5px; border: 1px solid #ccc;">
+      <option value="all">All</option>
+      <option value="cash">Cash</option>
+      <option value="credit_card">Credit Card</option>
+      <option value="digital_wallet">Digital Wallet</option>
+    </select>
+  </div>
+
+  <!-- Billings Table -->
+  <table style="width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);">
+    <thead style="background: linear-gradient(135deg, #198754, #20c997); color: white; text-align: left;">
+      <tr>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">#</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Payment ID</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Amount</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Payment Method</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Date</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Ticket ID</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="billing-table">
+      <!-- Example static rows for now; replace with database records later -->
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">1</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">101</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">$50.00</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">Cash</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">2024-12-15</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">T123</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+          <button style="padding: 8px 15px; margin-right: 8px; background: linear-gradient(135deg, #20c997, #6f9fff); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">Edit</button>
+          <button style="padding: 8px 15px; background: linear-gradient(135deg, #dc3545, #fd7e14); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">Delete</button>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">2</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">102</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">$25.00</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">Credit Card</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">2024-12-15</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">T124</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+          <button style="padding: 8px 15px; margin-right: 8px; background: linear-gradient(135deg, #20c997, #6f9fff); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">Edit</button>
+          <button style="padding: 8px 15px; background: linear-gradient(135deg, #dc3545, #fd7e14); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

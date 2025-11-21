@@ -1,0 +1,165 @@
+{% extends 'userin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <!-- Ticket Information Section -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-ticket-alt me-2"></i>Your Parking Ticket
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- QR Code Section -->
+                    <div class="col-md-4 text-center">
+                        <div class="p-3 border rounded bg-light">
+                            <img src="{% url 'generate_qr_code' %}" alt="QR Code" class="img-fluid" style="max-width: 150px;">
+                            <p class="text-muted small mt-2">
+                                <i class="fas fa-qrcode me-1"></i>
+                                Scan at parking entrance
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Ticket Details -->
+                    <div class="col-md-8">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="border-start border-success ps-3">
+                                    <small class="text-muted">Customer Name</small>
+                                    <p class="mb-2 fw-semibold">Happy Tumukunde</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="border-start border-success ps-3">
+                                    <small class="text-muted">Vehicle Plate</small>
+                                    <p class="mb-2 fw-semibold">RAB8598J</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="border-start border-success ps-3">
+                                    <small class="text-muted">Parking Area</small>
+                                    <p class="mb-2 fw-semibold">Makuza Plaza - Zone 43</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="border-start border-success ps-3">
+                                    <small class="text-muted">Parking Slot</small>
+                                    <p class="mb-2 fw-semibold">A-15</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="border-start border-success ps-3">
+                                    <small class="text-muted">Duration</small>
+                                    <p class="mb-2 fw-semibold">4 hours</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="border-start border-success ps-3">
+                                    <small class="text-muted">Time Slot</small>
+                                    <p class="mb-2 fw-semibold">3:00 - 7:00 PM</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="border-start border-success ps-3">
+                                    <small class="text-muted">Date</small>
+                                    <p class="mb-2 fw-semibold">December 24, 2024</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="border-start border-success ps-3">
+                                    <small class="text-muted">Contact</small>
+                                    <p class="mb-2 fw-semibold">+250 799 999 999</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mt-4 pt-3 border-top">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <a href="{% url 'generate_ticket' %}" class="btn btn-outline-success">
+                            <i class="fas fa-download me-1"></i>Download Ticket
+                        </a>
+                        <a href="{% url 'destination' %}" class="btn btn-primary">
+                            <i class="fas fa-route me-1"></i>Start Navigation
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Status Information -->
+                <div class="mt-3 p-3 bg-light rounded">
+                    <div class="d-flex align-items-center">
+                        <div class="status-indicator active me-2"></div>
+                        <span class="fw-semibold text-success">Booking Confirmed</span>
+                        <span class="ms-auto text-muted">
+                            <i class="fas fa-shield-alt me-1"></i>Secure Booking
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activities Section -->
+    <div class="col-lg-4">
+        <div class="activities-section">
+            <h5>Recent Activities</h5>
+            
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-check-circle text-success"></i>
+                </div>
+                <div class="activity-content">
+                    <h6>Ticket Generated</h6>
+                    <p><i class="fas fa-clock me-1"></i>Just now • Zone 43</p>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="activity-content">
+                    <h6>Payment Confirmed</h6>
+                    <p><i class="fas fa-dollar-sign me-1"></i>$10.00 • 4 hours</p>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-car"></i>
+                </div>
+                <div class="activity-content">
+                    <h6>Previous Booking</h6>
+                    <p><i class="fas fa-clock me-1"></i>2:30 hrs • Zone 44</p>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="activity-content">
+                    <h6>Review Submitted</h6>
+                    <p><i class="fas fa-thumbs-up me-1"></i>5 stars • Zone 51</p>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="activity-content">
+                    <h6>Reminder Set</h6>
+                    <p><i class="fas fa-clock me-1"></i>30 min before expiry</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

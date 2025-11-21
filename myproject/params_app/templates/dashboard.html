@@ -1,0 +1,492 @@
+{% load static %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% csrf_token %}
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>Dashboard</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Space Mono';
+      overflow-x: hidden;
+    }
+
+    .sidebar h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+
+    .sidebar ul li {
+      margin: 20px 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .sidebar ul li i {
+      margin-right: 10px;
+    }
+
+    /* Main content styling */
+    .main-content {
+      flex: 1;
+      background-color: #f9f9f9;
+      padding: 20px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .top-bar input {
+      padding: 10px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      width: 300px;
+    }
+
+    .top-bar button {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #198754, #20c997);
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      color: white;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+    
+    .top-bar button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+    }
+
+    /* Quick Links styling */
+    .quick-links {
+      display: flex;
+      justify-content: space-between;
+      margin: 20px 0;
+    }
+
+    .quick-link {
+      padding: 20px;
+      border-radius: 10px;
+      color: white;
+      width: 22%;
+      text-align: center;
+      margin: 5px; /* Adds spacing between blocks */
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .quick-link i {
+      font-size: 30px;
+      margin-bottom: 10px;
+    }
+
+    /* Stats Section */
+    .stats-section {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .stat-card {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 32%;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .progress-bar {
+      position: relative;
+      background-color: #e0e0e0;
+      height: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+
+    .progress-bar div {
+      height: 100%;
+      border-radius: 10px;
+      text-align: right;
+      line-height: 20px;
+      color: white;
+      padding-right: 5px;
+    }
+
+    /* Footer Stats */
+    .footer-stats {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+      padding: 20px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .footer-stat {
+      text-align: center;
+    }
+
+    .footer-stat h1 {
+      margin: 0;
+      color: #198754;
+    }
+
+    /* Stars for Best Rated Parks */
+    .stars {
+      color: #ffc107;
+    }
+
+    .grey-star {
+      color: #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Mobile Menu Toggle -->
+  <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <div style="display: flex;">
+    <!-- Advanced Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <a style="color: white; text-decoration: none; display: flex; align-items: center; margin-bottom: 30px;" class="navbar-brand" href="/">
+        <img src="{% static 'imgs/Traffic Jam.png' %}" height="40px" style="margin-right: 10px;">
+        <span><h1 style="margin: 0;">PARMS</h1></span>
+      </a>
+      <ul class="nav-items">
+        <li class="nav-item">
+          <a href="{% url 'dashboard' %}">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+            <div class="notification-badge">3</div>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'users' %}">
+            <i class="fas fa-users"></i>
+            <span>Users</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'billings' %}">
+            <i class="fas fa-file-invoice-dollar"></i>
+            <span>Billings</span>
+            <div class="notification-badge">2</div>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'locations' %}">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>Locations</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'parkings' %}">
+            <i class="fas fa-car"></i>
+            <span>Parkings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'settings' %}">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+   
+    
+
+    <!-- Main Content -->
+    <div class="main-content">
+      {% block content %}
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <p>Welcome, {{ request.user.username }}!</p>
+        <input type="text" placeholder="Search">
+        <button onclick="confirmLogout(event)" style="cursor:pointer;">Logout</button>
+      </div>
+
+      <!-- Advanced Quick Links -->
+      <div class="quick-links">
+        <div class="quick-link card danger floating glass fade-in-up" style="animation-delay: 0.1s;">
+          <i class="fas fa-users pulse"></i>
+          <h3>Users</h3>
+          <div class="status-indicator active tooltip-advanced" data-tooltip="140 Active Users"></div>
+        </div>
+        <div class="quick-link card success floating glass fade-in-up" style="animation-delay: 0.2s;">
+          <i class="fas fa-map-marker-alt"></i>
+          <h3>Locations</h3>
+          <div class="status-indicator active tooltip-advanced" data-tooltip="15 Active Locations"></div>
+        </div>
+        <div class="quick-link card primary floating glass fade-in-up" style="animation-delay: 0.3s;">
+          <i class="fas fa-car"></i>
+          <h3>Cars</h3>
+          <div class="status-indicator warning tooltip-advanced" data-tooltip="200 Registered Cars"></div>
+        </div>
+        <div class="quick-link card purple floating glass fade-in-up" style="animation-delay: 0.4s;">
+          <i class="fas fa-file-invoice-dollar"></i>
+          <h3>Billings</h3>
+          <div class="status-indicator active tooltip-advanced" data-tooltip="All Systems Operational"></div>
+        </div>
+      </div>
+
+      <!-- Advanced Stats Section -->
+      <div class="stats-section">
+        <!-- Most Visited Parking -->
+        <div class="stat-card glass fade-in-up">
+          <h4 style="color: #198754;">Most Visited Parking</h4>
+          <p>Makuza UP</p>
+          <div class="progress-bar">
+            <div class="progress-bar-animated" style="width: 100%;">100%</div>
+          </div>
+          <p>Cyanika</p>
+          <div class="progress-bar">
+            <div class="progress-bar-animated" style="width: 85%; animation-delay: 0.5s;">85%</div>
+          </div>
+        </div>
+
+        <!-- Top Popular Locations -->
+        <div class="stat-card glass fade-in-up">
+          <h4 style="color: #198754;">Top Popular Locations</h4>
+          <p>Rugunga</p>
+          <div class="progress-bar">
+            <div class="progress-bar-animated" style="width: 100%;">100%</div>
+          </div>
+          <p>Nyarugenge</p>
+          <div class="progress-bar">
+            <div class="progress-bar-animated" style="width: 85%; animation-delay: 0.3s;">85%</div>
+          </div>
+          <p>Kiyovu</p>
+          <div class="progress-bar">
+            <div class="progress-bar-animated" style="width: 70%; animation-delay: 0.6s;">70%</div>
+          </div>
+        </div>
+
+        <!-- Best Rated Parks -->
+        <div class="stat-card glass fade-in-up">
+          <h4 style="color: #198754;">Best Rated Parks</h4>
+          <p>Rugunga: <span class="tooltip-advanced" data-tooltip="4.5/5 stars from 120 reviews">⭐</span></p>
+          <div class="stars">
+            <i class="fas fa-star" style="color: #ffc107;"></i>
+            <i class="fas fa-star" style="color: #ffc107;"></i>
+            <i class="fas fa-star" style="color: #ffc107;"></i>
+            <i class="fas fa-star" style="color: #ffc107;"></i>
+            <i class="fas fa-star-half-alt" style="color: #ffc107;"></i>
+          </div>
+          <p>Nyamagabe: <span class="tooltip-advanced" data-tooltip="4.0/5 stars from 85 reviews">⭐</span></p>
+          <div class="stars">
+            <i class="fas fa-star" style="color: #ffc107;"></i>
+            <i class="fas fa-star" style="color: #ffc107;"></i>
+            <i class="fas fa-star" style="color: #ffc107;"></i>
+            <i class="fas fa-star" style="color: #ffc107;"></i>
+            <i class="far fa-star" style="color: #e0e0e0;"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Stats -->
+      <div class="footer-stats">
+        <div class="footer-stat">
+          <h1 style="color: #198754;">140</h1>
+          <p>Users</p>
+        </div>
+        <div class="footer-stat">
+          <h1 style="color: #198754;">140</h1>
+          <p>Park Lots</p>
+        </div>
+        <div class="footer-stat">
+          <h1 style="color: #198754;">200</h1>
+          <p>Registered Cars</p>
+        </div>
+      </div>
+    </div>
+    {% endblock %}
+  </div>
+
+  <!-- Advanced JavaScript -->
+  <script>
+    // Mobile sidebar toggle
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('active');
+    }
+
+    // Scroll animations
+    function handleScrollAnimations() {
+      const elements = document.querySelectorAll('.fade-in-up');
+      const windowHeight = window.innerHeight;
+
+      elements.forEach(element => {
+        const elementTop = element.getBoundingClientRect().top;
+        if (elementTop < windowHeight - 100) {
+          element.classList.add('visible');
+        }
+      });
+    }
+
+    // Initialize animations on load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Trigger scroll animations
+      handleScrollAnimations();
+      
+      // Add floating animation to cards with delay
+      const floatingCards = document.querySelectorAll('.floating');
+      floatingCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.5}s`;
+      });
+
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener('click', function(event) {
+        const sidebar = document.getElementById('sidebar');
+        const toggle = document.querySelector('.mobile-menu-toggle');
+        
+        if (window.innerWidth <= 768 && 
+            !sidebar.contains(event.target) && 
+            !toggle.contains(event.target) && 
+            sidebar.classList.contains('active')) {
+          sidebar.classList.remove('active');
+        }
+      });
+
+      // Smooth progress bar animations
+      const progressBars = document.querySelectorAll('.progress-bar-animated');
+      progressBars.forEach((bar, index) => {
+        setTimeout(() => {
+          bar.style.opacity = '1';
+          bar.style.transform = 'scaleX(1)';
+        }, index * 200);
+      });
+
+      // Add ripple effect to clickable elements
+      const clickableElements = document.querySelectorAll('.card, .btn-advanced, .quick-link');
+      clickableElements.forEach(element => {
+        element.addEventListener('click', function(e) {
+          const ripple = document.createElement('span');
+          const rect = this.getBoundingClientRect();
+          const size = Math.max(rect.width, rect.height);
+          const x = e.clientX - rect.left - size / 2;
+          const y = e.clientY - rect.top - size / 2;
+          
+          ripple.style.width = ripple.style.height = size + 'px';
+          ripple.style.left = x + 'px';
+          ripple.style.top = y + 'px';
+          ripple.classList.add('ripple');
+          
+          this.appendChild(ripple);
+          
+          setTimeout(() => {
+            ripple.remove();
+          }, 600);
+        });
+      });
+
+      // Real-time clock
+      function updateClock() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-US', {
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+        
+        // Add clock to sidebar if it doesn't exist
+        let clockElement = document.getElementById('sidebar-clock');
+        if (!clockElement) {
+          clockElement = document.createElement('div');
+          clockElement.id = 'sidebar-clock';
+          clockElement.style.cssText = `
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            text-align: center;
+            font-size: 14px;
+            opacity: 0.8;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+          `;
+          document.getElementById('sidebar').appendChild(clockElement);
+        }
+        
+        clockElement.textContent = timeString;
+      }
+      
+      updateClock();
+      setInterval(updateClock, 1000);
+    });
+
+    // Scroll event listener
+    window.addEventListener('scroll', handleScrollAnimations);
+
+    // Add ripple effect CSS
+    const style = document.createElement('style');
+    style.textContent = `
+      .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(0);
+        animation: ripple-animation 0.6s linear;
+        pointer-events: none;
+      }
+      
+      @keyframes ripple-animation {
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    // Simple logout confirmation
+    function confirmLogout(event) {
+        event.preventDefault();
+        if (confirm('Are you sure you want to logout?')) {
+            // Create a form to POST to logout
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/logout/';
+            
+            // Add CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                             document.querySelector('meta[name="csrf-token"]')?.content;
+            
+            if (csrfToken) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+            }
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+  </script>
+  <script src="{% static 'js/advanced_global.js' %}"></script>
+</body>
+</html>

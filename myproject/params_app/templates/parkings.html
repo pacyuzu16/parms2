@@ -1,0 +1,130 @@
+{% extends 'dashboard.html' %}
+
+{% block content %}
+<style>
+  .main-content h1 {
+    color: #198754;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .main-content p {
+    color: #6c757d;
+    margin-bottom: 30px;
+  }
+  
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  table {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  tbody tr:hover {
+    background-color: #f8f9fa;
+  }
+  
+  select {
+    border: 2px solid #198754;
+    color: #198754;
+    font-weight: bold;
+  }
+  
+  label {
+    color: #198754;
+    font-weight: bold;
+  }
+</style>
+
+<div class="main-content">
+  <h1>Parkings</h1>
+  <p>Manage parking lots and car information.</p>
+
+  <!-- Filters Section -->
+  <div style="margin-bottom: 20px;">
+    <label for="parking-lot-filter" style="margin-right: 10px;">Filter by Parking Lot:</label>
+    <select id="parking-lot-filter" onchange="filterParkings()" style="padding: 5px; border-radius: 5px; border: 1px solid #ccc;">
+      <option value="all">All</option>
+      <option value="lot1">Lot 1</option>
+      <option value="lot2">Lot 2</option>
+    </select>
+    <label for="parking-status-filter" style="margin-left: 20px; margin-right: 10px;">Filter by Status:</label>
+    <select id="parking-status-filter" onchange="filterParkings()" style="padding: 5px; border-radius: 5px; border: 1px solid #ccc;">
+      <option value="all">All</option>
+      <option value="active">Active</option>
+      <option value="completed">Completed</option>
+    </select>
+  </div>
+
+  <!-- Parking Information Table -->
+  <table style="width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);">
+    <thead style="background: linear-gradient(135deg, #198754, #20c997); color: white; text-align: left;">
+      <tr>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">#</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Vehicle</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Parking Lot</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Space</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Entry Time</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Exit Time</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Status</th>
+        <th style="padding: 15px; border-bottom: 1px solid #ddd;">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="parking-table">
+      <!-- Static rows for now; replace with database records later -->
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">1</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">ABC-123 (Car)</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">Downtown Parking</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">Space 10</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">2024-12-15 08:00</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">-</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">Active</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+          <button style="padding: 8px 15px; margin-right: 8px; background: linear-gradient(135deg, #20c997, #6f9fff); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">Details</button>
+          <button style="padding: 8px 15px; background: linear-gradient(135deg, #198754, #20c997); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">Check-out</button>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">2</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">XYZ-789 (Motorcycle)</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">City Mall Parking</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">Space 5</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">2024-12-15 09:00</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">2024-12-15 11:00</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">Completed</td>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+          <button style="padding: 8px 15px; margin-right: 8px; background: linear-gradient(135deg, #20c997, #6f9fff); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">Details</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  // Filter Parkings
+  function filterParkings() {
+    const lotFilter = document.getElementById('parking-lot-filter').value.toLowerCase();
+    const statusFilter = document.getElementById('parking-status-filter').value.toLowerCase();
+    const table = document.getElementById('parking-table');
+    const rows = table.getElementsByTagName('tr');
+
+    for (let i = 0; i < rows.length; i++) {
+      const lotCell = rows[i].getElementsByTagName('td')[2]; // Parking Lot column
+      const statusCell = rows[i].getElementsByTagName('td')[6]; // Status column
+
+      if (lotCell && statusCell) {
+        const lot = lotCell.textContent.toLowerCase();
+        const status = statusCell.textContent.toLowerCase();
+        const matchesLot = lotFilter === 'all' || lot.includes(lotFilter);
+        const matchesStatus = statusFilter === 'all' || status.includes(statusFilter);
+
+        rows[i].style.display = matchesLot && matchesStatus ? '' : 'none';
+      }
+    }
+  }
+</script>
+{% endblock %}

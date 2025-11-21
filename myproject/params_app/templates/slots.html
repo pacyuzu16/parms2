@@ -1,0 +1,226 @@
+{% extends 'userin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <!-- Payment Selection Section -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-credit-card me-2"></i>Select Payment Method
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <!-- Visa Card Option -->
+                    <div class="col-md-4">
+                        <div class="payment-card" onclick="selectPayment('visa')">
+                            <img src="{% static 'imgs/visa.png' %}" alt="Visa Card" class="mb-3">
+                            <h5>Visa Card</h5>
+                            <p>Secure payment with your Visa card</p>
+                            <button class="btn btn-outline-success btn-sm">Select</button>
+                        </div>
+                    </div>
+                    
+                    <!-- MTN Mobile Money Option -->
+                    <div class="col-md-4">
+                        <div class="payment-card" onclick="selectPayment('mtn')">
+                            <img src="{% static 'imgs/mtn.png' %}" alt="MTN Mobile Money" class="mb-3">
+                            <h5>MTN MoMo</h5>
+                            <p>Pay with MTN Mobile Money</p>
+                            <button class="btn btn-outline-success btn-sm">Select</button>
+                        </div>
+                    </div>
+                    
+                    <!-- PayPal Option -->
+                    <div class="col-md-4">
+                        <div class="payment-card" onclick="selectPayment('paypal')">
+                            <img src="{% static 'imgs/paypal.png' %}" alt="PayPal" class="mb-3">
+                            <h5>PayPal</h5>
+                            <p>Quick payment with PayPal</p>
+                            <button class="btn btn-outline-success btn-sm">Select</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Form -->
+        <div id="payment-form" class="card" style="display: none;">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lock me-2"></i>Payment Details
+                </h5>
+            </div>
+            <div class="card-body">
+                <form>
+                    <!-- Visa Form -->
+                    <div id="visa-form" class="payment-option" style="display: none;">
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="card-number" class="form-label">Card Number</label>
+                                <input type="text" class="form-control" id="card-number" placeholder="1234 5678 9012 3456">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="expiry" class="form-label">Expiry Date</label>
+                                <input type="text" class="form-control" id="expiry" placeholder="MM/YY">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="cvv" class="form-label">CVV</label>
+                                <input type="text" class="form-control" id="cvv" placeholder="123">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- MTN Form -->
+                    <div id="mtn-form" class="payment-option" style="display: none;">
+                        <div class="mb-3">
+                            <label for="mtn-number" class="form-label">MTN Mobile Number</label>
+                            <input type="text" class="form-control" id="mtn-number" placeholder="078XXXXXXX">
+                        </div>
+                    </div>
+                    
+                    <!-- PayPal Form -->
+                    <div id="paypal-form" class="payment-option" style="display: none;">
+                        <div class="mb-3">
+                            <label for="paypal-email" class="form-label">PayPal Email</label>
+                            <input type="email" class="form-control" id="paypal-email" placeholder="your@email.com">
+                        </div>
+                    </div>
+
+                    <!-- Booking Summary -->
+                    <div class="border-top pt-3 mt-4">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <p class="text-muted mb-1">Parking Duration</p>
+                                <p class="fw-semibold">4 hours</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <p class="text-muted mb-1">Total Amount</p>
+                                <p class="fw-semibold text-success fs-5">$10.00</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <button type="button" class="btn btn-outline-secondary" onclick="hidePaymentForm()">
+                            <i class="fas fa-arrow-left me-1"></i>Back
+                        </button>
+                        <a href="{% url 'ticket' %}" class="btn btn-primary">
+                            <i class="fas fa-lock me-1"></i>Pay Securely
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activities Section -->
+    <div class="col-lg-4">
+        <div class="activities-section">
+            <h5>Recent Activities</h5>
+            
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="activity-content">
+                    <h6>Slot Reserved</h6>
+                    <p><i class="fas fa-map-marker-alt me-1"></i>Zone 43 - Slot A-15</p>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="activity-content">
+                    <h6>Previous Payment</h6>
+                    <p><i class="fas fa-dollar-sign me-1"></i>$7.50 • Zone 44</p>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-car"></i>
+                </div>
+                <div class="activity-content">
+                    <h6>Booking History</h6>
+                    <p><i class="fas fa-clock me-1"></i>2:30 hrs • Zone 43</p>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="activity-content">
+                    <h6>Review Submitted</h6>
+                    <p><i class="fas fa-thumbs-up me-1"></i>5 stars • Zone 51</p>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="activity-content">
+                    <h6>Secure Transaction</h6>
+                    <p><i class="fas fa-lock me-1"></i>256-bit encryption</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Security Info -->
+        <div class="card mt-4">
+            <div class="card-body text-center">
+                <i class="fas fa-shield-alt text-success fs-2 mb-3"></i>
+                <h6>Secure Payment</h6>
+                <p class="text-muted small mb-0">
+                    Your payment information is encrypted and secure. We never store your payment details.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function selectPayment(method) {
+        // Remove selected class from all cards
+        document.querySelectorAll('.payment-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        
+        // Add selected class to clicked card
+        event.target.closest('.payment-card').classList.add('selected');
+        
+        // Hide all payment forms
+        document.querySelectorAll('.payment-option').forEach(form => {
+            form.style.display = 'none';
+        });
+        
+        // Show payment form
+        document.getElementById('payment-form').style.display = 'block';
+        
+        // Show the selected payment form
+        if (method === 'visa') {
+            document.getElementById('visa-form').style.display = 'block';
+        } else if (method === 'mtn') {
+            document.getElementById('mtn-form').style.display = 'block';
+        } else if (method === 'paypal') {
+            document.getElementById('paypal-form').style.display = 'block';
+        }
+        
+        // Scroll to payment form
+        document.getElementById('payment-form').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function hidePaymentForm() {
+        document.getElementById('payment-form').style.display = 'none';
+        document.querySelectorAll('.payment-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+    }
+</script>
+{% endblock %}
