@@ -7,7 +7,10 @@ echo "Starting build process..."
 # Debug: Show environment variables
 echo "Environment check:"
 echo "DATABASE_URL is set: ${DATABASE_URL:+yes}"
+echo "DATABASE_URL length: ${#DATABASE_URL}"
 echo "DEBUG: $DEBUG"
+echo "RENDER: ${RENDER:-not set}"
+echo "RENDER_SERVICE_ID: ${RENDER_SERVICE_ID:-not set}"
 
 # Install dependencies
 echo "Installing Python dependencies..."

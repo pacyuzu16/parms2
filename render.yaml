@@ -15,4 +15,4 @@ services:
       - key: ALLOWED_HOSTS
         value: parms2.onrender.com,params-v2.onrender.com
       - key: DATABASE_URL
-        value: postgresql://parms2_db_user:spxgiscw2X69gXax4Wa1KksHutEUNiKi@dpg-d4gtodpr0fns739slra0-a/parms2_db
+        value: postgresql://parms2_db_user:spxgiscw2X69gXax4Wa1KksHutEUNiKi@dpg-d4gtodpr0fns739slra0-a.postgres.render.com:5432/parms2_db?sslmode=require

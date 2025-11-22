@@ -83,16 +83,27 @@ WSGI_APPLICATION = "myproject.wsgi.application"
 # Import dj_database_url at the top to avoid issues
 import dj_database_url
 
+# Force set DATABASE_URL if we're on Render and it's not set
+if ('RENDER' in os.environ or 'RENDER_SERVICE_ID' in os.environ) and not os.environ.get('DATABASE_URL'):
+    os.environ['DATABASE_URL'] = 'postgresql://parms2_db_user:spxgiscw2X69gXax4Wa1KksHutEUNiKi@dpg-d4gtodpr0fns739slra0-a.postgres.render.com:5432/parms2_db?sslmode=require'
+    print("Manually set DATABASE_URL for Render deployment")
+
 # Check if DATABASE_URL is provided (common in production environments like Render)
-DATABASE_URL = config('DATABASE_URL', default=None)
+DATABASE_URL = config('DATABASE_URL', default=None) or os.environ.get('DATABASE_URL')
 
 # Always print DATABASE_URL status for debugging deployment issues
 print(f"DEBUG mode: {DEBUG}")
 print(f"DATABASE_URL present: {DATABASE_URL is not None}")
+print(f"All environment variables containing 'DATABASE': {[k for k in os.environ.keys() if 'DATABASE' in k.upper()]}")
 if DATABASE_URL:
     print(f"DATABASE_URL starts with: {DATABASE_URL[:20]}...")
+    print(f"DATABASE_URL contains render.com: {'render.com' in DATABASE_URL}")
 else:
     print("No DATABASE_URL found, using local configuration")
+
+# Detect if we're running on Render
+IS_RENDER = 'RENDER' in os.environ or 'RENDER_SERVICE_ID' in os.environ
+print(f"Running on Render: {IS_RENDER}")
 
 if DATABASE_URL:
     # Parse DATABASE_URL for production (Render provides this)
@@ -101,6 +112,17 @@ if DATABASE_URL:
     }
     print("Using DATABASE_URL configuration")
     print(f"Database host: {DATABASES['default'].get('HOST', 'Unknown')}")
+    print(f"Database name: {DATABASES['default'].get('NAME', 'Unknown')}")
+elif IS_RENDER:
+    # Fallback for Render if DATABASE_URL is somehow not set
+    print("WARNING: Running on Render but DATABASE_URL not found! Using hardcoded database.")
+    DATABASES = {
+        'default': dj_database_url.parse(
+            'postgresql://parms2_db_user:spxgiscw2X69gXax4Wa1KksHutEUNiKi@dpg-d4gtodpr0fns739slra0-a.postgres.render.com:5432/parms2_db?sslmode=require',
+            conn_max_age=600,
+            conn_health_checks=True
+        )
+    }
 elif config('USE_SQLITE_FOR_TESTING', default=False, cast=bool):
     # Temporary SQLite for local development when PostgreSQL isn't available
     DATABASES = {
