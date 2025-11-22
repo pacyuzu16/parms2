@@ -606,29 +606,164 @@
             });
         });
 
-        // Simple logout confirmation
+        // Advanced logout confirmation with modal
         function confirmLogout(event) {
             event.preventDefault();
-            if (confirm('Are you sure you want to logout?')) {
-                // Create a form to POST to logout
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/logout/';
+            
+            // Create advanced modal
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.6);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                backdrop-filter: blur(5px);
+            `;
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background: white;
+                padding: 2rem;
+                border-radius: 15px;
+                text-align: center;
+                max-width: 400px;
+                width: 90%;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                transform: translateY(-30px);
+                transition: transform 0.3s ease;
+                position: relative;
+            `;
+            
+            modalContent.innerHTML = `
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="width: 80px; height: 80px; background: #ffeaa7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; animation: pulse 2s infinite;">
+                        <i class="fas fa-sign-out-alt" style="font-size: 2rem; color: #fdcb6e;"></i>
+                    </div>
+                    <h3 style="color: #2d3436; margin-bottom: 0.5rem; font-weight: 600;">Confirm Logout</h3>
+                    <p style="color: #636e72; margin: 0; line-height: 1.5;">Are you sure you want to sign out of your PARMS account? You'll need to log in again to access your dashboard.</p>
+                </div>
                 
-                // Add CSRF token
-                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
-                                 document.querySelector('meta[name="csrf-token"]')?.content;
-                
-                if (csrfToken) {
-                    const csrfInput = document.createElement('input');
-                    csrfInput.type = 'hidden';
-                    csrfInput.name = 'csrfmiddlewaretoken';
-                    csrfInput.value = csrfToken;
-                    form.appendChild(csrfInput);
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <button id="cancelLogout" style="
+                        background: #ddd; 
+                        border: none; 
+                        padding: 0.8rem 1.5rem; 
+                        border-radius: 8px; 
+                        cursor: pointer; 
+                        font-weight: 600; 
+                        color: #555;
+                        transition: all 0.2s ease;
+                        min-width: 100px;
+                    ">
+                        <i class="fas fa-times" style="margin-right: 0.5rem;"></i>Cancel
+                    </button>
+                    <button id="confirmLogout" style="
+                        background: #e74c3c; 
+                        border: none; 
+                        padding: 0.8rem 1.5rem; 
+                        border-radius: 8px; 
+                        cursor: pointer; 
+                        font-weight: 600; 
+                        color: white;
+                        transition: all 0.2s ease;
+                        min-width: 100px;
+                    ">
+                        <i class="fas fa-sign-out-alt" style="margin-right: 0.5rem;"></i>Logout
+                    </button>
+                </div>
+            `;
+            
+            // Add pulse animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes pulse {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.05); }
+                    100% { transform: scale(1); }
                 }
+            `;
+            document.head.appendChild(style);
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            // Animate modal in
+            requestAnimationFrame(() => {
+                modal.style.opacity = '1';
+                modalContent.style.transform = 'translateY(0)';
+            });
+            
+            // Prevent body scrolling
+            document.body.style.overflow = 'hidden';
+            
+            // Cancel button
+            document.getElementById('cancelLogout').addEventListener('click', function() {
+                closeModal();
+            });
+            
+            // Confirm button with loading state
+            document.getElementById('confirmLogout').addEventListener('click', function() {
+                this.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem;"></i>Logging out...';
+                this.disabled = true;
                 
-                document.body.appendChild(form);
-                form.submit();
+                setTimeout(() => {
+                    // Create a form to POST to logout
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/logout/';
+                    
+                    // Add CSRF token
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                                     document.querySelector('meta[name="csrf-token"]')?.content;
+                    
+                    if (csrfToken) {
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrfmiddlewaretoken';
+                        csrfInput.value = csrfToken;
+                        form.appendChild(csrfInput);
+                    }
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                }, 1000);
+            });
+            
+            // Close modal on outside click
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+            
+            // Close modal on ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
+            
+            function closeModal() {
+                modal.style.opacity = '0';
+                modalContent.style.transform = 'translateY(-30px)';
+                document.body.style.overflow = '';
+                
+                setTimeout(() => {
+                    if (modal.parentNode) {
+                        document.body.removeChild(modal);
+                    }
+                    if (style.parentNode) {
+                        document.head.removeChild(style);
+                    }
+                }, 300);
             }
         }
     </script>

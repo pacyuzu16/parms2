@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+from decouple import config, Csv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +22,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure--2=%yzl50=$hgzm=c-&4pep!6%qkaz1637@th5q@35+&u=9mpb"
+SECRET_KEY = config('SECRET_KEY', default="django-insecure--2=%yzl50=$hgzm=c-&4pep!6%qkaz1637@th5q@35+&u=9mpb")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ["parms2.onrender.com", "params-v2.onrender.com", "127.0.0.1"]
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default="parms2.onrender.com,params-v2.onrender.com,127.0.0.1,localhost", cast=Csv())
 
 
 
@@ -78,12 +80,35 @@ WSGI_APPLICATION = "myproject.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+# Check if DATABASE_URL is provided (common in production environments)
+DATABASE_URL = config('DATABASE_URL', default=None)
+
+if DATABASE_URL:
+    # Parse DATABASE_URL for production
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL)
     }
-}
+elif config('USE_SQLITE_FOR_TESTING', default=False, cast=bool):
+    # Temporary SQLite for testing when PostgreSQL isn't available
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+else:
+    # PostgreSQL configuration
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": config('DB_NAME', default='parking_db'),
+            "USER": config('DB_USER', default='postgres'),
+            "PASSWORD": config('DB_PASSWORD', default=''),
+            "HOST": config('DB_HOST', default='localhost'),
+            "PORT": config('DB_PORT', default='5432'),
+        }
+    }
 
 
 # Password validation
@@ -120,14 +145,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 
 # For a global static directory
-# STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
-# Optional: Specify where static files are collected for deployment
-# STATIC_ROOT = BASE_DIR / "staticfiles"
-# STATIC_ROOT = BASE_DIR / "staticfiles"
+# Specify where static files are collected for deployment
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# WhiteNoise configuration for serving static files in production
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
 

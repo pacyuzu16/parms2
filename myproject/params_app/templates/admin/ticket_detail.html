@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Details - PARMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --info-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 2rem;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .status-badge {
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .status-active {
+            background: var(--success-gradient);
+            color: white;
+        }
+
+        .status-completed {
+            background: var(--info-gradient);
+            color: white;
+        }
+
+        .status-cancelled {
+            background: var(--secondary-gradient);
+            color: white;
+        }
+
+        .btn-gradient {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            border-radius: 25px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+
+        .btn-success-gradient {
+            background: var(--success-gradient);
+            border: none;
+            color: white;
+            border-radius: 25px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-success-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+
+        .btn-warning-gradient {
+            background: var(--warning-gradient);
+            border: none;
+            color: white;
+            border-radius: 25px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-warning-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #667eea;
+            z-index: 1000;
+        }
+
+        .back-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            color: #667eea;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background: var(--primary-gradient);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -27px;
+            top: 10px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+        }
+
+        .qr-code {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .qr-code img {
+            max-width: 200px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <a href="{% url 'admin_tickets' %}" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header text-center">
+                <h2 class="mb-0">
+                    <i class="fas fa-ticket-alt me-3"></i>Ticket Details
+                </h2>
+                <p class="mb-0 mt-2 opacity-75">Ticket #{{ ticket.id }}</p>
+            </div>
+            
+            <div class="card-body p-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <h5 class="mb-3">
+                                <i class="fas fa-info-circle text-primary me-2"></i>Basic Information
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <div class="info-label">Ticket ID</div>
+                                    <div class="info-value">#{{ ticket.id }}</div>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <div class="info-label">Status</div>
+                                    <div>
+                                        {% if ticket.status == 'active' %}
+                                            <span class="status-badge status-active">
+                                                <i class="fas fa-clock me-1"></i>Active
+                                            </span>
+                                        {% elif ticket.status == 'completed' %}
+                                            <span class="status-badge status-completed">
+                                                <i class="fas fa-check me-1"></i>Completed
+                                            </span>
+                                        {% else %}
+                                            <span class="status-badge status-cancelled">
+                                                <i class="fas fa-times me-1"></i>Cancelled
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <div class="info-label">Entry Time</div>
+                                    <div class="info-value">{{ ticket.entry_time|date:"M d, Y H:i" }}</div>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <div class="info-label">Exit Time</div>
+                                    <div class="info-value">
+                                        {% if ticket.exit_time %}
+                                            {{ ticket.exit_time|date:"M d, Y H:i" }}
+                                        {% else %}
+                                            <span class="text-muted">Not yet</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-card">
+                            <h5 class="mb-3">
+                                <i class="fas fa-car text-primary me-2"></i>Vehicle Information
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <div class="info-label">License Plate</div>
+                                    <div class="info-value">{{ ticket.vehicle.license_plate }}</div>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <div class="info-label">Vehicle Type</div>
+                                    <div class="info-value">{{ ticket.vehicle.vehicle_type|title }}</div>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <div class="info-label">Owner</div>
+                                    <div class="info-value">{{ ticket.vehicle.owner.username }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <h5 class="mb-3">
+                                <i class="fas fa-map-marker-alt text-primary me-2"></i>Parking Information
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <div class="info-label">Parking Lot</div>
+                                    <div class="info-value">{{ ticket.parking_space.lot.name }}</div>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <div class="info-label">Space Number</div>
+                                    <div class="info-value">#{{ ticket.parking_space.space_number }}</div>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <div class="info-label">Zone</div>
+                                    <div class="info-value">{{ ticket.parking_space.lot.location }}</div>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <div class="info-label">Hourly Rate</div>
+                                    <div class="info-value">${{ ticket.parking_space.lot.hourly_rate }}/hour</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-card">
+                            <h5 class="mb-3">
+                                <i class="fas fa-dollar-sign text-primary me-2"></i>Payment Information
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <div class="info-label">Duration</div>
+                                    <div class="info-value">
+                                        {% if ticket.exit_time %}
+                                            {% widthratio ticket.exit_time|timeuntil:ticket.entry_time 3600 1 %} hours
+                                        {% else %}
+                                            <span class="text-muted">In progress</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <div class="info-label">Total Amount</div>
+                                    <div class="info-value">
+                                        {% if ticket.exit_time %}
+                                            ${{ ticket.total_amount }}
+                                        {% else %}
+                                            <span class="text-muted">TBD</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <div class="info-label">Payment Status</div>
+                                    <div>
+                                        {% if ticket.payment %}
+                                            <span class="status-badge status-completed">
+                                                <i class="fas fa-check-circle me-1"></i>Paid
+                                            </span>
+                                        {% else %}
+                                            <span class="status-badge status-active">
+                                                <i class="fas fa-clock me-1"></i>Pending
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if ticket.qr_code %}
+                <div class="info-card">
+                    <h5 class="mb-3 text-center">
+                        <i class="fas fa-qrcode text-primary me-2"></i>QR Code
+                    </h5>
+                    <div class="qr-code">
+                        <img src="{{ ticket.qr_code.url }}" alt="Ticket QR Code" class="img-fluid">
+                        <p class="mt-2 text-muted">Scan this code for quick access</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="info-card">
+                    <h5 class="mb-3">
+                        <i class="fas fa-history text-primary me-2"></i>Timeline
+                    </h5>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="info-label">Vehicle Entry</div>
+                            <div class="info-value">{{ ticket.entry_time|date:"M d, Y H:i:s" }}</div>
+                            <small class="text-muted">Vehicle entered parking space #{{ ticket.parking_space.space_number }}</small>
+                        </div>
+                        
+                        {% if ticket.payment %}
+                        <div class="timeline-item">
+                            <div class="info-label">Payment Made</div>
+                            <div class="info-value">{{ ticket.payment.date|date:"M d, Y H:i:s" }}</div>
+                            <small class="text-muted">Payment of ${{ ticket.payment.amount }} processed via {{ ticket.payment.method }}</small>
+                        </div>
+                        {% endif %}
+                        
+                        {% if ticket.exit_time %}
+                        <div class="timeline-item">
+                            <div class="info-label">Vehicle Exit</div>
+                            <div class="info-value">{{ ticket.exit_time|date:"M d, Y H:i:s" }}</div>
+                            <small class="text-muted">Vehicle left parking space</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    {% if ticket.status == 'active' %}
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="complete">
+                            <button type="submit" class="btn btn-success-gradient me-3">
+                                <i class="fas fa-check me-2"></i>Complete Ticket
+                            </button>
+                        </form>
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="cancel">
+                            <button type="submit" class="btn btn-warning-gradient">
+                                <i class="fas fa-ban me-2"></i>Cancel Ticket
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'admin_tickets' %}" class="btn btn-gradient">
+                            <i class="fas fa-list me-2"></i>Back to Tickets
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Add some nice animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.info-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'all 0.6s ease';
+                
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

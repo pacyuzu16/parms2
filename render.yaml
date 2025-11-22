@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: parms
+    runtime: python3
+    buildCommand: "./build.sh"
+    startCommand: "cd myproject && gunicorn myproject.wsgi:application"
+    plan: free
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.9
+      - key: DEBUG
+        value: false
+      - key: USE_SQLITE_FOR_TESTING
+        value: false
+    
+databases:
+  - name: parms-db
+    databaseName: parking_db
+    user: parms_user
+    plan: free

@@ -1,5 +1,4 @@
 {% load static %}
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   {% csrf_token %}
   <meta name="csrf-token" content="{{ csrf_token }}">
-  <title>Dashboard</title>
+  <title>PARMS Dashboard</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
   <style>
@@ -41,7 +40,7 @@
     /* Main content styling */
     .main-content {
       flex: 1;
-      background-color: #f9f9f9;
+      background-color: #f8f9fa;
       padding: 20px;
     }
 
@@ -60,18 +59,20 @@
 
     .top-bar button {
       padding: 10px 20px;
-      background: linear-gradient(135deg, #198754, #20c997);
+      background: #27ae60;
       border: none;
-      border-radius: 25px;
+      border-radius: 8px;
       cursor: pointer;
       color: white;
-      font-weight: bold;
+      font-weight: 600;
       transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(39,174,96,0.3);
     }
     
     .top-bar button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+      background: #229954;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(39,174,96,0.4);
     }
 
     /* Quick Links styling */
@@ -205,6 +206,26 @@
           </a>
         </li>
         <li class="nav-item">
+          <a href="{% url 'admin_contacts' %}">
+            <i class="fas fa-envelope"></i>
+            <span>Messages</span>
+            <div class="notification-badge">{{ total_messages }}</div>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'admin_tickets' %}">
+            <i class="fas fa-ticket-alt"></i>
+            <span>Tickets</span>
+            <div class="notification-badge">{{ active_tickets }}</div>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'admin_reports' %}">
+            <i class="fas fa-chart-bar"></i>
+            <span>Reports</span>
+          </a>
+        </li>
+        <li class="nav-item">
           <a href="{% url 'settings' %}">
             <i class="fas fa-cog"></i>
             <span>Settings</span>
@@ -219,103 +240,197 @@
     <div class="main-content">
       {% block content %}
       <!-- Top Bar -->
-      <div class="top-bar">
-        <p>Welcome, {{ request.user.username }}!</p>
-        <input type="text" placeholder="Search">
-        <button onclick="confirmLogout(event)" style="cursor:pointer;">Logout</button>
-      </div>
-
-      <!-- Advanced Quick Links -->
-      <div class="quick-links">
-        <div class="quick-link card danger floating glass fade-in-up" style="animation-delay: 0.1s;">
-          <i class="fas fa-users pulse"></i>
-          <h3>Users</h3>
-          <div class="status-indicator active tooltip-advanced" data-tooltip="140 Active Users"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <div>
+          <h2 style="color: #2c3e50; margin: 0; font-weight: 700;">Dashboard Overview</h2>
+          <p style="color: #7f8c8d; margin: 5px 0 0 0;">Welcome back, <strong style="color: #34495e;">{{ request.user.username }}</strong>!</p>
         </div>
-        <div class="quick-link card success floating glass fade-in-up" style="animation-delay: 0.2s;">
-          <i class="fas fa-map-marker-alt"></i>
-          <h3>Locations</h3>
-          <div class="status-indicator active tooltip-advanced" data-tooltip="15 Active Locations"></div>
-        </div>
-        <div class="quick-link card primary floating glass fade-in-up" style="animation-delay: 0.3s;">
-          <i class="fas fa-car"></i>
-          <h3>Cars</h3>
-          <div class="status-indicator warning tooltip-advanced" data-tooltip="200 Registered Cars"></div>
-        </div>
-        <div class="quick-link card purple floating glass fade-in-up" style="animation-delay: 0.4s;">
-          <i class="fas fa-file-invoice-dollar"></i>
-          <h3>Billings</h3>
-          <div class="status-indicator active tooltip-advanced" data-tooltip="All Systems Operational"></div>
+        <div style="display: flex; gap: 15px; align-items: center;">
+          <input type="text" placeholder="Search..." style="padding: 10px 15px; border: 2px solid #ecf0f1; border-radius: 8px; font-size: 14px; width: 250px; transition: all 0.3s ease; background: #fafafa;">
+          <button onclick="confirmLogout(event)" style="padding: 10px 20px; background: #c0392b; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(192,57,43,0.3);">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
         </div>
       </div>
 
-      <!-- Advanced Stats Section -->
-      <div class="stats-section">
-        <!-- Most Visited Parking -->
-        <div class="stat-card glass fade-in-up">
-          <h4 style="color: #198754;">Most Visited Parking</h4>
-          <p>Makuza UP</p>
-          <div class="progress-bar">
-            <div class="progress-bar-animated" style="width: 100%;">100%</div>
+      <!-- Management Cards -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 30px;">
+        <div onclick="window.location.href='{% url 'admin_users_management' %}'" style="background: #2c3e50; color: white; padding: 25px; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(44,62,80,0.25); border-left: 4px solid #3498db;">
+          <i class="fas fa-users" style="font-size: 36px; margin-bottom: 15px; color: #3498db;"></i>
+          <h3 style="margin: 10px 0; font-weight: 600;">Users Management</h3>
+          <p style="margin: 0; opacity: 0.9;">{{ total_users }} Total Users</p>
+          <div style="margin-top: 10px; font-size: 12px; opacity: 0.8; color: #bdc3c7;">{{ staff_users }} Staff • {{ regular_users }} Regular</div>
+        </div>
+        
+        <div onclick="window.location.href='{% url 'admin_parking_lots' %}'" style="background: #27ae60; color: white; padding: 25px; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(39,174,96,0.25); border-left: 4px solid #2ecc71;">
+          <i class="fas fa-map-marker-alt" style="font-size: 36px; margin-bottom: 15px; color: #2ecc71;"></i>
+          <h3 style="margin: 10px 0; font-weight: 600;">Parking Lots</h3>
+          <p style="margin: 0; opacity: 0.9;">{{ total_parking_lots }} Locations</p>
+          <div style="margin-top: 10px; font-size: 12px; opacity: 0.8; color: #a9dfbf;">{{ available_spaces }} Available Spaces</div>
+        </div>
+        
+        <div onclick="window.location.href='{% url 'admin_vehicles' %}'" style="background: #8e44ad; color: white; padding: 25px; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(142,68,173,0.25); border-left: 4px solid #9b59b6;">
+          <i class="fas fa-car" style="font-size: 36px; margin-bottom: 15px; color: #9b59b6;"></i>
+          <h3 style="margin: 10px 0; font-weight: 600;">Vehicles</h3>
+          <p style="margin: 0; opacity: 0.9;">{{ total_vehicles }} Registered</p>
+          <div style="margin-top: 10px; font-size: 12px; opacity: 0.8; color: #d7bde2;">All Vehicle Types</div>
+        </div>
+        
+        <div onclick="window.location.href='{% url 'admin_reports' %}'" style="background: #e67e22; color: white; padding: 25px; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(230,126,34,0.25); border-left: 4px solid #f39c12;">
+          <i class="fas fa-chart-bar" style="font-size: 36px; margin-bottom: 15px; color: #f39c12;"></i>
+          <h3 style="margin: 10px 0; font-weight: 600;">Reports</h3>
+          <p style="margin: 0; opacity: 0.9;">${{ total_revenue|floatformat:2 }}</p>
+          <div style="margin-top: 10px; font-size: 12px; opacity: 0.8; color: #f8c471;">Total Revenue</div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+        <div style="background: #34495e; color: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(52,73,94,0.25); border-top: 4px solid #1abc9c;">
+          <i class="fas fa-ticket-alt" style="font-size: 36px; margin-bottom: 10px; color: #1abc9c;"></i>
+          <h3 style="margin: 0; font-weight: 600;">{{ total_tickets }}</h3>
+          <p style="margin: 5px 0 0 0; opacity: 0.9; color: #bdc3c7;">Total Tickets</p>
+        </div>
+        
+        <div style="background: #16a085; color: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(22,160,133,0.25); border-top: 4px solid #48c9b0;">
+          <i class="fas fa-clock" style="font-size: 36px; margin-bottom: 10px; color: #48c9b0;"></i>
+          <h3 style="margin: 0; font-weight: 600;">{{ active_tickets }}</h3>
+          <p style="margin: 5px 0 0 0; opacity: 0.9; color: #a3e4d7;">Active Tickets</p>
+        </div>
+
+        <div style="background: #c0392b; color: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(192,57,43,0.25); border-top: 4px solid #e74c3c;">
+          <i class="fas fa-envelope" style="font-size: 36px; margin-bottom: 10px; color: #e74c3c;"></i>
+          <h3 style="margin: 0; font-weight: 600;">{{ total_messages }}</h3>
+          <p style="margin: 5px 0 0 0; opacity: 0.9; color: #f1948a;">Messages</p>
+        </div>
+        
+        <div style="background: #d68910; color: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(214,137,16,0.25); border-top: 4px solid #f1c40f;">
+          <i class="fas fa-dollar-sign" style="font-size: 36px; margin-bottom: 10px; color: #f1c40f;"></i>
+          <h3 style="margin: 0; font-weight: 600;">${{ monthly_revenue|floatformat:2 }}</h3>
+          <p style="margin: 5px 0 0 0; opacity: 0.9; color: #f4d03f;">Monthly Revenue</p>
+        </div>
+      </div>
+
+      <!-- Recent Activity Section -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px; margin: 30px 0;">
+        <!-- Recent Messages -->
+        <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-top: 4px solid #3498db;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #ecf0f1; padding-bottom: 15px;">
+            <h4 style="color: #2c3e50; margin: 0; font-weight: 600;">
+              <i class="fas fa-envelope" style="margin-right: 10px; color: #3498db;"></i>Recent Messages
+            </h4>
+            <span style="background: #3498db; color: white; padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;">{{ total_messages }}</span>
           </div>
-          <p>Cyanika</p>
-          <div class="progress-bar">
-            <div class="progress-bar-animated" style="width: 85%; animation-delay: 0.5s;">85%</div>
+          {% for message in recent_messages|slice:":5" %}
+          <div style="padding: 12px 0; border-bottom: 1px solid #f0f0f0; {% if forloop.last %}border-bottom: none;{% endif %}">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+              <div>
+                <strong style="color: #333;">{{ message.full_name }}</strong>
+                <p style="margin: 5px 0; font-size: 14px; color: #666; line-height: 1.4;">{{ message.message|truncatewords:15 }}</p>
+                <small style="color: #999;"><i class="fas fa-clock"></i> {{ message.submitted_at|timesince }} ago</small>
+              </div>
+              <div style="background: #ebf3fd; padding: 4px 8px; border-radius: 6px; font-size: 10px; color: #3498db; font-weight: 600;">NEW</div>
+            </div>
+          </div>
+          {% empty %}
+          <div style="text-align: center; padding: 20px; color: #666;">
+            <i class="fas fa-inbox" style="font-size: 48px; opacity: 0.3; margin-bottom: 10px;"></i>
+            <p>No recent messages</p>
+          </div>
+          {% endfor %}
+          <div style="text-align: center; margin-top: 20px;">
+            <a href="{% url 'admin_contacts' %}" style="background: #3498db; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(52,152,219,0.3);">
+              <i class="fas fa-arrow-right"></i> View All Messages
+            </a>
           </div>
         </div>
 
-        <!-- Top Popular Locations -->
-        <div class="stat-card glass fade-in-up">
-          <h4 style="color: #198754;">Top Popular Locations</h4>
-          <p>Rugunga</p>
-          <div class="progress-bar">
-            <div class="progress-bar-animated" style="width: 100%;">100%</div>
+        <!-- Recent Tickets -->
+        <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-top: 4px solid #27ae60;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #ecf0f1; padding-bottom: 15px;">
+            <h4 style="color: #2c3e50; margin: 0; font-weight: 600;">
+              <i class="fas fa-ticket-alt" style="margin-right: 10px; color: #27ae60;"></i>Recent Tickets
+            </h4>
+            <span style="background: #27ae60; color: white; padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;">{{ active_tickets }}</span>
           </div>
-          <p>Nyarugenge</p>
-          <div class="progress-bar">
-            <div class="progress-bar-animated" style="width: 85%; animation-delay: 0.3s;">85%</div>
+          {% for ticket in recent_tickets|slice:":5" %}
+          <div style="padding: 12px 0; border-bottom: 1px solid #f0f0f0; {% if forloop.last %}border-bottom: none;{% endif %}">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+              <div>
+                <strong style="color: #333;">{{ ticket.vehicle.plate_number }}</strong>
+                <p style="margin: 5px 0; font-size: 14px; color: #666;">{{ ticket.parking_space.parking_lot.location }}</p>
+                <small style="color: #999;"><i class="fas fa-clock"></i> {{ ticket.entry_time|timesince }} ago</small>
+              </div>
+              {% if not ticket.exit_time %}
+              <div style="background: #f4d03f; color: #7d6608; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 600;">ACTIVE</div>
+              {% else %}
+              <div style="background: #a9dfbf; color: #1e8449; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 600;">COMPLETED</div>
+              {% endif %}
+            </div>
           </div>
-          <p>Kiyovu</p>
-          <div class="progress-bar">
-            <div class="progress-bar-animated" style="width: 70%; animation-delay: 0.6s;">70%</div>
+          {% empty %}
+          <div style="text-align: center; padding: 20px; color: #666;">
+            <i class="fas fa-ticket-alt" style="font-size: 48px; opacity: 0.3; margin-bottom: 10px;"></i>
+            <p>No recent tickets</p>
+          </div>
+          {% endfor %}
+          <div style="text-align: center; margin-top: 20px;">
+            <a href="{% url 'admin_tickets' %}" style="background: #27ae60; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(39,174,96,0.3);">
+              <i class="fas fa-arrow-right"></i> View All Tickets
+            </a>
           </div>
         </div>
 
-        <!-- Best Rated Parks -->
-        <div class="stat-card glass fade-in-up">
-          <h4 style="color: #198754;">Best Rated Parks</h4>
-          <p>Rugunga: <span class="tooltip-advanced" data-tooltip="4.5/5 stars from 120 reviews">⭐</span></p>
-          <div class="stars">
-            <i class="fas fa-star" style="color: #ffc107;"></i>
-            <i class="fas fa-star" style="color: #ffc107;"></i>
-            <i class="fas fa-star" style="color: #ffc107;"></i>
-            <i class="fas fa-star" style="color: #ffc107;"></i>
-            <i class="fas fa-star-half-alt" style="color: #ffc107;"></i>
+        <!-- System Status -->
+        <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-top: 4px solid #e67e22;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #ecf0f1; padding-bottom: 15px;">
+            <h4 style="color: #2c3e50; margin: 0; font-weight: 600;">
+              <i class="fas fa-chart-line" style="margin-right: 10px; color: #e67e22;"></i>System Status
+            </h4>
+            <span style="background: #27ae60; color: white; padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;">LIVE</span>
           </div>
-          <p>Nyamagabe: <span class="tooltip-advanced" data-tooltip="4.0/5 stars from 85 reviews">⭐</span></p>
-          <div class="stars">
-            <i class="fas fa-star" style="color: #ffc107;"></i>
-            <i class="fas fa-star" style="color: #ffc107;"></i>
-            <i class="fas fa-star" style="color: #ffc107;"></i>
-            <i class="fas fa-star" style="color: #ffc107;"></i>
-            <i class="far fa-star" style="color: #e0e0e0;"></i>
+          <div style="space-y: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+              <span style="color: #7f8c8d; display: flex; align-items: center;"><i class="fas fa-ticket-alt" style="margin-right: 8px; color: #3498db;"></i>Active Tickets:</span>
+              <strong style="color: #2c3e50; font-size: 18px;">{{ active_tickets }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+              <span style="color: #7f8c8d; display: flex; align-items: center;"><i class="fas fa-parking" style="margin-right: 8px; color: #27ae60;"></i>Available Spaces:</span>
+              <strong style="color: #2c3e50; font-size: 18px;">{{ available_spaces }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+              <span style="color: #7f8c8d; display: flex; align-items: center;"><i class="fas fa-dollar-sign" style="margin-right: 8px; color: #f39c12;"></i>Total Revenue:</span>
+              <strong style="color: #2c3e50; font-size: 18px;">${{ total_revenue|floatformat:2 }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+              <span style="color: #7f8c8d; display: flex; align-items: center;"><i class="fas fa-chart-bar" style="margin-right: 8px; color: #e74c3c;"></i>Monthly Revenue:</span>
+              <strong style="color: #2c3e50; font-size: 18px;">${{ monthly_revenue|floatformat:2 }}</strong>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Footer Stats -->
-      <div class="footer-stats">
-        <div class="footer-stat">
-          <h1 style="color: #198754;">140</h1>
-          <p>Users</p>
+      <div style="display: flex; justify-content: space-around; margin-top: 20px; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+        <div class="footer-stat" style="text-align: center;">
+          <h1 style="color: #3498db; margin: 0; font-weight: 700;">{{ total_users }}</h1>
+          <p style="color: #7f8c8d; margin: 8px 0 0 0; font-weight: 500;">Users</p>
         </div>
-        <div class="footer-stat">
-          <h1 style="color: #198754;">140</h1>
-          <p>Park Lots</p>
+        <div class="footer-stat" style="text-align: center;">
+          <h1 style="color: #27ae60; margin: 0; font-weight: 700;">{{ total_parking_lots }}</h1>
+          <p style="color: #7f8c8d; margin: 8px 0 0 0; font-weight: 500;">Park Lots</p>
         </div>
-        <div class="footer-stat">
-          <h1 style="color: #198754;">200</h1>
-          <p>Registered Cars</p>
+        <div class="footer-stat" style="text-align: center;">
+          <h1 style="color: #9b59b6; margin: 0; font-weight: 700;">{{ total_vehicles }}</h1>
+          <p style="color: #7f8c8d; margin: 8px 0 0 0; font-weight: 500;">Registered Cars</p>
+        </div>
+        <div class="footer-stat" style="text-align: center;">
+          <h1 style="color: #e67e22; margin: 0; font-weight: 700;">{{ total_tickets }}</h1>
+          <p style="color: #7f8c8d; margin: 8px 0 0 0; font-weight: 500;">Total Tickets</p>
+        </div>
+        <div class="footer-stat" style="text-align: center;">
+          <h1 style="color: #e74c3c; margin: 0; font-weight: 700;">{{ total_messages }}</h1>
+          <p style="color: #7f8c8d; margin: 8px 0 0 0; font-weight: 500;">Messages</p>
         </div>
       </div>
     </div>

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if parking_lot %}Edit{% else %}Add{% endif %} Parking Lot - PARMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 2rem 0;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .form-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .form-body {
+            padding: 2rem;
+        }
+
+        .form-control, .form-select, textarea {
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus, textarea:focus {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn-gradient {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            border-radius: 25px;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            color: white;
+            border-radius: 25px;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #667eea;
+            z-index: 1000;
+        }
+
+        .back-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            color: #667eea;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group .form-control, .input-group .form-select {
+            padding-left: 3rem;
+        }
+
+        .input-group .input-group-text {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #667eea;
+            z-index: 10;
+        }
+
+        .alert {
+            border-radius: 15px;
+            border: none;
+        }
+
+        .alert-success {
+            background: var(--success-gradient);
+            color: white;
+        }
+
+        .alert-danger {
+            background: var(--secondary-gradient);
+            color: white;
+        }
+
+        .info-card {
+            background: rgba(102, 126, 234, 0.1);
+            border: none;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-section {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <a href="{% url 'admin_parking_lots' %}" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+
+    <div class="container">
+        <div class="form-container">
+            <div class="form-header">
+                <h2 class="mb-0">
+                    <i class="fas fa-map-marker-alt me-3"></i>
+                    {% if parking_lot %}Edit Parking Lot{% else %}Add New Parking Lot{% endif %}
+                </h2>
+                <p class="mb-0 mt-2 opacity-75">
+                    {% if parking_lot %}Update parking lot information{% else %}Create a new parking facility{% endif %}
+                </p>
+            </div>
+
+            <div class="form-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-section">
+                        <h5 class="mb-3 text-primary">
+                            <i class="fas fa-info-circle me-2"></i>Basic Information
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-tag"></i>
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           name="name" 
+                                           placeholder="Parking Lot Name"
+                                           value="{% if parking_lot %}{{ parking_lot.name }}{% endif %}"
+                                           required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           name="location" 
+                                           placeholder="Location/Address"
+                                           value="{% if parking_lot %}{{ parking_lot.location }}{% endif %}"
+                                           required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-align-left"></i>
+                                </span>
+                                <textarea class="form-control" 
+                                          name="description" 
+                                          placeholder="Parking lot description (optional)"
+                                          rows="3">{% if parking_lot %}{{ parking_lot.description }}{% endif %}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h5 class="mb-3 text-primary">
+                            <i class="fas fa-calculator me-2"></i>Capacity & Pricing
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-car"></i>
+                                    </span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           name="total_spaces" 
+                                           placeholder="Total Spaces"
+                                           min="1"
+                                           value="{% if parking_lot %}{{ parking_lot.total_spaces }}{% endif %}"
+                                           required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-dollar-sign"></i>
+                                    </span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           name="hourly_rate" 
+                                           placeholder="Hourly Rate"
+                                           step="0.01"
+                                           min="0"
+                                           value="{% if parking_lot %}{{ parking_lot.hourly_rate }}{% endif %}"
+                                           required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-toggle-on"></i>
+                                    </span>
+                                    <select class="form-select" name="is_active">
+                                        <option value="1" {% if not parking_lot or parking_lot.is_active %}selected{% endif %}>
+                                            Active
+                                        </option>
+                                        <option value="0" {% if parking_lot and not parking_lot.is_active %}selected{% endif %}>
+                                            Inactive
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h5 class="mb-3 text-primary">
+                            <i class="fas fa-clock me-2"></i>Operating Hours
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-sun"></i>
+                                    </span>
+                                    <input type="time" 
+                                           class="form-control" 
+                                           name="opening_time" 
+                                           value="{% if parking_lot %}{{ parking_lot.opening_time|time:'H:i' }}{% else %}06:00{% endif %}">
+                                </div>
+                                <small class="text-muted">Opening Time</small>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-moon"></i>
+                                    </span>
+                                    <input type="time" 
+                                           class="form-control" 
+                                           name="closing_time" 
+                                           value="{% if parking_lot %}{{ parking_lot.closing_time|time:'H:i' }}{% else %}22:00{% endif %}">
+                                </div>
+                                <small class="text-muted">Closing Time</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-primary">
+                                <i class="fas fa-calendar-week me-2"></i>Operating Days
+                            </label>
+                            <div class="row">
+                                {% for day in days_of_week %}
+                                <div class="col-md-6 col-lg-4 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               name="operating_days" 
+                                               value="{{ day.0 }}"
+                                               id="{{ day.0 }}"
+                                               {% if parking_lot and day.0 in parking_lot.operating_days %}checked{% elif not parking_lot %}checked{% endif %}>
+                                        <label class="form-check-label" for="{{ day.0 }}">
+                                            {{ day.1 }}
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if not parking_lot %}
+                    <div class="info-card">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle text-primary me-3 fs-4"></i>
+                            <div>
+                                <h6 class="mb-1 text-primary">Automatic Space Generation</h6>
+                                <small class="text-muted">
+                                    Parking spaces will be automatically created based on the total spaces count you specify.
+                                    Each space will be numbered sequentially (1, 2, 3, etc.).
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <button type="submit" class="btn btn-gradient">
+                                <i class="fas fa-save me-2"></i>
+                                {% if parking_lot %}Update Parking Lot{% else %}Create Parking Lot{% endif %}
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'admin_parking_lots' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Add some nice animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('.form-container');
+            form.style.opacity = '0';
+            form.style.transform = 'translateY(30px)';
+            form.style.transition = 'all 0.6s ease';
+            
+            setTimeout(() => {
+                form.style.opacity = '1';
+                form.style.transform = 'translateY(0)';
+            }, 100);
+
+            // Auto-focus first input
+            const firstInput = document.querySelector('input[name="name"]');
+            if (firstInput) {
+                firstInput.focus();
+            }
+        });
+
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const totalSpaces = document.querySelector('input[name="total_spaces"]').value;
+            const hourlyRate = document.querySelector('input[name="hourly_rate"]').value;
+            
+            if (totalSpaces < 1) {
+                alert('Total spaces must be at least 1');
+                e.preventDefault();
+                return;
+            }
+            
+            if (hourlyRate < 0) {
+                alert('Hourly rate cannot be negative');
+                e.preventDefault();
+                return;
+            }
+
+            // Check if at least one operating day is selected
+            const operatingDays = document.querySelectorAll('input[name="operating_days"]:checked');
+            if (operatingDays.length === 0) {
+                alert('Please select at least one operating day');
+                e.preventDefault();
+                return;
+            }
+        });
+
+        // Hourly rate formatting
+        document.querySelector('input[name="hourly_rate"]').addEventListener('blur', function() {
+            const value = parseFloat(this.value);
+            if (!isNaN(value)) {
+                this.value = value.toFixed(2);
+            }
+        });
+    </script>
+</body>
+</html>
