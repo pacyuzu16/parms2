@@ -3,20 +3,16 @@ services:
     name: parms
     runtime: python3
     buildCommand: "./build.sh"
-    startCommand: "cd myproject && gunicorn myproject.wsgi:application"
+    startCommand: "cd myproject && gunicorn myproject.wsgi:application --bind 0.0.0.0:$PORT"
     plan: free
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.9
       - key: DEBUG
         value: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: parms2.onrender.com,params-v2.onrender.com
       - key: DATABASE_URL
-        fromDatabase:
-          name: parms-db
-          property: connectionString
-    
-databases:
-  - name: parms-db
-    databaseName: parking_db
-    user: parms_user
-    plan: free
+        value: postgresql://parms2_db_user:spxgiscw2X69gXax4Wa1KksHutEUNiKi@dpg-d4gtodpr0fns739slra0-a/parms2_db

@@ -80,15 +80,27 @@ WSGI_APPLICATION = "myproject.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# Import dj_database_url at the top to avoid issues
+import dj_database_url
+
 # Check if DATABASE_URL is provided (common in production environments like Render)
 DATABASE_URL = config('DATABASE_URL', default=None)
 
+# Always print DATABASE_URL status for debugging deployment issues
+print(f"DEBUG mode: {DEBUG}")
+print(f"DATABASE_URL present: {DATABASE_URL is not None}")
+if DATABASE_URL:
+    print(f"DATABASE_URL starts with: {DATABASE_URL[:20]}...")
+else:
+    print("No DATABASE_URL found, using local configuration")
+
 if DATABASE_URL:
     # Parse DATABASE_URL for production (Render provides this)
-    import dj_database_url
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True)
     }
+    print("Using DATABASE_URL configuration")
+    print(f"Database host: {DATABASES['default'].get('HOST', 'Unknown')}")
 elif config('USE_SQLITE_FOR_TESTING', default=False, cast=bool):
     # Temporary SQLite for local development when PostgreSQL isn't available
     DATABASES = {
@@ -97,6 +109,7 @@ elif config('USE_SQLITE_FOR_TESTING', default=False, cast=bool):
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+    print("Using SQLite configuration")
 else:
     # Local development PostgreSQL configuration
     DATABASES = {
@@ -109,6 +122,7 @@ else:
             "PORT": config('DB_PORT', default='5432'),
         }
     }
+    print("Using local PostgreSQL configuration")
 
 
 # Password validation
