@@ -89,6 +89,14 @@ if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
     }
+elif config('USE_SQLITE_FOR_TESTING', default=False, cast=bool):
+    # Temporary SQLite for local development when PostgreSQL isn't available
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 else:
     # Local development PostgreSQL configuration
     DATABASES = {
