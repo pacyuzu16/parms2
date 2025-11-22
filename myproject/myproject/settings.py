@@ -80,25 +80,17 @@ WSGI_APPLICATION = "myproject.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# Check if DATABASE_URL is provided (common in production environments)
+# Check if DATABASE_URL is provided (common in production environments like Render)
 DATABASE_URL = config('DATABASE_URL', default=None)
 
 if DATABASE_URL:
-    # Parse DATABASE_URL for production
+    # Parse DATABASE_URL for production (Render provides this)
     import dj_database_url
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL)
-    }
-elif config('USE_SQLITE_FOR_TESTING', default=False, cast=bool):
-    # Temporary SQLite for testing when PostgreSQL isn't available
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
     }
 else:
-    # PostgreSQL configuration
+    # Local development PostgreSQL configuration
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -107,6 +99,9 @@ else:
             "PASSWORD": config('DB_PASSWORD', default=''),
             "HOST": config('DB_HOST', default='localhost'),
             "PORT": config('DB_PORT', default='5432'),
+            'OPTIONS': {
+                'charset': 'utf8',
+            },
         }
     }
 
