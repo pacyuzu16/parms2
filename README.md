@@ -1,7 +1,7 @@
 PARMS
 
 Description 🏠
-PARMS is a complete web application, integrating database storage, a back-end API, and front-end interface. PARMS (Smart Parking Management System) aims to address parking challenges faced by vehicle owners while equipping administrators with efficient management tools.PARAMs will reduce runaround drivers face while findinding a place to park vehicles.   
+PARMS is a complete web application, integrating database storage, a back-end API, and front-end interface. PARMS (Smart Parking Management System) aims to address parking challenges faced by vehicle owners while equipping administrators with efficient management tools. PARMS will reduce runaround drivers face while findinding a place to park vehicles.   
 
 
 Usage 💻
