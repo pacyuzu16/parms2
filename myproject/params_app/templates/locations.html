@@ -1,0 +1,270 @@
+{% extends 'dashboard.html' %}
+
+{% block content %}
+<style>
+    .loc-header {
+        margin-bottom: 28px;
+    }
+    .loc-header h1 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--ink, #161b19);
+        letter-spacing: -0.025em;
+        margin-bottom: 4px;
+    }
+    .loc-header p {
+        font-size: 0.875rem;
+        color: var(--steel, #4f5a55);
+        margin: 0;
+    }
+
+    /* Filter bar */
+    .loc-filter-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    .loc-filter-bar label {
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--carbon, #242b27);
+    }
+    .loc-select {
+        padding: 7px 12px;
+        border: 1.5px solid var(--dust, #dde3e0);
+        border-radius: 6px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.875rem;
+        color: var(--carbon, #242b27);
+        background: var(--paper, #ffffff);
+        outline: none;
+        cursor: pointer;
+        transition: border-color 150ms;
+    }
+    .loc-select:focus { border-color: var(--forest, #2c5f47); }
+
+    /* Table */
+    .loc-table-wrap {
+        background: var(--paper, #ffffff);
+        border: 1px solid var(--dust, #dde3e0);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 32px;
+    }
+    .loc-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+    .loc-table thead th {
+        background: var(--chalk, #f2f4f3);
+        color: var(--steel, #4f5a55);
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 11px 16px;
+        border-bottom: 1px solid var(--dust, #dde3e0);
+        white-space: nowrap;
+    }
+    .loc-table tbody td {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--dust, #dde3e0);
+        color: var(--carbon, #242b27);
+        vertical-align: middle;
+    }
+    .loc-table tbody tr:last-child td { border-bottom: none; }
+    .loc-table tbody tr:hover { background: var(--parchment, #f7f8f7); }
+
+    /* Status badges */
+    .badge-available {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 9px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: #e6f4ec;
+        color: #1e6640;
+    }
+    .badge-full {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 9px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: #fde8e8;
+        color: #7a1f18;
+    }
+    .badge-available::before {
+        content: '';
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: #1e6640;
+        flex-shrink: 0;
+    }
+    .badge-full::before {
+        content: '';
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: #c0392b;
+        flex-shrink: 0;
+    }
+
+    /* Action buttons */
+    .btn-tbl-edit {
+        padding: 5px 12px;
+        border: 1.5px solid var(--dust, #dde3e0);
+        border-radius: 6px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--carbon, #242b27);
+        background: var(--paper, #fff);
+        cursor: pointer;
+        transition: border-color 150ms, background 150ms;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-right: 6px;
+    }
+    .btn-tbl-edit:hover {
+        border-color: var(--sage-mid, #c8ddd4);
+        background: var(--chalk, #f2f4f3);
+        color: var(--ink, #161b19);
+    }
+    .btn-tbl-delete {
+        padding: 5px 12px;
+        border: 1.5px solid #f2b8b2;
+        border-radius: 6px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: #7a1f18;
+        background: #fef0ee;
+        cursor: pointer;
+        transition: border-color 150ms, background 150ms;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .btn-tbl-delete:hover {
+        background: #fde8e8;
+        border-color: #d9534f;
+    }
+
+    /* Map */
+    .loc-map-wrap {
+        border: 1px solid var(--dust, #dde3e0);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .loc-map-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--ink, #161b19);
+        margin-bottom: 12px;
+    }
+</style>
+
+<div class="main-content">
+    <div class="loc-header">
+        <h1>Locations</h1>
+        <p>Manage parking locations and their details.</p>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="loc-filter-bar">
+        <label for="availability-filter">Filter by availability:</label>
+        <select class="loc-select" id="availability-filter" onchange="filterLocations()">
+            <option value="all">All</option>
+            <option value="available">Available</option>
+            <option value="full">Full</option>
+        </select>
+    </div>
+
+    <!-- Locations table -->
+    <div class="loc-table-wrap">
+        <table class="loc-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Location</th>
+                    <th>Total Spaces</th>
+                    <th>Available</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="location-table">
+                <tr>
+                    <td>1</td>
+                    <td>Downtown Parking</td>
+                    <td>50</td>
+                    <td>10</td>
+                    <td><span class="badge-available">Available</span></td>
+                    <td>
+                        <button class="btn-tbl-edit"><i class="fas fa-pen"></i> Edit</button>
+                        <button class="btn-tbl-delete"><i class="fas fa-trash"></i> Delete</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>City Mall Parking</td>
+                    <td>30</td>
+                    <td>0</td>
+                    <td><span class="badge-full">Full</span></td>
+                    <td>
+                        <button class="btn-tbl-edit"><i class="fas fa-pen"></i> Edit</button>
+                        <button class="btn-tbl-delete"><i class="fas fa-trash"></i> Delete</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Map section -->
+    <p class="loc-map-label">Location map</p>
+    <div class="loc-map-wrap" id="map" style="height:400px;"></div>
+</div>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"></script>
+<script>
+function filterLocations() {
+    const filter = document.getElementById('availability-filter').value;
+    const rows   = document.querySelectorAll('#location-table tr');
+    rows.forEach(function (row) {
+        const cell = row.cells[3];
+        if (!cell) return;
+        const avail = parseInt(cell.textContent, 10);
+        const show  = filter === 'all'
+                   || (filter === 'available' && avail > 0)
+                   || (filter === 'full'      && avail === 0);
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const map = L.map('map').setView([51.505, -0.09], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    L.marker([51.505, -0.09]).addTo(map)
+        .bindPopup('<b>Downtown Parking</b><br>Total: 50 &mdash; Available: 10')
+        .openPopup();
+
+    L.marker([51.515, -0.1]).addTo(map)
+        .bindPopup('<b>City Mall Parking</b><br>Total: 30 &mdash; Available: 0');
+});
+</script>
+{% endblock %}

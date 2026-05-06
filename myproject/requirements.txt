@@ -1,0 +1,3 @@
+# This file is for reference only.
+# The authoritative requirements.txt used by build.sh is at the REPO ROOT.
+# See: ../requirements.txt

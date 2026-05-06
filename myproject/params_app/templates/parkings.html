@@ -1,0 +1,148 @@
+{% extends 'dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+    <div>
+        <h2 style="font-size:1.15rem;font-weight:700;color:var(--text);margin:0;">Parking Lots Overview</h2>
+        <p style="font-size:0.82rem;color:var(--muted);margin-top:3px;">All registered parking lots and their space utilisation</p>
+    </div>
+    <a href="{% url 'dashboard' %}?tab=parking" class="btn btn-primary">
+        <i class="fas fa-cog"></i> Manage Lots
+    </a>
+</div>
+
+<!-- Stats -->
+<div class="stat-grid" style="margin-bottom:20px;">
+    <div class="stat-card">
+        <div class="stat-icon si-green"><i class="fas fa-parking"></i></div>
+        <div class="stat-info">
+            <div class="stat-val">{{ total_lots }}</div>
+            <div class="stat-lbl">Total Lots</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-blue"><i class="fas fa-border-all"></i></div>
+        <div class="stat-info">
+            <div class="stat-val">{{ total_spaces }}</div>
+            <div class="stat-lbl">Total Spaces</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-green"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-info">
+            <div class="stat-val">{{ available_spaces }}</div>
+            <div class="stat-lbl">Available</div>
+            <div class="stat-sub" style="color:var(--green);">Free right now</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-red"><i class="fas fa-car"></i></div>
+        <div class="stat-info">
+            <div class="stat-val">{{ occupied_spaces }}</div>
+            <div class="stat-lbl">Occupied</div>
+            <div class="stat-sub" style="color:var(--red);">Currently parked</div>
+        </div>
+    </div>
+</div>
+
+<!-- Parking lots table -->
+<div class="card" style="margin-bottom:20px;">
+    <div class="card-hdr">
+        <h4><i class="fas fa-map-marker-alt" style="color:var(--green);"></i> Parking Lots</h4>
+    </div>
+    <div class="tbl-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th><th>Location</th><th>Total Spaces</th>
+                    <th>Available</th><th>Occupied</th><th>Utilisation</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lot in parking_lots %}
+                {% with occupied=lot.total_spaces|add:"-"|add:lot.available_spaces %}
+                <tr>
+                    <td style="color:var(--muted);">{{ lot.lot_id }}</td>
+                    <td><strong>{{ lot.location }}</strong></td>
+                    <td>{{ lot.total_spaces }}</td>
+                    <td>
+                        <span class="badge {% if lot.available_spaces == 0 %}b-red{% elif lot.available_spaces < 10 %}b-amber{% else %}b-green{% endif %}">
+                            {{ lot.available_spaces }}
+                        </span>
+                    </td>
+                    <td>{{ lot.total_spaces|add:"-1"|add:"1" }}</td>
+                    <td style="min-width:140px;">
+                        {% if lot.total_spaces > 0 %}
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div class="progress-bar" style="flex:1;">
+                                <div class="progress-fill"
+                                     style="width:{% widthratio lot.available_spaces lot.total_spaces 100 %}%;
+                                            background:{% if lot.available_spaces == 0 %}var(--red){% elif lot.available_spaces < 10 %}#d97706{% else %}var(--green){% endif %};">
+                                </div>
+                            </div>
+                            <span style="font-size:0.75rem;color:var(--muted);min-width:30px;">
+                                {% widthratio lot.available_spaces lot.total_spaces 100 %}%
+                            </span>
+                        </div>
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endwith %}
+                {% empty %}
+                <tr><td colspan="6">
+                    <div class="empty-state"><i class="fas fa-parking"></i><p>No parking lots registered yet</p></div>
+                </td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Individual spaces table -->
+{% if parking_spaces %}
+<div class="card">
+    <div class="card-hdr">
+        <h4><i class="fas fa-th" style="color:var(--blue);"></i> Individual Parking Spaces</h4>
+        <div style="display:flex;gap:8px;">
+            <button class="filter-btn active" onclick="filterSpaces('all',this)">All</button>
+            <button class="filter-btn" onclick="filterSpaces('free',this)">Free</button>
+            <button class="filter-btn" onclick="filterSpaces('occupied',this)">Occupied</button>
+        </div>
+    </div>
+    <div class="tbl-wrap">
+        <table>
+            <thead>
+                <tr><th>Space ID</th><th>Lot</th><th>Type</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                {% for space in parking_spaces %}
+                <tr class="space-row" data-status="{% if space.is_occupied %}occupied{% else %}free{% endif %}">
+                    <td><strong>#{{ space.space_id }}</strong></td>
+                    <td>{{ space.parking_lot.location }}</td>
+                    <td><span class="badge b-gray">{{ space.space_type }}</span></td>
+                    <td>
+                        {% if space.is_occupied %}
+                        <span class="badge b-red"><i class="fas fa-circle" style="font-size:6px;"></i> Occupied</span>
+                        {% else %}
+                        <span class="badge b-green"><i class="fas fa-circle" style="font-size:6px;"></i> Free</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<script>
+function filterSpaces(status, btn) {
+    btn.parentElement.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.querySelectorAll('.space-row').forEach(function(row) {
+        row.style.display = (status === 'all' || row.dataset.status === status) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

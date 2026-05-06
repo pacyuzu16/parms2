@@ -1,0 +1,419 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /*
+      Auth pages use a split-panel layout — same as login.
+      Left  — brand identity (dark, confident)
+      Right — clean form (light, focused)
+    */
+
+    .auth-page {
+        min-height: calc(100vh - 60px);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        background: var(--parchment);
+    }
+
+    /* ── Left panel — brand side ── */
+    .auth-brand {
+        background: #171f1c;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 48px 52px;
+        position: relative;
+        overflow: hidden;
+    }
+    .auth-brand::before {
+        content: '';
+        position: absolute;
+        top: -80px;
+        right: -80px;
+        width: 340px;
+        height: 340px;
+        border: 60px solid rgba(44,95,71,0.25);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .auth-brand::after {
+        content: '';
+        position: absolute;
+        bottom: -60px;
+        left: -40px;
+        width: 220px;
+        height: 220px;
+        border: 40px solid rgba(44,95,71,0.15);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .auth-brand-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        position: relative;
+        z-index: 1;
+    }
+    .auth-brand-logo span {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: white;
+        letter-spacing: -0.02em;
+    }
+    .auth-brand-content {
+        position: relative;
+        z-index: 1;
+    }
+    .auth-brand-content h2 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.875rem;
+        font-weight: 800;
+        color: white;
+        letter-spacing: -0.03em;
+        line-height: 1.2;
+        margin-bottom: 16px;
+    }
+    .auth-brand-content p {
+        color: rgba(255,255,255,0.5);
+        font-size: 0.9375rem;
+        line-height: 1.65;
+        margin-bottom: 32px;
+    }
+    .auth-feature-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        position: relative;
+        z-index: 1;
+    }
+    .auth-feature-list li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.875rem;
+        color: rgba(255,255,255,0.65);
+    }
+    .auth-feature-list li i {
+        width: 22px;
+        height: 22px;
+        background: rgba(44,95,71,0.45);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.625rem;
+        color: rgba(255,255,255,0.8);
+        flex-shrink: 0;
+    }
+    .auth-brand-footer {
+        font-size: 0.8125rem;
+        color: rgba(255,255,255,0.28);
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ── Right panel — form side ── */
+    .auth-form-panel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 40px;
+        background: var(--paper);
+        overflow-y: auto;
+    }
+    .auth-form-inner {
+        width: 100%;
+        max-width: 400px;
+    }
+    .auth-form-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.625rem;
+        font-weight: 800;
+        color: var(--ink);
+        letter-spacing: -0.03em;
+        margin-bottom: 5px;
+    }
+    .auth-form-sub {
+        font-size: 0.875rem;
+        color: var(--steel);
+        margin-bottom: 28px;
+    }
+    .auth-form-sub a {
+        color: var(--forest);
+        text-decoration: none;
+        font-weight: 600;
+        border-bottom: 1px solid var(--sage-mid);
+        transition: border-color 150ms;
+    }
+    .auth-form-sub a:hover { border-color: var(--forest); }
+
+    .field-group { margin-bottom: 14px; }
+    .field-label {
+        display: block;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--carbon);
+        margin-bottom: 5px;
+        letter-spacing: 0.005em;
+    }
+    .field-input {
+        width: 100%;
+        padding: 9px 13px;
+        border: 1.5px solid var(--dust);
+        border-radius: var(--radius-sm);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9rem;
+        color: var(--carbon);
+        background: var(--paper);
+        outline: none;
+        transition: border-color 150ms, box-shadow 150ms;
+        -webkit-appearance: none;
+    }
+    .field-input::placeholder { color: var(--mist); }
+    .field-input:hover  { border-color: var(--sage-mid); }
+    .field-input:focus  {
+        border-color: var(--forest);
+        box-shadow: 0 0 0 3px rgba(44,95,71,0.10);
+    }
+
+    /* Password strength bar */
+    .pw-strength-bar {
+        height: 3px;
+        border-radius: 2px;
+        margin-top: 6px;
+        background: var(--dust);
+        overflow: hidden;
+    }
+    .pw-strength-fill {
+        height: 100%;
+        border-radius: 2px;
+        width: 0%;
+        transition: width 200ms, background 200ms;
+    }
+    .pw-hint {
+        font-size: 0.75rem;
+        color: var(--mist);
+        margin-top: 4px;
+    }
+
+    /* Terms checkbox */
+    .terms-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        margin: 16px 0 18px;
+    }
+    .terms-row input[type="checkbox"] {
+        margin-top: 2px;
+        accent-color: var(--forest);
+        flex-shrink: 0;
+    }
+    .terms-row label {
+        font-size: 0.8125rem;
+        color: var(--steel);
+        line-height: 1.5;
+        cursor: pointer;
+    }
+    .terms-row a {
+        color: var(--forest);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .terms-row a:hover { text-decoration: underline; }
+
+    .auth-submit {
+        width: 100%;
+        padding: 10px 20px;
+        background: var(--forest);
+        color: rgba(255,255,255,0.95);
+        border: 1px solid var(--forest-dark);
+        border-radius: var(--radius-sm);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 150ms, box-shadow 150ms;
+        letter-spacing: 0.005em;
+    }
+    .auth-submit:hover {
+        background: var(--forest-dark);
+        box-shadow: 0 1px 3px rgba(20,27,25,0.16), 0 4px 8px rgba(44,95,71,0.18);
+    }
+    .auth-submit:active { background: #1d4a34; box-shadow: none; }
+    .auth-submit:disabled { opacity: 0.65; cursor: not-allowed; }
+
+    .flash-error {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        padding: 10px 13px;
+        background: #fef0ee;
+        border: 1px solid #f2b8b2;
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+        color: #7a1f18;
+        margin-bottom: 18px;
+    }
+    .flash-error i { flex-shrink: 0; margin-top: 1px; }
+
+    @media (max-width: 767px) {
+        .auth-page { grid-template-columns: 1fr; }
+        .auth-brand { display: none; }
+        .auth-form-panel { padding: 40px 24px; }
+    }
+</style>
+
+<div class="auth-page">
+
+    <!-- ── Brand panel (left) ── -->
+    <div class="auth-brand">
+        <a class="auth-brand-logo" href="/">
+            <img src="{% static 'imgs/TrafficJam.svg' %}" alt="" height="28"
+                 style="filter:brightness(0) invert(1);opacity:0.85;">
+            <span>PARMS</span>
+        </a>
+
+        <div class="auth-brand-content">
+            <h2>Your parking journey starts here</h2>
+            <p>Join thousands of drivers who book, manage, and pay for parking without the stress.</p>
+            <ul class="auth-feature-list">
+                <li><i class="fas fa-check"></i> Real-time space availability</li>
+                <li><i class="fas fa-check"></i> Instant booking confirmation</li>
+                <li><i class="fas fa-check"></i> Multiple payment methods</li>
+                <li><i class="fas fa-check"></i> Full parking history & receipts</li>
+                <li><i class="fas fa-check"></i> 24/7 platform support</li>
+            </ul>
+        </div>
+
+        <div class="auth-brand-footer">
+            &copy; 2025 PARMS — All rights reserved
+        </div>
+    </div>
+
+    <!-- ── Form panel (right) ── -->
+    <div class="auth-form-panel">
+        <div class="auth-form-inner">
+
+            <h1 class="auth-form-title">Create your account</h1>
+            <p class="auth-form-sub">
+                Already have an account? <a href="/login">Sign in</a>
+            </p>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="flash-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="POST" action="{% url 'signup' %}" id="signupForm">
+                {% csrf_token %}
+
+                <div class="field-group">
+                    <label class="field-label" for="username">Username</label>
+                    <input type="text" class="field-input" id="username" name="username"
+                           placeholder="Choose a unique username" autocomplete="username" required>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label" for="email">Email address</label>
+                    <input type="email" class="field-input" id="email" name="email"
+                           placeholder="you@example.com" autocomplete="email" required>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label" for="password">Password</label>
+                    <input type="password" class="field-input" id="password" name="password"
+                           placeholder="Create a strong password" autocomplete="new-password" required>
+                    <div class="pw-strength-bar"><div class="pw-strength-fill" id="strengthFill"></div></div>
+                    <p class="pw-hint" id="strengthHint">At least 8 characters</p>
+                </div>
+
+                <div class="field-group" style="margin-bottom:0;">
+                    <label class="field-label" for="confirmPassword">Confirm password</label>
+                    <input type="password" class="field-input" id="confirmPassword" name="confirm_password"
+                           placeholder="Re-enter your password" autocomplete="new-password" required>
+                    <p class="pw-hint" id="matchHint" style="min-height:16px;"></p>
+                </div>
+
+                <div class="terms-row">
+                    <input type="checkbox" id="agreeTerms" required>
+                    <label for="agreeTerms">
+                        I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="auth-submit" id="submitBtn">
+                    Create account
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+(function () {
+    const pwInput   = document.getElementById('password');
+    const cfInput   = document.getElementById('confirmPassword');
+    const fill      = document.getElementById('strengthFill');
+    const hint      = document.getElementById('strengthHint');
+    const matchHint = document.getElementById('matchHint');
+    const form      = document.getElementById('signupForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function calcStrength(pw) {
+        let s = 0;
+        if (pw.length >= 8)           s++;
+        if (/[a-z]/.test(pw))         s++;
+        if (/[A-Z]/.test(pw))         s++;
+        if (/[0-9]/.test(pw))         s++;
+        if (/[^A-Za-z0-9]/.test(pw))  s++;
+        return s;
+    }
+
+    pwInput.addEventListener('input', function () {
+        const s = calcStrength(this.value);
+        const pct  = [0, 20, 40, 60, 80, 100][s];
+        const color = s <= 2 ? '#d9534f' : s <= 3 ? '#c8a84e' : '#2c5f47';
+        fill.style.width     = pct + '%';
+        fill.style.background = color;
+        hint.textContent = s <= 2 ? 'Weak — add uppercase, numbers & symbols'
+                         : s <= 3 ? 'Medium — add more variety'
+                         : 'Strong password';
+        hint.style.color = color;
+        checkMatch();
+    });
+
+    cfInput.addEventListener('input', checkMatch);
+
+    function checkMatch() {
+        if (!cfInput.value) { matchHint.textContent = ''; return; }
+        const ok = pwInput.value === cfInput.value;
+        matchHint.textContent = ok ? 'Passwords match' : 'Passwords do not match';
+        matchHint.style.color = ok ? '#2c5f47' : '#d9534f';
+    }
+
+    form.addEventListener('submit', function (e) {
+        if (pwInput.value !== cfInput.value) {
+            e.preventDefault();
+            matchHint.textContent  = 'Passwords do not match';
+            matchHint.style.color  = '#d9534f';
+            cfInput.focus();
+            return;
+        }
+        submitBtn.textContent = 'Creating account…';
+        submitBtn.disabled    = true;
+    });
+}());
+</script>
+{% endblock %}

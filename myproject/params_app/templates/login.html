@@ -1,0 +1,366 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /*
+      Auth pages use a split-panel layout:
+      Left  — brand identity (dark, confident)
+      Right — clean form (light, focused)
+      No gradients. No animations. No glass effects.
+    */
+
+    .auth-page {
+        min-height: calc(100vh - 60px);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        background: var(--parchment);
+    }
+
+    /* ── Left panel — brand side ── */
+    .auth-brand {
+        background: #171f1c;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 48px 52px;
+        position: relative;
+        overflow: hidden;
+    }
+    /* Quiet ring decoration — same language as homepage hero */
+    .auth-brand::before {
+        content: '';
+        position: absolute;
+        top: -80px;
+        right: -80px;
+        width: 340px;
+        height: 340px;
+        border: 60px solid rgba(44,95,71,0.25);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .auth-brand::after {
+        content: '';
+        position: absolute;
+        bottom: -60px;
+        left: -40px;
+        width: 220px;
+        height: 220px;
+        border: 40px solid rgba(44,95,71,0.15);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .auth-brand-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        position: relative;
+        z-index: 1;
+    }
+    .auth-brand-logo span {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: white;
+        letter-spacing: -0.02em;
+    }
+    .auth-brand-content {
+        position: relative;
+        z-index: 1;
+    }
+    .auth-brand-content h2 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.875rem;
+        font-weight: 800;
+        color: white;
+        letter-spacing: -0.03em;
+        line-height: 1.2;
+        margin-bottom: 12px;
+    }
+    .auth-brand-content p {
+        color: rgba(255,255,255,0.5);
+        font-size: 0.9375rem;
+        line-height: 1.65;
+        margin-bottom: 36px;
+    }
+    .auth-stat-row {
+        display: flex;
+        gap: 32px;
+        position: relative;
+        z-index: 1;
+    }
+    .auth-stat .val {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: white;
+        letter-spacing: -0.03em;
+        line-height: 1;
+        margin-bottom: 3px;
+    }
+    .auth-stat .lbl {
+        font-size: 0.75rem;
+        color: rgba(255,255,255,0.38);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+    .auth-brand-footer {
+        font-size: 0.8125rem;
+        color: rgba(255,255,255,0.28);
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ── Right panel — form side ── */
+    .auth-form-panel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 40px;
+        background: var(--paper);
+    }
+    .auth-form-inner {
+        width: 100%;
+        max-width: 380px;
+    }
+    .auth-form-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.625rem;
+        font-weight: 800;
+        color: var(--ink);
+        letter-spacing: -0.03em;
+        margin-bottom: 5px;
+    }
+    .auth-form-sub {
+        font-size: 0.875rem;
+        color: var(--steel);
+        margin-bottom: 32px;
+    }
+    .auth-form-sub a {
+        color: var(--forest);
+        text-decoration: none;
+        font-weight: 600;
+        border-bottom: 1px solid var(--sage-mid);
+        transition: border-color 150ms;
+    }
+    .auth-form-sub a:hover { border-color: var(--forest); }
+
+    .field-group { margin-bottom: 16px; }
+    .field-label {
+        display: block;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--carbon);
+        margin-bottom: 5px;
+        letter-spacing: 0.005em;
+    }
+    .field-input {
+        width: 100%;
+        padding: 9px 13px;
+        border: 1.5px solid var(--dust);
+        border-radius: var(--radius-sm);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9rem;
+        color: var(--carbon);
+        background: var(--paper);
+        outline: none;
+        transition: border-color 150ms, box-shadow 150ms;
+        -webkit-appearance: none;
+    }
+    .field-input::placeholder { color: var(--mist); }
+    .field-input:hover  { border-color: var(--sage-mid); }
+    .field-input:focus  {
+        border-color: var(--forest);
+        box-shadow: 0 0 0 3px rgba(44,95,71,0.10);
+    }
+
+    .auth-submit {
+        width: 100%;
+        padding: 10px 20px;
+        background: var(--forest);
+        color: rgba(255,255,255,0.95);
+        border: 1px solid var(--forest-dark);
+        border-radius: var(--radius-sm);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 150ms, box-shadow 150ms;
+        margin-top: 8px;
+        letter-spacing: 0.005em;
+    }
+    .auth-submit:hover {
+        background: var(--forest-dark);
+        box-shadow: 0 1px 3px rgba(20,27,25,0.16), 0 4px 8px rgba(44,95,71,0.18);
+    }
+    .auth-submit:active { background: #1d4a34; box-shadow: none; }
+    .auth-submit:disabled { opacity: 0.65; cursor: not-allowed; }
+
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 20px 0;
+        color: var(--mist);
+        font-size: 0.8125rem;
+    }
+    .auth-divider::before, .auth-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--dust);
+    }
+
+    .btn-google-auth {
+        width: 100%;
+        padding: 9px 16px;
+        background: var(--paper);
+        border: 1.5px solid var(--dust);
+        border-radius: var(--radius-sm);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--carbon);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: background 150ms, border-color 150ms;
+        text-decoration: none;
+    }
+    .btn-google-auth:hover { background: var(--chalk); border-color: var(--sage-mid); color: var(--carbon); }
+
+    .auth-hint {
+        font-size: 0.8125rem;
+        color: var(--mist);
+        text-align: center;
+        margin-top: 20px;
+    }
+    .auth-hint a {
+        color: var(--forest);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .auth-hint a:hover { text-decoration: underline; }
+
+    .flash-error {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        padding: 10px 13px;
+        background: #fef0ee;
+        border: 1px solid #f2b8b2;
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+        color: #7a1f18;
+        margin-bottom: 18px;
+    }
+    .flash-error i { flex-shrink: 0; margin-top: 1px; }
+
+    @media (max-width: 767px) {
+        .auth-page { grid-template-columns: 1fr; }
+        .auth-brand { display: none; }
+        .auth-form-panel { padding: 40px 24px; }
+    }
+</style>
+
+<div class="auth-page">
+
+    <!-- ── Brand panel (left) ── -->
+    <div class="auth-brand">
+        <a class="auth-brand-logo" href="/">
+            <img src="{% static 'imgs/TrafficJam.svg' %}" alt="" height="28"
+                 style="filter:brightness(0) invert(1);opacity:0.85;">
+            <span>PARMS</span>
+        </a>
+
+        <div class="auth-brand-content">
+            <h2>Smart parking for drivers who value their time</h2>
+            <p>Find available spaces, book instantly, and pay automatically — all from one platform.</p>
+            <div class="auth-stat-row">
+                <div class="auth-stat">
+                    <div class="val">50K+</div>
+                    <div class="lbl">Active Users</div>
+                </div>
+                <div class="auth-stat">
+                    <div class="val">15K+</div>
+                    <div class="lbl">Parking Spots</div>
+                </div>
+                <div class="auth-stat">
+                    <div class="val">99%</div>
+                    <div class="lbl">Success Rate</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-brand-footer">
+            &copy; 2025 PARMS — All rights reserved
+        </div>
+    </div>
+
+    <!-- ── Form panel (right) ── -->
+    <div class="auth-form-panel">
+        <div class="auth-form-inner">
+
+            <h1 class="auth-form-title">Welcome back</h1>
+            <p class="auth-form-sub">
+                Don't have an account? <a href="/signup">Create one free</a>
+            </p>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="flash-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="POST" action="{% url 'login' %}" id="loginForm">
+                {% csrf_token %}
+
+                <div class="field-group">
+                    <label class="field-label" for="email">Email address</label>
+                    <input type="email" class="field-input" id="email" name="email"
+                           placeholder="you@example.com" autocomplete="email" required>
+                </div>
+
+                <div class="field-group" style="margin-bottom:0;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                        <label class="field-label" for="password" style="margin:0;">Password</label>
+                        <a href="#" style="font-size:0.8125rem;color:var(--forest);text-decoration:none;font-weight:500;">
+                            Forgot password?
+                        </a>
+                    </div>
+                    <input type="password" class="field-input" id="password" name="password"
+                           placeholder="Enter your password" autocomplete="current-password" required>
+                </div>
+
+                <button type="submit" class="auth-submit" id="submitBtn">
+                    Sign in to PARMS
+                </button>
+            </form>
+
+            <div class="auth-divider">or</div>
+
+            <a href="#" class="btn-google-auth">
+                <img src="{% static 'imgs/flat-color-icons_google.svg' %}" width="18" alt="">
+                Continue with Google
+            </a>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', function () {
+    var btn = document.getElementById('submitBtn');
+    btn.textContent = 'Signing in…';
+    btn.disabled = true;
+});
+</script>
+{% endblock %}

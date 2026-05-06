@@ -1,0 +1,704 @@
+/* ============================================================
+   PARMS — Refined Design System
+   Philosophy: human-designed, not template-generated.
+   Every decision has a reason. No gradients on UI chrome.
+   No glow shadows. No uniform transforms.
+   ============================================================ */
+
+/* ── Google Fonts import ─────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+
+/* ── Design tokens ───────────────────────────────────────── */
+:root {
+    /* Core palette — natural, not saturated */
+    --forest:       #2c5f47;   /* primary green — deep, earthy */
+    --forest-dark:  #234d39;   /* hover/active state */
+    --forest-dim:   #3d7560;   /* lighter interactive green */
+    --sage:         #e6f0eb;   /* very light green tint for backgrounds */
+    --sage-mid:     #c8ddd4;   /* borders on green-tinted surfaces */
+
+    /* Neutrals — warm, not cold */
+    --ink:          #161b19;   /* near-black for headings — not pure #000 */
+    --carbon:       #242b27;   /* slightly lighter for body text */
+    --steel:        #4f5a55;   /* secondary text */
+    --mist:         #8a9690;   /* placeholder / muted */
+    --dust:         #dde3e0;   /* borders — warm gray-green */
+    --smoke:        #ecefed;   /* subtle dividers */
+    --parchment:    #f7f8f7;   /* page background — off-white, barely warm */
+    --paper:        #ffffff;   /* cards and inputs */
+    --chalk:        #f2f4f3;   /* alternate section background */
+
+    /* Semantic */
+    --text-dark:    var(--carbon);
+    --text-muted:   var(--steel);
+    --border-light: var(--dust);
+    --light-gray:   var(--parchment);
+    --white:        var(--paper);
+
+    /* Legacy aliases (keep for templates using them) */
+    --primary-green:   var(--forest);
+    --dark-green:      var(--forest-dark);
+    --secondary-green: var(--forest-dim);
+    --light-green:     var(--sage-mid);
+    --light-green-bg:  var(--sage);
+
+    /* Shadows — monochromatic only, no color tints */
+    --shadow-xs:   0 1px 2px rgba(20,27,25,0.06);
+    --shadow-soft: 0 1px 3px rgba(20,27,25,0.07), 0 1px 2px rgba(20,27,25,0.04);
+    --shadow-medium: 0 4px 12px rgba(20,27,25,0.08), 0 2px 4px rgba(20,27,25,0.04);
+    --shadow-lg:   0 12px 32px rgba(20,27,25,0.10), 0 4px 8px rgba(20,27,25,0.04);
+
+    /* Transitions — deliberate timing, not just "ease" */
+    --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);   /* snappy, physical */
+    --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+    --transition-fast: 150ms var(--ease-out);
+    --transition-smooth: 200ms var(--ease-out);
+    --transition-medium: 260ms var(--ease-out);
+
+    /* Border radius — intentional variety, not uniform */
+    --radius-xs:  4px;
+    --radius-sm:  6px;
+    --radius-md:  10px;
+    --radius-lg:  14px;
+    --radius-xl:  20px;
+
+    /* Spacing scale (4px base) */
+    --sp-1: 4px;
+    --sp-2: 8px;
+    --sp-3: 12px;
+    --sp-4: 16px;
+    --sp-5: 24px;
+    --sp-6: 32px;
+    --sp-7: 48px;
+    --sp-8: 64px;
+    --sp-9: 96px;
+}
+
+/* ── Reset ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── Base typography ─────────────────────────────────────── */
+body {
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--carbon);
+    background: var(--parchment);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+}
+
+/*
+  Headings use Plus Jakarta Sans — humanist, slightly geometric,
+  not the sterile corporate look of Helvetica or Roboto.
+  Inter handles body text better at small sizes.
+*/
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin: 0;
+}
+
+h1 { font-size: clamp(1.75rem, 4vw, 2.5rem);  letter-spacing: -0.025em; }
+h2 { font-size: clamp(1.35rem, 3vw, 1.875rem); letter-spacing: -0.02em; }
+h3 { font-size: 1.35rem; }
+h4 { font-size: 1.125rem; }
+h5 { font-size: 0.9375rem; }
+h6 { font-size: 0.8125rem; letter-spacing: 0.02em; text-transform: uppercase; }
+
+p { margin: 0 0 1rem; }
+
+/* Monospace — for plate numbers, IDs, codes */
+code, .mono {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.88em;
+    letter-spacing: 0.02em;
+}
+
+/* ── Container ───────────────────────────────────────────── */
+.container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+@media (max-width: 640px) { .container { padding: 0 16px; } }
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+/*
+  No gradient. A single flat dark tone.
+  The color comes from the green accent on active items,
+  not from a decoration gradient.
+*/
+.sidebar {
+    background: #171f1c;
+    min-height: 100vh;
+    width: 248px;
+    position: fixed;
+    left: 0; top: 0;
+    padding: 0;
+    border-right: 1px solid rgba(255,255,255,0.05);
+    z-index: 1000;
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+.sidebar::-webkit-scrollbar { display: none; }
+
+.sidebar .nav-item { margin: 0 10px 1px; }
+.sidebar .nav-item a {
+    display: flex;
+    align-items: center;
+    color: rgba(255,255,255,0.52);
+    text-decoration: none;
+    padding: 9px 11px;
+    border-radius: var(--radius-sm);
+    transition: color var(--transition-fast), background var(--transition-fast);
+    font-size: 0.875rem;
+    font-weight: 500;
+    gap: 10px;
+    letter-spacing: 0.005em;
+}
+.sidebar .nav-item a:hover {
+    background: rgba(255,255,255,0.055);
+    color: rgba(255,255,255,0.88);
+    /* No translateX — it draws attention away from the content */
+}
+.sidebar .nav-item a.active {
+    background: var(--forest);
+    color: rgba(255,255,255,0.96);
+    font-weight: 600;
+}
+.sidebar .nav-item a i {
+    width: 16px;
+    text-align: center;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+    opacity: 0.75;
+}
+.sidebar .nav-item a.active i,
+.sidebar .nav-item a:hover i { opacity: 1; }
+
+/* ── Main content (sidebar layout) ──────────────────────── */
+.main-content {
+    margin-left: 248px;
+    padding: var(--sp-6);
+    background: var(--parchment);
+    min-height: 100vh;
+}
+
+/* ── Cards ───────────────────────────────────────────────── */
+/*
+  Cards don't move on hover. That's a mobile-game pattern.
+  Instead: a subtle border brightens — more considered, less noisy.
+*/
+.card {
+    background: var(--paper);
+    border: 1px solid var(--dust);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+    transition: border-color var(--transition-smooth),
+                box-shadow var(--transition-smooth);
+    overflow: hidden;
+}
+.card:hover {
+    border-color: var(--sage-mid);
+    box-shadow: var(--shadow-medium);
+    /* no transform */
+}
+.card-body {
+    padding: var(--sp-5);
+}
+.card-header {
+    background: var(--chalk);
+    border-bottom: 1px solid var(--dust);
+    padding: 13px var(--sp-5);
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+}
+
+/* ── Summary / stat cards ────────────────────────────────── */
+/*
+  No gradient. Stat cards use flat color blocks with intentional
+  saturation differences — not a rainbow dashboard.
+*/
+.summary-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-6);
+}
+.summary-card {
+    background: var(--paper);
+    border: 1px solid var(--dust);
+    border-radius: var(--radius-md);
+    padding: var(--sp-5);
+    box-shadow: var(--shadow-soft);
+    transition: border-color var(--transition-smooth);
+}
+.summary-card:hover { border-color: var(--sage-mid); }
+.summary-card h3 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.875rem;
+    font-weight: 800;
+    margin: 0 0 4px;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+}
+.summary-card p { margin: 0; color: var(--steel); font-size: 0.875rem; }
+
+/* Green accent variant used in userin/public stats */
+.summary-card.accent {
+    background: var(--forest);
+    border-color: var(--forest-dark);
+    color: white;
+}
+.summary-card.accent h3 { color: white; }
+.summary-card.accent p  { color: rgba(255,255,255,0.72); }
+
+/* ── Buttons ─────────────────────────────────────────────── */
+/*
+  No translateY transforms. Buttons indicate interaction through
+  color shift and a measured shadow — physical without bouncing.
+  Slightly asymmetric padding creates natural reading rhythm.
+*/
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0.005em;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background var(--transition-fast),
+                border-color var(--transition-fast),
+                box-shadow var(--transition-fast),
+                color var(--transition-fast);
+    white-space: nowrap;
+    user-select: none;
+}
+.btn:focus-visible {
+    outline: 2px solid var(--forest);
+    outline-offset: 2px;
+}
+
+/* Primary — forest green, confident */
+.btn-primary {
+    background: var(--forest);
+    color: rgba(255,255,255,0.95);
+    border-color: var(--forest-dark);
+}
+.btn-primary:hover {
+    background: var(--forest-dark);
+    color: white;
+    box-shadow: 0 1px 3px rgba(20,27,25,0.18),
+                0 4px 8px rgba(44,95,71,0.2);
+}
+.btn-primary:active { background: #1d4a34; box-shadow: none; }
+
+/* Success (same as primary — avoid rainbow button syndrome) */
+.btn-success {
+    background: var(--forest);
+    color: rgba(255,255,255,0.95);
+    border-color: var(--forest-dark);
+}
+.btn-success:hover { background: var(--forest-dark); color: white; }
+
+/* Outline — considered, uses border not fill */
+.btn-outline-success {
+    background: transparent;
+    color: var(--forest);
+    border-color: var(--forest);
+    border-width: 1.5px;
+}
+.btn-outline-success:hover {
+    background: var(--sage);
+    color: var(--forest-dark);
+    border-color: var(--forest);
+}
+
+/* Ghost — for secondary actions, quiet */
+.btn-outline-secondary {
+    background: transparent;
+    color: var(--steel);
+    border: 1.5px solid var(--dust);
+}
+.btn-outline-secondary:hover {
+    background: var(--chalk);
+    color: var(--carbon);
+    border-color: var(--sage-mid);
+}
+
+/* Sizes */
+.btn-lg { padding: 11px 24px; font-size: 0.9375rem; border-radius: var(--radius-md); }
+.btn-sm { padding: 5px 11px;  font-size: 0.8125rem; }
+.btn-xs { padding: 3px 8px;   font-size: 0.75rem; border-radius: var(--radius-xs); }
+
+/* ── Forms ───────────────────────────────────────────────── */
+.form-control {
+    width: 100%;
+    padding: 9px 13px;
+    border: 1.5px solid var(--dust);
+    border-radius: var(--radius-sm);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--carbon);
+    background: var(--paper);
+    transition: border-color var(--transition-fast),
+                box-shadow var(--transition-fast);
+    outline: none;
+    -webkit-appearance: none;
+}
+.form-control::placeholder { color: var(--mist); }
+.form-control:hover { border-color: var(--sage-mid); }
+.form-control:focus {
+    border-color: var(--forest);
+    box-shadow: 0 0 0 3px rgba(44,95,71,0.10);
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    color: var(--carbon);
+    letter-spacing: 0.01em;
+}
+.form-group { margin-bottom: var(--sp-4); }
+
+/* ── Tables ──────────────────────────────────────────────── */
+/*
+  Table headers are quiet, not green. Green headers compete with
+  data — the data should be the hero.
+*/
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--paper);
+}
+.table thead th {
+    background: var(--chalk);
+    color: var(--steel);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--dust);
+    border-top: 1px solid var(--dust);
+}
+.table th, .table td {
+    padding: 11px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--smoke);
+    font-size: 0.875rem;
+    vertical-align: middle;
+}
+.table tbody tr:last-child td { border-bottom: none; }
+.table tbody tr {
+    transition: background var(--transition-fast);
+}
+.table tbody tr:hover { background: var(--chalk); }
+
+/* ── Alerts ──────────────────────────────────────────────── */
+.alert {
+    padding: 11px 15px;
+    border-radius: var(--radius-sm);
+    margin: 12px 0;
+    border: 1px solid transparent;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+.alert-success { background: #edf6f1; border-color: #b8d9c7; color: #1d5236; }
+.alert-info    { background: #eef4ff; border-color: #b8cff5; color: #1e3a7a; }
+.alert-warning { background: #fef9ec; border-color: #f0d890; color: #7a4f0d; }
+.alert-danger  { background: #fef0ee; border-color: #f2b8b2; color: #7a1f18; }
+
+/* ── Badges ──────────────────────────────────────────────── */
+/*
+  Badges are readable above all else. Slightly larger than typical,
+  generous padding, no border-radius overkill.
+*/
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: var(--radius-xs);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.6;
+}
+.badge-success, .b-green { background: #e5f4ec; color: #1d5236; }
+.badge-warning, .b-amber { background: #fef7e4; color: #7a4f0d; }
+.badge-danger,  .b-red   { background: #fef0ee; color: #7a1f18; }
+.badge-info,    .b-blue  { background: #eef4ff; color: #1e3a7a; }
+.b-purple { background: #f1edff; color: #3d1d91; }
+.b-gray   { background: var(--chalk); color: var(--steel); }
+
+/* ── List groups ─────────────────────────────────────────── */
+.list-group { list-style: none; padding: 0; margin: 0; }
+.list-group-item {
+    background: var(--paper);
+    border: 1px solid var(--dust);
+    padding: 12px 16px;
+    margin-bottom: 4px;
+    border-radius: var(--radius-sm);
+    transition: border-color var(--transition-fast),
+                background var(--transition-fast);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+}
+.list-group-item:hover {
+    border-color: var(--sage-mid);
+    background: var(--chalk);
+    /* No translateX — that's a tooltip pattern, not a list pattern */
+}
+
+/* ── Payment cards ───────────────────────────────────────── */
+.payment-card {
+    background: var(--paper);
+    border: 1.5px solid var(--dust);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    text-align: center;
+    transition: border-color var(--transition-fast),
+                background var(--transition-fast);
+    cursor: pointer;
+}
+.payment-card:hover  {
+    border-color: var(--forest);
+    background: var(--sage);
+}
+.payment-card.selected {
+    border-color: var(--forest);
+    background: var(--sage);
+    box-shadow: 0 0 0 2px var(--forest);
+}
+.payment-card img { max-width: 64px; height: auto; margin-bottom: 12px; }
+
+/* ── Typography helpers ──────────────────────────────────── */
+.text-success { color: var(--forest) !important; }
+.text-muted   { color: var(--steel) !important; }
+.text-dark    { color: var(--ink) !important; }
+
+/* ── Notification badge ──────────────────────────────────── */
+.notification-badge {
+    margin-left: auto;
+    background: #c04040;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 100px;
+    line-height: 1.7;
+    letter-spacing: 0.02em;
+}
+
+/* ── Mobile menu toggle ──────────────────────────────────── */
+.mobile-menu-toggle {
+    display: none;
+    position: fixed;
+    top: 15px; left: 15px;
+    z-index: 1001;
+    background: var(--paper);
+    color: var(--carbon);
+    border: 1px solid var(--dust);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    cursor: pointer;
+    box-shadow: var(--shadow-soft);
+    transition: background var(--transition-fast);
+}
+.mobile-menu-toggle:hover { background: var(--chalk); }
+
+/* ── Loading skeleton ────────────────────────────────────── */
+.skeleton {
+    background: linear-gradient(90deg, var(--chalk) 25%, var(--smoke) 50%, var(--chalk) 75%);
+    background-size: 300px 100%;
+    animation: shimmer 1.6s infinite;
+    border-radius: var(--radius-sm);
+}
+@keyframes shimmer {
+    0%   { background-position: -300px 0; }
+    100% { background-position: calc(300px + 100%) 0; }
+}
+
+/* ── Status dots ─────────────────────────────────────────── */
+.status-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+.status-dot.active   { background: var(--forest); }
+.status-dot.inactive { background: var(--mist); }
+.status-dot.warning  { background: #c08a0a; }
+
+/* ── Footer (public pages) ───────────────────────────────── */
+.footer {
+    background: var(--chalk);
+    padding: var(--sp-7) 0 0;
+    margin-top: var(--sp-8);
+    border-top: 1px solid var(--dust);
+}
+.footer h5, .footer h6 {
+    color: var(--ink);
+    font-weight: 700;
+    margin-bottom: 13px;
+    letter-spacing: -0.01em;
+}
+.footer a {
+    color: var(--steel);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 7px;
+    font-size: 0.875rem;
+    transition: color var(--transition-fast);
+}
+.footer a:hover { color: var(--forest); }
+.footer .social-icons { display: flex; gap: 8px; margin-top: 8px; }
+.footer .social-icons a {
+    width: 34px; height: 34px;
+    border-radius: var(--radius-sm);   /* square-ish, not round pill */
+    background: var(--paper);
+    border: 1px solid var(--dust);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--steel);
+    font-size: 0.8125rem;
+    margin: 0;
+    transition: background var(--transition-fast),
+                border-color var(--transition-fast),
+                color var(--transition-fast);
+}
+.footer .social-icons a:hover {
+    background: var(--forest);
+    border-color: var(--forest);
+    color: white;
+}
+.footer-bottom {
+    text-align: center;
+    padding: 16px 0;
+    border-top: 1px solid var(--dust);
+    margin-top: var(--sp-6);
+    color: var(--mist);
+    font-size: 0.8125rem;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 992px) {
+    .sidebar { transform: translateX(-100%); transition: transform 0.28s var(--ease-out); }
+    .sidebar.active { transform: translateX(0); }
+    .main-content { margin-left: 0; padding: var(--sp-5) var(--sp-4); }
+    .mobile-menu-toggle { display: block; }
+}
+@media (max-width: 768px) {
+    .summary-section { grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+    .card-body { padding: var(--sp-4); }
+}
+@media (max-width: 576px) {
+    .summary-section { grid-template-columns: 1fr; }
+    .summary-card h3 { font-size: 1.6rem; }
+    .btn      { padding: 8px 15px; }
+    .btn-lg   { padding: 10px 20px; font-size: 0.9rem; }
+    .main-content { padding: var(--sp-3) var(--sp-2); }
+}
+
+/* ── Utilities ───────────────────────────────────────────── */
+.text-center   { text-align: center; }
+.text-right    { text-align: right; }
+.fw-400 { font-weight: 400; }
+.fw-500 { font-weight: 500; }
+.fw-600 { font-weight: 600; }
+.fw-bold, .fw-700 { font-weight: 700; }
+.fw-800 { font-weight: 800; }
+
+.gap-1 { gap: var(--sp-1); }
+.gap-2 { gap: var(--sp-2); }
+.gap-3 { gap: var(--sp-3); }
+.gap-4 { gap: var(--sp-4); }
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: var(--sp-1); }
+.mb-2 { margin-bottom: var(--sp-2); }
+.mb-3 { margin-bottom: var(--sp-4); }
+.mb-4 { margin-bottom: var(--sp-5); }
+.mb-5 { margin-bottom: var(--sp-7); }
+.mt-1 { margin-top: var(--sp-1); }
+.mt-2 { margin-top: var(--sp-2); }
+.mt-3 { margin-top: var(--sp-4); }
+.mt-4 { margin-top: var(--sp-5); }
+.mt-5 { margin-top: var(--sp-7); }
+.me-1 { margin-right: var(--sp-1); }
+.me-2 { margin-right: var(--sp-2); }
+.me-3 { margin-right: var(--sp-4); }
+.ms-auto { margin-left: auto; }
+
+.p-3 { padding: var(--sp-4); }
+.p-4 { padding: var(--sp-5); }
+.p-5 { padding: var(--sp-7); }
+.py-3 { padding-top: var(--sp-4); padding-bottom: var(--sp-4); }
+.py-5 { padding-top: var(--sp-7); padding-bottom: var(--sp-7); }
+.px-4 { padding-left: var(--sp-5); padding-right: var(--sp-5); }
+
+.d-flex  { display: flex; }
+.d-grid  { display: grid; }
+.d-none  { display: none; }
+.d-block { display: block; }
+.d-sm-block { display: none; }
+@media (min-width: 576px) { .d-sm-block { display: block; } }
+
+.align-items-center  { align-items: center; }
+.align-items-start   { align-items: flex-start; }
+.justify-content-between { justify-content: space-between; }
+.justify-content-center  { justify-content: center; }
+.justify-content-end     { justify-content: flex-end; }
+.flex-wrap    { flex-wrap: wrap; }
+.flex-column  { flex-direction: column; }
+.flex-1       { flex: 1; }
+
+.w-100 { width: 100%; }
+.h-100 { height: 100%; }
+.min-w-0 { min-width: 0; }
+.position-relative { position: relative; }
+.overflow-hidden   { overflow: hidden; }
+
+.rounded    { border-radius: var(--radius-sm); }
+.rounded-md { border-radius: var(--radius-md); }
+.rounded-lg { border-radius: var(--radius-lg); }
+.rounded-circle { border-radius: 50%; }
+
+.shadow    { box-shadow: var(--shadow-soft); }
+.shadow-md { box-shadow: var(--shadow-medium); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+
+.img-fluid { max-width: 100%; height: auto; display: block; }
+
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

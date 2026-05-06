@@ -1,0 +1,184 @@
+{% extends 'userin.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* ── Destination page — navigation + activities ── */
+
+    .dest-grid {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 20px;
+        align-items: start;
+    }
+
+    /* Navigation map card */
+    .nav-card {
+        background: var(--white);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+    .nav-card-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .nav-card-header h5 {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+    }
+    .nav-card-header i { color: var(--green); }
+    .nav-card-body {
+        padding: 20px;
+        text-align: center;
+    }
+    .nav-card-body img {
+        width: 100%;
+        border-radius: 8px;
+        display: block;
+    }
+    .nav-card-caption {
+        font-size: 0.875rem;
+        color: var(--muted);
+        margin-top: 12px;
+        margin-bottom: 16px;
+    }
+    .nav-badges {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .nav-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+    .nav-badge-green  { background: #dcfce7; color: #166534; }
+    .nav-badge-blue   { background: #dbeafe; color: #1e40af; }
+    .nav-badge-amber  { background: #fef9c3; color: #854d0e; }
+
+    /* Activities panel re-use */
+    .activities-panel {
+        background: var(--white);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    @media (max-width: 991px) {
+        .dest-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="dest-grid">
+
+    <!-- ── Navigation map ── -->
+    <div class="nav-card">
+        <div class="nav-card-header">
+            <i class="fas fa-route"></i>
+            <h5>Navigation to Your Parking Spot</h5>
+        </div>
+        <div class="nav-card-body">
+            <img src="{% static 'imgs/Group83.png' %}" alt="Navigation Map">
+            <p class="nav-card-caption">
+                Follow the highlighted route to reach your reserved parking spot safely.
+            </p>
+            <div class="nav-badges">
+                <span class="nav-badge nav-badge-green">
+                    <i class="fas fa-map-marker-alt"></i> Zone 43 — Makuza Plaza
+                </span>
+                <span class="nav-badge nav-badge-blue">
+                    <i class="fas fa-clock"></i> ETA: 8 minutes
+                </span>
+                <span class="nav-badge nav-badge-amber">
+                    <i class="fas fa-car"></i> Spot A-15 Reserved
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Recent activities ── -->
+    <div class="activities-panel">
+        <div class="ap-header">
+            <h5><i class="fas fa-clock" style="color:var(--green);"></i> Recent Activities</h5>
+        </div>
+        <div class="ap-body">
+
+            <div class="activity-row">
+                <div class="act-avatar"><i class="fas fa-car"></i></div>
+                <div class="act-info">
+                    <strong>ID #1111</strong>
+                    <div class="act-meta">
+                        <span><i class="fas fa-clock"></i> 2:30 hrs</span>
+                        <span><i class="fas fa-map-marker-alt"></i> Zone 43</span>
+                    </div>
+                </div>
+                <span class="act-tag tag-done">DONE</span>
+            </div>
+
+            <div class="activity-row">
+                <div class="act-avatar"><i class="fas fa-car"></i></div>
+                <div class="act-info">
+                    <strong>ID #2222</strong>
+                    <div class="act-meta">
+                        <span><i class="fas fa-clock"></i> 1:30 hrs</span>
+                        <span><i class="fas fa-map-marker-alt"></i> Zone 44</span>
+                    </div>
+                </div>
+                <span class="act-tag tag-active">ACTIVE</span>
+            </div>
+
+            <div class="activity-row">
+                <div class="act-avatar"><i class="fas fa-car"></i></div>
+                <div class="act-info">
+                    <strong>ID #3333</strong>
+                    <div class="act-meta">
+                        <span><i class="fas fa-clock"></i> 3:30 hrs</span>
+                        <span><i class="fas fa-map-marker-alt"></i> Zone 51</span>
+                    </div>
+                </div>
+                <span class="act-tag tag-done">DONE</span>
+            </div>
+
+            <div class="activity-row">
+                <div class="act-avatar"><i class="fas fa-map-marker-alt"></i></div>
+                <div class="act-info">
+                    <strong>Navigation Started</strong>
+                    <div class="act-meta">
+                        <span><i class="fas fa-route"></i> To Makuza Plaza</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="activity-row">
+                <div class="act-avatar"><i class="fas fa-bell"></i></div>
+                <div class="act-info">
+                    <strong>Arrival Reminder</strong>
+                    <div class="act-meta">
+                        <span><i class="fas fa-clock"></i> 8 minutes remaining</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="ap-footer">
+            <a href="{% url 'billings' %}">View all activities <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

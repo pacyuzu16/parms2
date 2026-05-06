@@ -1,0 +1,97 @@
+{% extends 'dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+    <div>
+        <h2 style="font-size:1.15rem;font-weight:700;color:var(--text);margin:0;">Billings &amp; Payments</h2>
+        <p style="font-size:0.82rem;color:var(--muted);margin-top:3px;">All payment transactions in the system</p>
+    </div>
+    <a href="{% url 'dashboard' %}?tab=reports" class="btn btn-outline">
+        <i class="fas fa-chart-bar"></i> Reports
+    </a>
+</div>
+
+<!-- Stat cards -->
+<div class="stat-grid" style="margin-bottom:20px;">
+    <div class="stat-card">
+        <div class="stat-icon si-green"><i class="fas fa-dollar-sign"></i></div>
+        <div class="stat-info">
+            <div class="stat-val">${{ total_revenue|floatformat:2 }}</div>
+            <div class="stat-lbl">Total Revenue</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-blue"><i class="fas fa-receipt"></i></div>
+        <div class="stat-info">
+            <div class="stat-val">{{ total_payments }}</div>
+            <div class="stat-lbl">Total Payments</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon si-red"><i class="fas fa-exclamation-circle"></i></div>
+        <div class="stat-info">
+            <div class="stat-val">{{ unpaid_tickets }}</div>
+            <div class="stat-lbl">Unpaid Tickets</div>
+        </div>
+    </div>
+</div>
+
+<!-- Table -->
+<div class="card">
+    <div class="card-hdr">
+        <h4><i class="fas fa-receipt" style="color:var(--green);"></i> Payment History</h4>
+        <select id="method-filter" onchange="filterRows()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:0.82rem;color:var(--text);background:white;outline:none;cursor:pointer;">
+            <option value="all">All Methods</option>
+            <option value="Cash">Cash</option>
+            <option value="Credit">Credit Card</option>
+            <option value="Digital">Digital Wallet</option>
+        </select>
+    </div>
+    <div class="tbl-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th><th>ID</th><th>Vehicle</th><th>Amount</th>
+                    <th>Method</th><th>Date</th><th>Ticket</th><th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="bill-tbody">
+                {% for p in payments %}
+                <tr class="bill-row" data-method="{{ p.payment_method }}">
+                    <td style="color:var(--muted);">{{ forloop.counter }}</td>
+                    <td><strong>#{{ p.payment_id }}</strong></td>
+                    <td>
+                        {% if p.ticket.vehicle %}
+                        <span style="font-family:monospace;font-size:0.82rem;font-weight:600;">{{ p.ticket.vehicle.plate_number }}</span>
+                        {% else %}<span style="color:var(--muted);">—</span>{% endif %}
+                    </td>
+                    <td><strong style="color:var(--green);">${{ p.amount|floatformat:2 }}</strong></td>
+                    <td>
+                        <span class="badge {% if 'Cash' in p.payment_method %}b-green{% elif 'Credit' in p.payment_method %}b-blue{% else %}b-purple{% endif %}">
+                            {{ p.payment_method }}
+                        </span>
+                    </td>
+                    <td style="font-size:0.8rem;color:var(--muted);">{{ p.date|date:"d M Y, H:i" }}</td>
+                    <td style="color:var(--muted);font-size:0.8rem;">#{{ p.ticket.ticket_id }}</td>
+                    <td><span class="badge b-green">Paid</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8">
+                    <div class="empty-state"><i class="fas fa-receipt"></i><p>No payment records yet</p></div>
+                </td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function filterRows() {
+    var f = document.getElementById('method-filter').value;
+    document.querySelectorAll('.bill-row').forEach(function(r) {
+        r.style.display = (f === 'all' || (r.dataset.method || '').includes(f)) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

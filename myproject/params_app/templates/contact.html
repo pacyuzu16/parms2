@@ -1,0 +1,482 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /*
+      Contact page — design system applied.
+      No gradient banners. No card lifts. No backdrop-filter.
+      Clean editorial layout matching the homepage aesthetic.
+    */
+
+    /* ── Page header strip ── */
+    .contact-header {
+        background: var(--paper);
+        border-bottom: 1px solid var(--dust);
+        padding: 56px 0 40px;
+    }
+    .contact-header-inner {
+        max-width: 680px;
+    }
+    .contact-header-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--forest);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 14px;
+    }
+    .contact-header-eyebrow span {
+        width: 20px;
+        height: 1px;
+        background: var(--forest);
+        display: inline-block;
+    }
+    .contact-header h1 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: clamp(2rem, 4vw, 2.75rem);
+        font-weight: 800;
+        color: var(--ink);
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+        margin-bottom: 14px;
+    }
+    .contact-header p {
+        font-size: 1rem;
+        color: var(--steel);
+        line-height: 1.7;
+        max-width: 520px;
+    }
+
+    /* ── Main body ── */
+    .contact-body {
+        padding: 60px 0 80px;
+        background: var(--parchment);
+    }
+
+    /* ── Info column ── */
+    .contact-info-block {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .contact-info-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 16px 18px;
+        background: var(--paper);
+        border: 1px solid var(--dust);
+        border-radius: var(--radius-md);
+        transition: border-color 150ms;
+    }
+    .contact-info-item:hover { border-color: var(--sage-mid); }
+    .contact-info-icon {
+        width: 36px;
+        height: 36px;
+        background: var(--sage);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--forest);
+        font-size: 0.875rem;
+        flex-shrink: 0;
+    }
+    .contact-info-text h6 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 2px;
+    }
+    .contact-info-text p {
+        font-size: 0.8125rem;
+        color: var(--steel);
+        margin: 0;
+    }
+
+    /* ── Form card ── */
+    .contact-form-card {
+        background: var(--paper);
+        border: 1px solid var(--dust);
+        border-radius: var(--radius-md);
+        padding: 36px 32px;
+    }
+    .contact-form-card h3 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.375rem;
+        font-weight: 800;
+        color: var(--ink);
+        letter-spacing: -0.025em;
+        margin-bottom: 6px;
+    }
+    .contact-form-card > p {
+        font-size: 0.875rem;
+        color: var(--steel);
+        margin-bottom: 28px;
+    }
+
+    .field-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+    .field-group { margin-bottom: 14px; }
+    .field-label {
+        display: block;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--carbon);
+        margin-bottom: 5px;
+    }
+    .field-input {
+        width: 100%;
+        padding: 9px 13px;
+        border: 1.5px solid var(--dust);
+        border-radius: var(--radius-sm);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.875rem;
+        color: var(--carbon);
+        background: var(--paper);
+        outline: none;
+        transition: border-color 150ms, box-shadow 150ms;
+        -webkit-appearance: none;
+    }
+    .field-input::placeholder { color: var(--mist); }
+    .field-input:hover  { border-color: var(--sage-mid); }
+    .field-input:focus  {
+        border-color: var(--forest);
+        box-shadow: 0 0 0 3px rgba(44,95,71,0.10);
+    }
+    textarea.field-input {
+        resize: vertical;
+        min-height: 130px;
+    }
+
+    .contact-submit {
+        padding: 10px 28px;
+        background: var(--forest);
+        color: rgba(255,255,255,0.95);
+        border: 1px solid var(--forest-dark);
+        border-radius: var(--radius-sm);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 150ms, box-shadow 150ms;
+        letter-spacing: 0.005em;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .contact-submit:hover {
+        background: var(--forest-dark);
+        box-shadow: 0 1px 3px rgba(20,27,25,0.16), 0 4px 8px rgba(44,95,71,0.18);
+    }
+    .contact-submit:active { background: #1d4a34; box-shadow: none; }
+    .contact-submit:disabled { opacity: 0.65; cursor: not-allowed; }
+
+    .flash-success {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        padding: 10px 13px;
+        background: #f0faf5;
+        border: 1px solid #a3d9bc;
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+        color: #1c5c3b;
+        margin-bottom: 18px;
+    }
+    .flash-error {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        padding: 10px 13px;
+        background: #fef0ee;
+        border: 1px solid #f2b8b2;
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+        color: #7a1f18;
+        margin-bottom: 18px;
+    }
+
+    /* ── Map section ── */
+    .contact-map-section {
+        background: var(--paper);
+        border-top: 1px solid var(--dust);
+        padding: 60px 0;
+    }
+    .section-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.375rem;
+        font-weight: 800;
+        color: var(--ink);
+        letter-spacing: -0.025em;
+        margin-bottom: 6px;
+    }
+    .section-sub {
+        font-size: 0.875rem;
+        color: var(--steel);
+        margin-bottom: 28px;
+    }
+    .map-wrap {
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        border: 1px solid var(--dust);
+    }
+    .map-wrap iframe { display: block; }
+
+    /* ── FAQ section ── */
+    .contact-faq-section {
+        background: var(--parchment);
+        padding: 60px 0 80px;
+    }
+    .accordion-item {
+        background: var(--paper);
+        border: 1px solid var(--dust) !important;
+        border-radius: var(--radius-sm) !important;
+        margin-bottom: 8px;
+        overflow: hidden;
+    }
+    .accordion-button {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--ink);
+        background: var(--paper);
+        padding: 15px 18px;
+    }
+    .accordion-button:not(.collapsed) {
+        color: var(--forest);
+        background: var(--sage);
+        box-shadow: none;
+    }
+    .accordion-button:focus { box-shadow: none; }
+    .accordion-button::after {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%234f5a55'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+    }
+    .accordion-body {
+        font-size: 0.875rem;
+        color: var(--steel);
+        line-height: 1.7;
+        padding: 14px 18px 16px;
+        border-top: 1px solid var(--dust);
+    }
+
+    @media (max-width: 576px) {
+        .field-row { grid-template-columns: 1fr; }
+        .contact-form-card { padding: 24px 20px; }
+    }
+</style>
+
+<!-- ── Page header ── -->
+<section class="contact-header">
+    <div class="container">
+        <div class="contact-header-inner">
+            <div class="contact-header-eyebrow">
+                <span></span>Contact
+            </div>
+            <h1>Get in touch</h1>
+            <p>We'd love to hear from you. Send us a message and we'll respond as soon as possible — usually within 24 hours.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ── Contact body — info + form ── -->
+<section class="contact-body">
+    <div class="container">
+        <div class="row g-5">
+
+            <!-- Info column -->
+            <div class="col-lg-4">
+                <div class="contact-info-block">
+                    <div class="contact-info-item">
+                        <div class="contact-info-icon"><i class="fas fa-map-marker-alt"></i></div>
+                        <div class="contact-info-text">
+                            <h6>Visit us</h6>
+                            <p>123 Parking Street, Kigali, Rwanda</p>
+                        </div>
+                    </div>
+                    <div class="contact-info-item">
+                        <div class="contact-info-icon"><i class="fas fa-phone"></i></div>
+                        <div class="contact-info-text">
+                            <h6>Call us</h6>
+                            <p>+250 788 123 456</p>
+                        </div>
+                    </div>
+                    <div class="contact-info-item">
+                        <div class="contact-info-icon"><i class="fas fa-envelope"></i></div>
+                        <div class="contact-info-text">
+                            <h6>Email us</h6>
+                            <p>support@parms.rw</p>
+                        </div>
+                    </div>
+                    <div class="contact-info-item">
+                        <div class="contact-info-icon"><i class="fas fa-clock"></i></div>
+                        <div class="contact-info-text">
+                            <h6>Support hours</h6>
+                            <p>24 / 7 — every day</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form column -->
+            <div class="col-lg-8">
+                <div class="contact-form-card">
+                    <h3>Send us a message</h3>
+                    <p>Fill out the form below and we'll get back to you shortly.</p>
+
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="flash-success">
+                        <i class="fas fa-check-circle"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <form method="POST" id="contactForm">
+                        {% csrf_token %}
+
+                        <div class="field-row">
+                            <div>
+                                <label class="field-label" for="c_name">Full name</label>
+                                <input type="text" class="field-input" id="c_name" name="name"
+                                       placeholder="Your full name" required>
+                            </div>
+                            <div>
+                                <label class="field-label" for="c_email">Email address</label>
+                                <input type="email" class="field-input" id="c_email" name="email"
+                                       placeholder="you@example.com" required>
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label" for="c_subject">Subject</label>
+                            <input type="text" class="field-input" id="c_subject" name="subject"
+                                   placeholder="What's this about?" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label" for="c_message">Message</label>
+                            <textarea class="field-input" id="c_message" name="message"
+                                      placeholder="Tell us more details…" required></textarea>
+                        </div>
+
+                        <button type="submit" class="contact-submit" id="contactBtn">
+                            <i class="fas fa-paper-plane"></i>
+                            Send message
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ── Map section ── -->
+<section class="contact-map-section">
+    <div class="container">
+        <p class="section-label">Find us here</p>
+        <p class="section-sub">Visit our office or locate us on the map below</p>
+        <div class="map-wrap">
+            <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.8354345099476!2d144.95373631531633!3d-37.8162791797517!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad642af0f11fd81%3A0xf577c6b7a6d1d4ab!2sMelbourne%20VIC%2C%20Australia!5e0!3m2!1sen!2sus!4v1617635826406!5m2!1sen!2sus"
+                width="100%"
+                height="440"
+                style="border:0;"
+                allowfullscreen=""
+                loading="lazy">
+            </iframe>
+        </div>
+    </div>
+</section>
+
+<!-- ── FAQ section ── -->
+<section class="contact-faq-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <p class="section-label">Frequently asked questions</p>
+                <p class="section-sub" style="margin-bottom:32px;">Quick answers to common questions</p>
+
+                <div class="accordion" id="faqAccordion">
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#faq1">
+                                How does PARMS work?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                PARMS connects you with real-time parking availability across registered lots. Search for your destination, view available spaces, book instantly, and pay — all in one place.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#faq2">
+                                Is PARMS available 24/7?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes. PARMS runs around the clock, and our support team is available whenever you need help — day or night.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#faq3">
+                                What payment methods are accepted?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                We accept MTN Mobile Money, PayPal, major credit/debit cards, and cash payments at the lot. More methods are being added regularly.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#faq4">
+                                Can I cancel or modify a booking?
+                            </button>
+                        </h2>
+                        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes — active bookings can be managed from your dashboard. If you have trouble, contact our support team and we'll assist you promptly.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.getElementById('contactForm').addEventListener('submit', function () {
+    var btn = document.getElementById('contactBtn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…';
+    btn.disabled = true;
+});
+</script>
+{% endblock %}

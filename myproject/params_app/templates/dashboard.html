@@ -1,0 +1,1343 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% csrf_token %}
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>PARMS — Admin Dashboard</title>
+
+    <link rel="icon" href="{% static 'imgs/weblogo.svg' %}" type="image/x-icon">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --sb-bg:     #171f1c;
+            --sb-hover:  rgba(255,255,255,0.06);
+            --sb-active: #2c5f47;
+            --sb-text:   rgba(255,255,255,0.58);
+            --sb-white:  #ffffff;
+            --sb-w:      248px;
+
+            --bg:      #f7f8f7;
+            --white:   #ffffff;
+            --border:  #dde3e0;
+            --text:    #161b19;
+            --muted:   #4f5a55;
+            --light:   #f2f4f3;
+
+            --green:   #2c5f47;
+            --blue:    #3b6fd4;
+            --amber:   #b45309;
+            --purple:  #6d4ed4;
+            --teal:    #0e7490;
+            --red:     #b04040;
+            --slate:   #475569;
+
+            --radius: 10px;
+            --shadow: 0 1px 3px rgba(20,27,25,0.07), 0 1px 2px rgba(20,27,25,0.04);
+            --shadow-md: 0 4px 12px rgba(20,27,25,0.08), 0 2px 4px rgba(20,27,25,0.04);
+            --trans: 0.2s ease;
+        }
+
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+        /* ── Sidebar ─────────────────────────────────────────────────────────── */
+        .sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: var(--sb-w);
+            background: var(--sb-bg);
+            display: flex; flex-direction: column;
+            z-index: 1000;
+            transition: transform var(--trans);
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+        .sidebar::-webkit-scrollbar { display: none; }
+
+        .sb-logo {
+            display: flex; align-items: center; gap: 10px;
+            padding: 20px 18px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+        .sb-logo span { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.2rem; font-weight: 800; color: var(--sb-white); letter-spacing: -0.02em; }
+
+        .sb-section { padding: 16px 10px 4px; }
+        .sb-label {
+            font-size: 0.67rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1.4px; color: rgba(255,255,255,0.28);
+            padding: 0 8px; margin-bottom: 4px;
+        }
+        .sb-nav { list-style: none; padding: 0; margin: 0; }
+        .sb-nav li { margin-bottom: 1px; }
+        .sb-nav a {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 10px; border-radius: 7px;
+            color: var(--sb-text); text-decoration: none;
+            font-size: 0.875rem; font-weight: 500;
+            transition: background var(--trans), color var(--trans);
+            position: relative;
+        }
+        .sb-nav a:hover { background: var(--sb-hover); color: var(--sb-white); }
+        .sb-nav a.active { background: var(--sb-active); color: var(--sb-white); font-weight: 600; }
+        .sb-nav a i { width: 17px; text-align: center; font-size: 0.9rem; flex-shrink: 0; }
+        .sb-badge {
+            margin-left: auto; background: #dc4040; color: white;
+            font-size: 0.65rem; font-weight: 700;
+            padding: 1px 6px; border-radius: 10px; line-height: 1.6;
+        }
+        .sb-badge.ok { background: var(--sb-active); }
+
+        .sb-bottom {
+            margin-top: auto; padding: 12px 10px 16px;
+            border-top: 1px solid rgba(255,255,255,0.07);
+        }
+        #sb-clock { text-align: center; font-size: 0.82rem; color: rgba(255,255,255,0.35); padding: 6px 0; font-variant-numeric: tabular-nums; }
+
+        /* ── Layout ──────────────────────────────────────────────────────────── */
+        .layout { margin-left: var(--sb-w); min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* ── Topbar ──────────────────────────────────────────────────────────── */
+        .topbar {
+            position: sticky; top: 0; height: 62px;
+            background: var(--white); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; z-index: 900;
+            box-shadow: 0 1px 0 var(--border);
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .tb-toggle { display: none; background: none; border: none; font-size: 1.1rem; color: var(--muted); cursor: pointer; padding: 6px; }
+        .tb-title h2 { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+        .tb-title p  { font-size: 0.8rem; color: var(--muted); margin-top: 1px; }
+        .topbar-right { display: flex; align-items: center; gap: 10px; }
+        .search-wrap { position: relative; }
+        .search-wrap i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.8rem; pointer-events: none; }
+        .search-input { padding: 7px 12px 7px 30px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 0.85rem; width: 200px; background: var(--bg); outline: none; transition: border-color var(--trans); color: var(--text); }
+        .search-input:focus { border-color: var(--green); background: white; }
+        .tb-btn { display: flex; align-items: center; gap: 7px; padding: 7px 14px; border-radius: 7px; border: none; font-size: 0.84rem; font-weight: 600; cursor: pointer; transition: all var(--trans); }
+        .tb-logout { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+        .tb-logout:hover { background: #b91c1c; color: white; border-color: #b91c1c; }
+
+        /* ── Main ────────────────────────────────────────────────────────────── */
+        .main { padding: 24px; flex: 1; }
+
+        /* ── Flash messages ──────────────────────────────────────────────────── */
+        .flash-wrap { margin-bottom: 16px; }
+        .flash { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: var(--radius); font-size: 0.88rem; font-weight: 500; margin-bottom: 8px; }
+        .flash-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .flash-error   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+        .flash-info    { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+
+        /* ── Panels (tab sections) ───────────────────────────────────────────── */
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* ── Stat grid ───────────────────────────────────────────────────────── */
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px; }
+        .stat-card {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 18px 20px;
+            box-shadow: var(--shadow); display: flex; align-items: center; gap: 14px;
+            transition: border-color var(--trans), box-shadow var(--trans);
+        }
+        .stat-card:hover { box-shadow: var(--shadow-md); border-color: #b8cfc8; }
+        .stat-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+        .si-green  { background: #f0fdf4; color: var(--green); }
+        .si-blue   { background: #eff6ff; color: var(--blue); }
+        .si-amber  { background: #fffbeb; color: var(--amber); }
+        .si-purple { background: #f5f3ff; color: var(--purple); }
+        .si-teal   { background: #ecfeff; color: var(--teal); }
+        .si-red    { background: #fef2f2; color: var(--red); }
+        .si-slate  { background: #f1f5f9; color: var(--slate); }
+        .stat-info { min-width: 0; }
+        .stat-val  { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--text); line-height: 1; letter-spacing: -0.03em; }
+        .stat-lbl  { font-size: 0.79rem; color: var(--muted); margin-top: 3px; font-weight: 500; }
+        .stat-sub  { font-size: 0.73rem; margin-top: 2px; font-weight: 500; }
+
+        /* ── Section header ──────────────────────────────────────────────────── */
+        .sec-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+        .sec-hdr h3 { font-size: 1rem; font-weight: 700; color: var(--text); }
+        .sec-hdr .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        /* ── Cards / panels ──────────────────────────────────────────────────── */
+        .card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+        .card-hdr { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .card-hdr h4 { font-size: 0.9rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 7px; }
+        .card-body { padding: 18px; }
+
+        /* ── Two-column grid ─────────────────────────────────────────────────── */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+
+        /* ── Tables ──────────────────────────────────────────────────────────── */
+        .tbl-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+        thead th { background: var(--light); color: var(--muted); font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+        tbody td { padding: 11px 14px; border-bottom: 1px solid #f1f5f9; color: var(--text); vertical-align: middle; }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background: #fafbfc; }
+
+        /* ── Badges ──────────────────────────────────────────────────────────── */
+        .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; gap: 4px; }
+        .b-green  { background: #dcfce7; color: #166534; }
+        .b-amber  { background: #fef9c3; color: #854d0e; }
+        .b-red    { background: #fee2e2; color: #b91c1c; }
+        .b-blue   { background: #dbeafe; color: #1e40af; }
+        .b-purple { background: #ede9fe; color: #6d28d9; }
+        .b-gray   { background: #f1f5f9; color: #475569; }
+
+        /* ── Buttons ─────────────────────────────────────────────────────────── */
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 7px; font-size: 0.84rem; font-weight: 600; cursor: pointer; text-decoration: none; border: none; transition: all var(--trans); }
+        .btn-primary { background: var(--green); color: white; }
+        .btn-primary:hover { background: #245a42; color: white; }
+        .btn-outline { background: transparent; color: var(--text); border: 1.5px solid var(--border); }
+        .btn-outline:hover { border-color: var(--green); color: var(--green); }
+        .btn-danger { background: #fef2f2; color: var(--red); border: 1px solid #fecaca; }
+        .btn-danger:hover { background: var(--red); color: white; }
+        .btn-sm { padding: 4px 10px; font-size: 0.78rem; }
+        .btn-icon { width: 30px; height: 30px; padding: 0; justify-content: center; border-radius: 6px; }
+
+        /* ── Forms ───────────────────────────────────────────────────────────── */
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+        .form-row.single { grid-template-columns: 1fr; }
+        .form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+        .fg label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+        .fg input, .fg select, .fg textarea {
+            width: 100%; padding: 8px 12px; border: 1.5px solid var(--border);
+            border-radius: 7px; font-size: 0.88rem; color: var(--text);
+            background: var(--white); outline: none; transition: border-color var(--trans);
+            font-family: inherit;
+        }
+        .fg input:focus, .fg select:focus, .fg textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(45,106,79,0.08); }
+        .fg textarea { resize: vertical; min-height: 80px; }
+        .form-actions { display: flex; gap: 8px; justify-content: flex-end; padding-top: 6px; }
+
+        /* ── Modal ───────────────────────────────────────────────────────────── */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(15,23,42,0.45); backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 2000; opacity: 0; pointer-events: none;
+            transition: opacity var(--trans);
+        }
+        .modal-overlay.show { opacity: 1; pointer-events: all; }
+        .modal-box {
+            background: white; border-radius: 14px;
+            width: 90%; max-width: 520px; max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 20px 48px rgba(0,0,0,0.18);
+            transform: translateY(-16px); transition: transform var(--trans);
+        }
+        .modal-overlay.show .modal-box { transform: translateY(0); }
+        .modal-hdr {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 22px; border-bottom: 1px solid var(--border);
+        }
+        .modal-hdr h3 { font-size: 1rem; font-weight: 700; }
+        .modal-close { background: none; border: none; font-size: 1.1rem; color: var(--muted); cursor: pointer; padding: 4px; border-radius: 5px; }
+        .modal-close:hover { background: var(--bg); }
+        .modal-body { padding: 20px 22px; }
+        .modal-footer { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+        /* ── Activity row ────────────────────────────────────────────────────── */
+        .act-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+        .act-row:last-child { border-bottom: none; }
+        .act-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+        .act-content strong { font-size: 0.86rem; font-weight: 600; color: var(--text); }
+        .act-content p { font-size: 0.78rem; color: var(--muted); margin-top: 1px; }
+
+        /* ── Progress bar ────────────────────────────────────────────────────── */
+        .progress-bar { background: #e2e8f0; border-radius: 4px; height: 6px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 4px; background: var(--green); transition: width 0.5s ease; }
+
+        /* ── Filter bar ──────────────────────────────────────────────────────── */
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+        .filter-btn { padding: 5px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: white; color: var(--muted); transition: all var(--trans); }
+        .filter-btn.active { background: var(--green); color: white; border-color: var(--green); }
+        .filter-btn:hover:not(.active) { border-color: var(--green); color: var(--green); }
+
+        /* ── Empty state ─────────────────────────────────────────────────────── */
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+        .empty-state i { font-size: 2.5rem; opacity: 0.2; display: block; margin-bottom: 10px; }
+        .empty-state p { font-size: 0.88rem; }
+
+        /* ── Settings form ───────────────────────────────────────────────────── */
+        .settings-card { max-width: 560px; }
+
+        /* ── Sidebar overlay (mobile) ────────────────────────────────────────── */
+        .sb-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999; }
+        .sb-overlay.show { display: block; }
+
+        /* ── Reports ─────────────────────────────────────────────────────────── */
+        .report-stat { text-align: center; padding: 20px; }
+        .report-stat .big { font-size: 2rem; font-weight: 800; color: var(--text); }
+        .report-stat .lbl { font-size: 0.82rem; color: var(--muted); margin-top: 4px; font-weight: 500; }
+        .lot-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .lot-bar span { font-size: 0.82rem; color: var(--text); min-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lot-bar .count { font-size: 0.78rem; color: var(--muted); min-width: 28px; text-align: right; }
+
+        /* ── Responsive ──────────────────────────────────────────────────────── */
+        @media (max-width: 991px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .layout { margin-left: 0; }
+            .tb-toggle { display: block; }
+            .two-col, .three-col { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+            .stat-grid { grid-template-columns: 1fr 1fr; }
+            .main { padding: 14px; }
+            .topbar { padding: 0 14px; }
+            .search-input { width: 130px; }
+            .form-row { grid-template-columns: 1fr; }
+            .form-row.triple { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 400px) {
+            .stat-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sb-overlay" id="sbOverlay" onclick="closeSb()"></div>
+
+<!-- ═══════════════════════════ SIDEBAR ═══════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+    <a class="sb-logo" href="/">
+        <img src="{% static 'imgs/Traffic Jam.png' %}" height="30" alt="PARMS"
+             style="filter:brightness(0) invert(1);">
+        <span>PARMS</span>
+    </a>
+
+    <div class="sb-section">
+        <p class="sb-label">Overview</p>
+        <ul class="sb-nav">
+            <li><a href="#" data-tab="overview">
+                <i class="fas fa-th-large"></i><span>Dashboard</span>
+            </a></li>
+        </ul>
+    </div>
+
+    <div class="sb-section">
+        <p class="sb-label">Management</p>
+        <ul class="sb-nav">
+            <li><a href="#" data-tab="users">
+                <i class="fas fa-users"></i><span>Users</span>
+            </a></li>
+            <li><a href="#" data-tab="vehicles">
+                <i class="fas fa-car"></i><span>Vehicles</span>
+            </a></li>
+            <li><a href="#" data-tab="parking">
+                <i class="fas fa-parking"></i><span>Parking Lots</span>
+            </a></li>
+            <li><a href="#" data-tab="tickets">
+                <i class="fas fa-ticket-alt"></i><span>Tickets</span>
+                {% if active_tickets %}<span class="sb-badge ok">{{ active_tickets }}</span>{% endif %}
+            </a></li>
+            <li><a href="#" data-tab="messages">
+                <i class="fas fa-envelope"></i><span>Messages</span>
+                {% if total_messages %}<span class="sb-badge">{{ total_messages }}</span>{% endif %}
+            </a></li>
+        </ul>
+    </div>
+
+    <div class="sb-section">
+        <p class="sb-label">Analytics</p>
+        <ul class="sb-nav">
+            <li><a href="#" data-tab="reports">
+                <i class="fas fa-chart-bar"></i><span>Reports</span>
+            </a></li>
+        </ul>
+    </div>
+
+    <div class="sb-section">
+        <p class="sb-label">Account</p>
+        <ul class="sb-nav">
+            <li><a href="#" data-tab="settings">
+                <i class="fas fa-cog"></i><span>Settings</span>
+            </a></li>
+            <li><a href="#" onclick="confirmLogout(event)" style="color:rgba(255,120,120,0.8);">
+                <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+            </a></li>
+        </ul>
+    </div>
+
+    <div class="sb-bottom">
+        <div id="sb-clock"></div>
+    </div>
+</aside>
+
+<!-- ═══════════════════════════ LAYOUT ═══════════════════════════ -->
+<div class="layout">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="tb-toggle" onclick="openSb()"><i class="fas fa-bars"></i></button>
+            <div class="tb-title">
+                <h2 id="topbar-title">Dashboard</h2>
+                <p>Welcome, <strong>{{ request.user.username }}</strong></p>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <div class="search-wrap d-none d-sm-block">
+                <i class="fas fa-search"></i>
+                <input class="search-input" type="text" id="globalSearch" placeholder="Search…" oninput="globalSearch(this.value)">
+            </div>
+            <button class="tb-btn tb-logout" onclick="confirmLogout(event)">
+                <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <!-- Flash messages -->
+        {% if messages %}
+        <div class="flash-wrap">
+            {% for msg in messages %}
+            <div class="flash flash-{% if msg.tags == 'error' %}error{% elif msg.tags == 'success' %}success{% else %}info{% endif %}">
+                <i class="fas fa-{% if msg.tags == 'error' %}exclamation-circle{% elif msg.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                {{ msg }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}
+
+        <!-- ══════════════════ PANEL: OVERVIEW ══════════════════ -->
+        <div class="panel" id="panel-overview">
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-icon si-blue"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-val">{{ total_users }}</div>
+                        <div class="stat-lbl">Total Users</div>
+                        <div class="stat-sub" style="color:var(--blue);">{{ staff_users }} admin · {{ regular_users }} regular</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon si-green"><i class="fas fa-parking"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-val">{{ total_parking_lots }}</div>
+                        <div class="stat-lbl">Parking Lots</div>
+                        <div class="stat-sub" style="color:var(--green);">{{ available_spaces }} spaces available</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon si-purple"><i class="fas fa-car"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-val">{{ total_vehicles }}</div>
+                        <div class="stat-lbl">Registered Vehicles</div>
+                        <div class="stat-sub" style="color:var(--purple);">All types</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon si-teal"><i class="fas fa-ticket-alt"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-val">{{ total_tickets }}</div>
+                        <div class="stat-lbl">Total Tickets</div>
+                        <div class="stat-sub" style="color:var(--teal);">{{ active_tickets }} active now</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon si-amber"><i class="fas fa-dollar-sign"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-val">${{ total_revenue|floatformat:0 }}</div>
+                        <div class="stat-lbl">Total Revenue</div>
+                        <div class="stat-sub" style="color:var(--amber);">${{ monthly_revenue|floatformat:0 }} this month</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon si-red"><i class="fas fa-envelope"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-val">{{ total_messages }}</div>
+                        <div class="stat-lbl">Messages</div>
+                        <div class="stat-sub" style="color:var(--red);">Needs response</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="two-col">
+                <!-- Recent tickets -->
+                <div class="card">
+                    <div class="card-hdr">
+                        <h4><i class="fas fa-ticket-alt" style="color:var(--teal);"></i> Recent Tickets</h4>
+                        <a href="#" class="btn btn-sm btn-outline" data-tab="tickets">View all</a>
+                    </div>
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead><tr><th>Plate</th><th>Location</th><th>Entry</th><th>Status</th></tr></thead>
+                            <tbody>
+                            {% for t in recent_tickets %}
+                            <tr>
+                                <td><strong>{{ t.vehicle.plate_number }}</strong></td>
+                                <td>{{ t.parking_space.parking_lot.location|truncatechars:20 }}</td>
+                                <td style="color:var(--muted);font-size:0.78rem;">{{ t.entry_time|timesince }} ago</td>
+                                <td>
+                                    {% if not t.exit_time %}
+                                    <span class="badge b-amber">Active</span>
+                                    {% else %}
+                                    <span class="badge b-green">Done</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px;">No tickets yet</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Recent messages -->
+                <div class="card">
+                    <div class="card-hdr">
+                        <h4><i class="fas fa-envelope" style="color:var(--red);"></i> Recent Messages</h4>
+                        <a href="#" class="btn btn-sm btn-outline" data-tab="messages">View all</a>
+                    </div>
+                    <div class="card-body" style="padding:0;">
+                        {% for msg in recent_messages %}
+                        <div class="act-row" style="padding:12px 18px;">
+                            <div class="act-dot" style="background:var(--red);margin-top:6px;"></div>
+                            <div class="act-content" style="min-width:0;">
+                                <strong>{{ msg.full_name }}</strong>
+                                <p>{{ msg.message|truncatewords:12 }}</p>
+                                <p style="font-size:0.73rem;color:#94a3b8;margin-top:2px;">{{ msg.submitted_at|timesince }} ago</p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="empty-state"><i class="fas fa-inbox"></i><p>No messages yet</p></div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Space utilisation -->
+            <div class="card">
+                <div class="card-hdr"><h4><i class="fas fa-chart-pie" style="color:var(--green);"></i> Parking Space Utilisation</h4></div>
+                <div class="card-body">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;">
+                        <div style="text-align:center;">
+                            <div style="font-size:2rem;font-weight:800;color:var(--text);">{{ total_spaces }}</div>
+                            <div style="font-size:0.82rem;color:var(--muted);">Total Spaces</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:2rem;font-weight:800;color:var(--red);">{{ occupied_spaces }}</div>
+                            <div style="font-size:0.82rem;color:var(--muted);">Occupied</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:2rem;font-weight:800;color:var(--green);">{{ available_spaces }}</div>
+                            <div style="font-size:0.82rem;color:var(--muted);">Available</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:2rem;font-weight:800;color:var(--amber);">{{ active_tickets }}</div>
+                            <div style="font-size:0.82rem;color:var(--muted);">Active Sessions</div>
+                        </div>
+                    </div>
+                    {% if total_spaces > 0 %}
+                    <div style="margin-top:18px;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:6px;">
+                            <span style="color:var(--muted);">Occupancy rate</span>
+                            <span style="font-weight:600;">{% widthratio occupied_spaces total_spaces 100 %}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width:{% widthratio occupied_spaces total_spaces 100 %}%; background:{% if occupied_spaces|floatformat:0 > available_spaces|floatformat:0 %}var(--red){% else %}var(--green){% endif %};"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════ PANEL: USERS ══════════════════ -->
+        <div class="panel" id="panel-users">
+            <div class="sec-hdr">
+                <h3>Users Management</h3>
+                <div class="actions">
+                    <div class="filter-bar" style="margin:0;">
+                        <button class="filter-btn active" onclick="filterUsers('all',this)">All ({{ total_users }})</button>
+                        <button class="filter-btn" onclick="filterUsers('staff',this)">Admin ({{ staff_users }})</button>
+                        <button class="filter-btn" onclick="filterUsers('regular',this)">Regular ({{ regular_users }})</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="tbl-wrap">
+                    <table id="users-table">
+                        <thead><tr><th>#</th><th>Username</th><th>Email</th><th>Role</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody>
+                        {% for u in all_users %}
+                        <tr class="user-row" data-role="{% if u.is_staff %}staff{% else %}regular{% endif %}">
+                            <td style="color:var(--muted);">{{ forloop.counter }}</td>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <div style="width:30px;height:30px;border-radius:50%;background:{% if u.is_staff %}var(--green){% else %}var(--blue){% endif %};color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0;">
+                                        {{ u.username|first|upper }}
+                                    </div>
+                                    <strong>{{ u.username }}</strong>
+                                </div>
+                            </td>
+                            <td style="color:var(--muted);">{{ u.email|default:"—" }}</td>
+                            <td>
+                                {% if u.is_staff %}
+                                <span class="badge b-green">Admin</span>
+                                {% else %}
+                                <span class="badge b-blue">User</span>
+                                {% endif %}
+                            </td>
+                            <td style="color:var(--muted);font-size:0.78rem;">{{ u.date_joined|date:"d M Y" }}</td>
+                            <td>
+                                {% if u.is_active %}
+                                <span class="badge b-green">Active</span>
+                                {% else %}
+                                <span class="badge b-gray">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display:flex;gap:6px;">
+                                    {% if u != request.user %}
+                                    <form method="POST" action="{% url 'admin_user_edit' u.id %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="toggle_staff">
+                                        <button type="submit" class="btn btn-sm btn-outline" title="Toggle Admin">
+                                            <i class="fas fa-{% if u.is_staff %}user-minus{% else %}user-plus{% endif %}"></i>
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{% url 'admin_user_edit' u.id %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="toggle_active">
+                                        <button type="submit" class="btn btn-sm btn-outline" title="Toggle Active">
+                                            <i class="fas fa-{% if u.is_active %}ban{% else %}check{% endif %}"></i>
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{% url 'admin_user_edit' u.id %}" style="display:inline;" onsubmit="return confirm('Delete {{ u.username }}?');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="delete">
+                                        <button type="submit" class="btn btn-sm btn-danger btn-icon" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <span style="font-size:0.78rem;color:var(--muted);">You</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7"><div class="empty-state"><i class="fas fa-users"></i><p>No users found</p></div></td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════ PANEL: VEHICLES ══════════════════ -->
+        <div class="panel" id="panel-vehicles">
+            <div class="sec-hdr">
+                <h3>Vehicles Management <span style="color:var(--muted);font-weight:400;font-size:0.85rem;">({{ total_vehicles }} total)</span></h3>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="openModal('modal-add-vehicle')">
+                        <i class="fas fa-plus"></i> Add Vehicle
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="tbl-wrap">
+                    <table id="vehicles-table">
+                        <thead><tr><th>ID</th><th>Plate Number</th><th>Type</th><th>Owner</th><th>Actions</th></tr></thead>
+                        <tbody>
+                        {% for v in all_vehicles %}
+                        <tr>
+                            <td style="color:var(--muted);">{{ v.vehicle_id }}</td>
+                            <td><strong style="font-family:monospace;letter-spacing:0.5px;">{{ v.plate_number }}</strong></td>
+                            <td>
+                                <span class="badge {% if v.vehicle_type == 'Car' %}b-blue{% elif v.vehicle_type == 'Motorcycle' %}b-purple{% else %}b-amber{% endif %}">
+                                    <i class="fas fa-{% if v.vehicle_type == 'Car' %}car{% elif v.vehicle_type == 'Motorcycle' %}motorcycle{% else %}truck{% endif %}"></i>
+                                    {{ v.vehicle_type }}
+                                </span>
+                            </td>
+                            <td>{{ v.owner_name }}</td>
+                            <td>
+                                <div style="display:flex;gap:6px;">
+                                    <button class="btn btn-sm btn-outline"
+                                        onclick="openEditVehicle('{{ v.vehicle_id }}','{{ v.plate_number }}','{{ v.vehicle_type }}','{{ v.owner_name }}')">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                    <form method="POST" action="{% url 'admin_vehicle_edit' v.vehicle_id %}" style="display:inline;" onsubmit="return confirm('Delete vehicle {{ v.plate_number }}?');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="delete">
+                                        <button type="submit" class="btn btn-sm btn-danger btn-icon">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5"><div class="empty-state"><i class="fas fa-car"></i><p>No vehicles registered yet</p></div></td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════ PANEL: PARKING LOTS ══════════════════ -->
+        <div class="panel" id="panel-parking">
+            <div class="sec-hdr">
+                <h3>Parking Lots <span style="color:var(--muted);font-weight:400;font-size:0.85rem;">({{ total_parking_lots }} locations)</span></h3>
+                <button class="btn btn-primary" onclick="openModal('modal-add-lot')">
+                    <i class="fas fa-plus"></i> Add Lot
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="tbl-wrap">
+                    <table>
+                        <thead><tr><th>ID</th><th>Location</th><th>Total Spaces</th><th>Available</th><th>Occupancy</th><th>Actions</th></tr></thead>
+                        <tbody>
+                        {% for lot in all_lots %}
+                        <tr>
+                            <td style="color:var(--muted);">{{ lot.lot_id }}</td>
+                            <td><strong>{{ lot.location }}</strong></td>
+                            <td>{{ lot.total_spaces }}</td>
+                            <td>
+                                <span class="badge {% if lot.available_spaces == 0 %}b-red{% elif lot.available_spaces < 10 %}b-amber{% else %}b-green{% endif %}">
+                                    {{ lot.available_spaces }}
+                                </span>
+                            </td>
+                            <td style="min-width:120px;">
+                                {% if lot.total_spaces > 0 %}
+                                {% widthratio lot.available_spaces lot.total_spaces 100 as free_pct %}
+                                <div class="progress-bar" title="{{ free_pct }}% free">
+                                    <div class="progress-fill" style="width:{% widthratio lot.available_spaces lot.total_spaces 100 %}%;"></div>
+                                </div>
+                                {% else %}—{% endif %}
+                            </td>
+                            <td>
+                                <div style="display:flex;gap:6px;">
+                                    <button class="btn btn-sm btn-outline"
+                                        onclick="openEditLot('{{ lot.lot_id }}','{{ lot.location }}','{{ lot.total_spaces }}','{{ lot.available_spaces }}')">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                    <form method="POST" action="{% url 'admin_parking_lot_edit' lot.lot_id %}" style="display:inline;" onsubmit="return confirm('Delete lot {{ lot.location }}?');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="delete">
+                                        <button type="submit" class="btn btn-sm btn-danger btn-icon">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6"><div class="empty-state"><i class="fas fa-parking"></i><p>No parking lots yet</p></div></td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════ PANEL: TICKETS ══════════════════ -->
+        <div class="panel" id="panel-tickets">
+            <div class="sec-hdr">
+                <h3>Parking Tickets</h3>
+                <div class="filter-bar" style="margin:0;">
+                    <button class="filter-btn active" onclick="filterTickets('all',this)">All ({{ total_tickets }})</button>
+                    <button class="filter-btn" onclick="filterTickets('active',this)">Active ({{ active_tickets }})</button>
+                    <button class="filter-btn" onclick="filterTickets('done',this)">Completed ({{ completed_tickets_count }})</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="tbl-wrap">
+                    <table id="tickets-table">
+                        <thead><tr><th>ID</th><th>Plate</th><th>Location</th><th>Entry</th><th>Exit</th><th>Fee</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody>
+                        {% for t in all_tickets %}
+                        <tr class="ticket-row" data-status="{% if not t.exit_time %}active{% else %}done{% endif %}">
+                            <td style="color:var(--muted);">{{ t.ticket_id }}</td>
+                            <td><strong style="font-family:monospace;">{{ t.vehicle.plate_number }}</strong></td>
+                            <td>{{ t.parking_space.parking_lot.location|truncatechars:18 }}</td>
+                            <td style="font-size:0.78rem;color:var(--muted);">{{ t.entry_time|date:"d M, H:i" }}</td>
+                            <td style="font-size:0.78rem;color:var(--muted);">
+                                {% if t.exit_time %}{{ t.exit_time|date:"d M, H:i" }}{% else %}—{% endif %}
+                            </td>
+                            <td>
+                                {% if t.fee %}<strong>${{ t.fee }}</strong>{% else %}<span style="color:var(--muted);">—</span>{% endif %}
+                            </td>
+                            <td>
+                                {% if not t.exit_time %}
+                                <span class="badge b-amber"><i class="fas fa-circle" style="font-size:6px;"></i> Active</span>
+                                {% else %}
+                                <span class="badge b-green">Done</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display:flex;gap:6px;">
+                                    {% if not t.exit_time %}
+                                    <button class="btn btn-sm btn-primary" onclick="openCompleteTicket('{{ t.ticket_id }}','{{ t.vehicle.plate_number }}')">
+                                        <i class="fas fa-check"></i> Close
+                                    </button>
+                                    {% endif %}
+                                    <form method="POST" action="{% url 'admin_ticket_edit' t.ticket_id %}" style="display:inline;" onsubmit="return confirm('Delete this ticket?');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="delete">
+                                        <button type="submit" class="btn btn-sm btn-danger btn-icon">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="8"><div class="empty-state"><i class="fas fa-ticket-alt"></i><p>No tickets yet</p></div></td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════ PANEL: MESSAGES ══════════════════ -->
+        <div class="panel" id="panel-messages">
+            <div class="sec-hdr">
+                <h3>Contact Messages <span style="color:var(--muted);font-weight:400;font-size:0.85rem;">({{ total_messages }} total)</span></h3>
+            </div>
+
+            <div class="two-col" style="align-items:start;">
+                <div class="card" style="height:fit-content;">
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead><tr><th>From</th><th>Preview</th><th>Received</th><th></th></tr></thead>
+                            <tbody>
+                            {% for msg in all_messages %}
+                            <tr style="cursor:pointer;" onclick="showMessage('{{ msg.id }}','{{ msg.full_name|escapejs }}','{{ msg.email|escapejs }}','{{ msg.message|escapejs }}','{{ msg.submitted_at }}')">
+                                <td>
+                                    <strong>{{ msg.full_name }}</strong><br>
+                                    <span style="font-size:0.75rem;color:var(--muted);">{{ msg.email }}</span>
+                                </td>
+                                <td style="color:var(--muted);font-size:0.82rem;">{{ msg.message|truncatewords:8 }}</td>
+                                <td style="color:var(--muted);font-size:0.76rem;white-space:nowrap;">{{ msg.submitted_at|timesince }} ago</td>
+                                <td>
+                                    <form method="POST" action="{% url 'admin_contact_detail' msg.id %}" style="display:inline;" onsubmit="return confirm('Delete this message?');" onclick="event.stopPropagation();">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="delete">
+                                        <button type="submit" class="btn btn-sm btn-danger btn-icon">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4"><div class="empty-state"><i class="fas fa-inbox"></i><p>No messages yet</p></div></td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card" id="msg-detail-panel" style="height:fit-content;display:none;">
+                    <div class="card-hdr">
+                        <h4 id="msg-detail-name">Message Detail</h4>
+                        <button class="btn btn-sm btn-outline" onclick="document.getElementById('msg-detail-panel').style.display='none';">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:4px;" id="msg-detail-email"></p>
+                        <p style="font-size:0.78rem;color:#94a3b8;margin-bottom:16px;" id="msg-detail-time"></p>
+                        <div id="msg-detail-body" style="font-size:0.9rem;line-height:1.7;color:var(--text);white-space:pre-wrap;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════ PANEL: REPORTS ══════════════════ -->
+        <div class="panel" id="panel-reports">
+            <div class="sec-hdr"><h3>Reports &amp; Analytics</h3></div>
+
+            <div class="three-col" style="margin-bottom:20px;">
+                <div class="card">
+                    <div class="card-body" style="text-align:center;">
+                        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">Total Revenue</div>
+                        <div style="font-size:2.2rem;font-weight:800;color:var(--green);">${{ total_revenue|floatformat:2 }}</div>
+                        <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">All time</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body" style="text-align:center;">
+                        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">Monthly Revenue</div>
+                        <div style="font-size:2.2rem;font-weight:800;color:var(--blue);">${{ monthly_revenue|floatformat:2 }}</div>
+                        <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">Last 30 days</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body" style="text-align:center;">
+                        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">Avg Ticket Value</div>
+                        <div style="font-size:2.2rem;font-weight:800;color:var(--amber);">${{ avg_ticket_value|floatformat:2 }}</div>
+                        <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">{{ total_transactions }} transactions</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="two-col">
+                <!-- Popular lots -->
+                <div class="card">
+                    <div class="card-hdr"><h4><i class="fas fa-map-marker-alt" style="color:var(--green);"></i> Most Used Parking Lots</h4></div>
+                    <div class="card-body">
+                        {% for lot in popular_lots %}
+                        <div class="lot-bar">
+                            <span>{{ lot.location }}</span>
+                            <div class="progress-bar" style="flex:1;">
+                                <div class="progress-fill" style="width:{% if popular_lots.0.usage_count > 0 %}{% widthratio lot.usage_count popular_lots.0.usage_count 100 %}{% else %}0{% endif %}%;"></div>
+                            </div>
+                            <span class="count">{{ lot.usage_count }}</span>
+                        </div>
+                        {% empty %}
+                        <div class="empty-state" style="padding:20px;"><p>No data yet</p></div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Vehicle types -->
+                <div class="card">
+                    <div class="card-hdr"><h4><i class="fas fa-car" style="color:var(--purple);"></i> Vehicle Type Breakdown</h4></div>
+                    <div class="card-body">
+                        {% for vt in vehicle_type_stats %}
+                        <div class="lot-bar">
+                            <span>{{ vt.vehicle_type }}</span>
+                            <div class="progress-bar" style="flex:1;">
+                                <div class="progress-fill" style="width:{% if total_vehicles > 0 %}{% widthratio vt.count total_vehicles 100 %}{% else %}0{% endif %}%;background:var(--purple);"></div>
+                            </div>
+                            <span class="count">{{ vt.count }}</span>
+                        </div>
+                        {% empty %}
+                        <div class="empty-state" style="padding:20px;"><p>No vehicles yet</p></div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Payment methods -->
+                <div class="card">
+                    <div class="card-hdr"><h4><i class="fas fa-credit-card" style="color:var(--amber);"></i> Payment Methods</h4></div>
+                    <div class="card-body">
+                        {% for pm in payment_method_stats %}
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f1f5f9;">
+                            <span style="font-size:0.86rem;">{{ pm.payment_method }}</span>
+                            <div style="display:flex;gap:10px;align-items:center;">
+                                <span class="badge b-amber">${{ pm.total_amount|floatformat:0 }}</span>
+                                <span style="font-size:0.78rem;color:var(--muted);">{{ pm.count }} txns</span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="empty-state" style="padding:20px;"><p>No payment data yet</p></div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Summary stats -->
+                <div class="card">
+                    <div class="card-hdr"><h4><i class="fas fa-chart-bar" style="color:var(--teal);"></i> System Summary</h4></div>
+                    <div class="card-body">
+                        {% for label,val,color in summary_rows %}{% endfor %}
+                        <div style="display:flex;flex-direction:column;gap:12px;">
+                            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:0.86rem;">Total Users</span><strong>{{ total_users }}</strong></div>
+                            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:0.86rem;">Total Vehicles</span><strong>{{ total_vehicles }}</strong></div>
+                            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:0.86rem;">Total Tickets</span><strong>{{ total_tickets }}</strong></div>
+                            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:0.86rem;">Active Sessions</span><strong style="color:var(--amber);">{{ active_tickets }}</strong></div>
+                            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:0.86rem;">Total Spaces</span><strong>{{ total_spaces }}</strong></div>
+                            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:0.86rem;">Available Spaces</span><strong style="color:var(--green);">{{ available_spaces }}</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════ PANEL: SETTINGS ══════════════════ -->
+        <div class="panel" id="panel-settings">
+            <div class="sec-hdr"><h3>Account Settings</h3></div>
+
+            <div class="settings-card card">
+                <div class="card-hdr"><h4><i class="fas fa-user-cog" style="color:var(--green);"></i> Profile</h4></div>
+                <div class="card-body">
+                    <form method="POST" action="/update-settings/">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="fg">
+                                <label>Username</label>
+                                <input type="text" name="username" value="{{ request.user.username }}" autocomplete="username">
+                            </div>
+                            <div class="fg">
+                                <label>Email</label>
+                                <input type="email" name="email" value="{{ request.user.email }}" autocomplete="email">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="fg">
+                                <label>New Password <span style="color:var(--muted);font-weight:400;">(leave blank to keep current)</span></label>
+                                <input type="password" name="password" placeholder="Enter new password" autocomplete="new-password">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="settings-card card" style="margin-top:16px;">
+                <div class="card-hdr"><h4><i class="fas fa-info-circle" style="color:var(--blue);"></i> Account Info</h4></div>
+                <div class="card-body">
+                    <div style="display:flex;flex-direction:column;gap:10px;font-size:0.88rem;">
+                        <div style="display:flex;gap:8px;"><span style="color:var(--muted);min-width:120px;">Role</span> <strong>{% if request.user.is_staff %}Administrator{% else %}Regular User{% endif %}</strong></div>
+                        <div style="display:flex;gap:8px;"><span style="color:var(--muted);min-width:120px;">Account Status</span> <span class="badge {% if request.user.is_active %}b-green{% else %}b-red{% endif %}">{% if request.user.is_active %}Active{% else %}Inactive{% endif %}</span></div>
+                        <div style="display:flex;gap:8px;"><span style="color:var(--muted);min-width:120px;">Joined</span> <strong>{{ request.user.date_joined|date:"d F Y" }}</strong></div>
+                        <div style="display:flex;gap:8px;"><span style="color:var(--muted);min-width:120px;">Last Login</span> <strong>{{ request.user.last_login|date:"d F Y, H:i"|default:"—" }}</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% endblock %}
+    </main>
+</div>
+
+<!-- ═══════════════════════════ MODALS ═══════════════════════════ -->
+
+<!-- Add Vehicle -->
+<div class="modal-overlay" id="modal-add-vehicle">
+    <div class="modal-box">
+        <div class="modal-hdr">
+            <h3><i class="fas fa-car" style="color:var(--purple);margin-right:8px;"></i>Add Vehicle</h3>
+            <button class="modal-close" onclick="closeModal('modal-add-vehicle')"><i class="fas fa-times"></i></button>
+        </div>
+        <form method="POST" action="{% url 'admin_vehicle_create' %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="fg">
+                        <label>Plate Number *</label>
+                        <input type="text" name="plate_number" placeholder="e.g. RAB 1234 A" required style="text-transform:uppercase;">
+                    </div>
+                    <div class="fg">
+                        <label>Vehicle Type</label>
+                        <select name="vehicle_type">
+                            {% for vt in vehicle_types %}<option value="{{ vt }}">{{ vt }}</option>{% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row single">
+                    <div class="fg">
+                        <label>Owner Name *</label>
+                        <input type="text" name="owner_name" placeholder="Full name of owner" required>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-add-vehicle')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Vehicle</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Vehicle -->
+<div class="modal-overlay" id="modal-edit-vehicle">
+    <div class="modal-box">
+        <div class="modal-hdr">
+            <h3><i class="fas fa-pen" style="color:var(--blue);margin-right:8px;"></i>Edit Vehicle</h3>
+            <button class="modal-close" onclick="closeModal('modal-edit-vehicle')"><i class="fas fa-times"></i></button>
+        </div>
+        <form method="POST" id="edit-vehicle-form" action="">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="fg">
+                        <label>Plate Number *</label>
+                        <input type="text" name="plate_number" id="ev-plate" required style="text-transform:uppercase;">
+                    </div>
+                    <div class="fg">
+                        <label>Vehicle Type</label>
+                        <select name="vehicle_type" id="ev-type">
+                            {% for vt in vehicle_types %}<option value="{{ vt }}">{{ vt }}</option>{% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row single">
+                    <div class="fg">
+                        <label>Owner Name *</label>
+                        <input type="text" name="owner_name" id="ev-owner" required>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-edit-vehicle')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Add Parking Lot -->
+<div class="modal-overlay" id="modal-add-lot">
+    <div class="modal-box">
+        <div class="modal-hdr">
+            <h3><i class="fas fa-parking" style="color:var(--green);margin-right:8px;"></i>Add Parking Lot</h3>
+            <button class="modal-close" onclick="closeModal('modal-add-lot')"><i class="fas fa-times"></i></button>
+        </div>
+        <form method="POST" action="{% url 'admin_parking_lot_create' %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-row single">
+                    <div class="fg">
+                        <label>Location / Name *</label>
+                        <input type="text" name="location" placeholder="e.g. Makuza Underground" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="fg">
+                        <label>Total Spaces *</label>
+                        <input type="number" name="total_spaces" min="1" placeholder="100" required>
+                    </div>
+                    <div class="fg">
+                        <label>Initially Available</label>
+                        <input type="number" name="available_spaces" min="0" placeholder="Same as total">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-add-lot')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Create Lot</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Parking Lot -->
+<div class="modal-overlay" id="modal-edit-lot">
+    <div class="modal-box">
+        <div class="modal-hdr">
+            <h3><i class="fas fa-pen" style="color:var(--blue);margin-right:8px;"></i>Edit Parking Lot</h3>
+            <button class="modal-close" onclick="closeModal('modal-edit-lot')"><i class="fas fa-times"></i></button>
+        </div>
+        <form method="POST" id="edit-lot-form" action="">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-row single">
+                    <div class="fg">
+                        <label>Location / Name *</label>
+                        <input type="text" name="location" id="el-location" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="fg">
+                        <label>Total Spaces</label>
+                        <input type="number" name="total_spaces" id="el-total" min="1">
+                    </div>
+                    <div class="fg">
+                        <label>Available Spaces</label>
+                        <input type="number" name="available_spaces" id="el-available" min="0">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-edit-lot')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Complete Ticket -->
+<div class="modal-overlay" id="modal-complete-ticket">
+    <div class="modal-box" style="max-width:380px;">
+        <div class="modal-hdr">
+            <h3><i class="fas fa-check-circle" style="color:var(--green);margin-right:8px;"></i>Close Ticket</h3>
+            <button class="modal-close" onclick="closeModal('modal-complete-ticket')"><i class="fas fa-times"></i></button>
+        </div>
+        <form method="POST" id="complete-ticket-form" action="">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="complete">
+            <div class="modal-body">
+                <p style="color:var(--muted);font-size:0.88rem;margin-bottom:16px;">Vehicle: <strong id="ct-plate"></strong></p>
+                <div class="fg">
+                    <label>Parking Fee ($) *</label>
+                    <input type="number" name="fee" step="0.01" min="0" placeholder="0.00" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-complete-ticket')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Close &amp; Charge</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Logout confirm -->
+<div class="modal-overlay" id="modal-logout">
+    <div class="modal-box" style="max-width:360px;">
+        <div class="modal-body" style="text-align:center;padding:32px 24px;">
+            <div style="width:64px;height:64px;background:#fef2f2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.6rem;color:var(--red);">
+                <i class="fas fa-sign-out-alt"></i>
+            </div>
+            <h3 style="font-size:1rem;margin-bottom:8px;">Confirm Logout</h3>
+            <p style="color:var(--muted);font-size:0.88rem;margin-bottom:24px;">Are you sure you want to sign out?</p>
+            <div style="display:flex;gap:10px;justify-content:center;">
+                <button class="btn btn-outline" onclick="closeModal('modal-logout')">Cancel</button>
+                <button class="btn btn-danger" id="do-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════ JS ═══════════════════════════ -->
+<script>
+const TABS = { overview:'Dashboard', users:'Users', vehicles:'Vehicles', parking:'Parking Lots', tickets:'Tickets', messages:'Messages', reports:'Reports', settings:'Settings' };
+
+/* ── Tab switching ── */
+function switchTab(name, push) {
+    if (!document.getElementById('panel-' + name)) name = 'overview';
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sb-nav a[data-tab]').forEach(a => a.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    var link = document.querySelector('.sb-nav a[data-tab="' + name + '"]');
+    if (link) link.classList.add('active');
+    document.getElementById('topbar-title').textContent = TABS[name] || 'Dashboard';
+    if (push !== false) history.replaceState(null, '', '?tab=' + name);
+}
+
+document.querySelectorAll('.sb-nav a[data-tab], .btn[data-tab]').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+        e.preventDefault();
+        switchTab(this.dataset.tab);
+        closeSb();
+    });
+});
+
+/* On load: read ?tab= or default to overview */
+(function() {
+    var params = new URLSearchParams(window.location.search);
+    switchTab(params.get('tab') || 'overview', false);
+})();
+
+/* ── Sidebar (mobile) ── */
+function openSb()  { document.getElementById('sidebar').classList.add('open');   document.getElementById('sbOverlay').classList.add('show'); }
+function closeSb() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sbOverlay').classList.remove('show'); }
+
+/* ── Modals ── */
+function openModal(id)  { document.getElementById(id).classList.add('show'); document.body.style.overflow = 'hidden'; }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); document.body.style.overflow = ''; }
+document.querySelectorAll('.modal-overlay').forEach(function(m) {
+    m.addEventListener('click', function(e) { if (e.target === this) closeModal(this.id); });
+});
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.show').forEach(function(m) { closeModal(m.id); });
+});
+
+/* ── Edit vehicle ── */
+function openEditVehicle(id, plate, type, owner) {
+    document.getElementById('edit-vehicle-form').action = '/manage/vehicles/' + id + '/edit/';
+    document.getElementById('ev-plate').value = plate;
+    document.getElementById('ev-owner').value = owner;
+    var sel = document.getElementById('ev-type');
+    for (var i = 0; i < sel.options.length; i++) { if (sel.options[i].value === type) { sel.selectedIndex = i; break; } }
+    openModal('modal-edit-vehicle');
+}
+
+/* ── Edit lot ── */
+function openEditLot(id, location, total, available) {
+    document.getElementById('edit-lot-form').action = '/manage/parking-lots/' + id + '/edit/';
+    document.getElementById('el-location').value = location;
+    document.getElementById('el-total').value = total;
+    document.getElementById('el-available').value = available;
+    openModal('modal-edit-lot');
+}
+
+/* ── Complete ticket ── */
+function openCompleteTicket(id, plate) {
+    document.getElementById('complete-ticket-form').action = '/manage/tickets/' + id + '/edit/';
+    document.getElementById('ct-plate').textContent = plate;
+    openModal('modal-complete-ticket');
+}
+
+/* ── Message detail ── */
+function showMessage(id, name, email, body, time) {
+    document.getElementById('msg-detail-name').textContent = name;
+    document.getElementById('msg-detail-email').textContent = email;
+    document.getElementById('msg-detail-time').textContent = time;
+    document.getElementById('msg-detail-body').textContent = body;
+    document.getElementById('msg-detail-panel').style.display = 'block';
+}
+
+/* ── Logout ── */
+function confirmLogout(e) {
+    e.preventDefault();
+    openModal('modal-logout');
+}
+document.getElementById('do-logout').addEventListener('click', function() {
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing out…';
+    this.disabled = true;
+    var form = document.createElement('form');
+    form.method = 'POST'; form.action = '/logout/';
+    var csrf = document.querySelector('meta[name="csrf-token"]');
+    if (csrf) { var inp = document.createElement('input'); inp.type='hidden'; inp.name='csrfmiddlewaretoken'; inp.value=csrf.content; form.appendChild(inp); }
+    document.body.appendChild(form); form.submit();
+});
+
+/* ── Filter: users ── */
+function filterUsers(type, btn) {
+    document.querySelectorAll('.filter-btn').forEach(function(b) { if (b.parentElement === btn.parentElement) b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.querySelectorAll('.user-row').forEach(function(row) {
+        row.style.display = (type === 'all' || row.dataset.role === type) ? '' : 'none';
+    });
+}
+
+/* ── Filter: tickets ── */
+function filterTickets(status, btn) {
+    document.querySelectorAll('.filter-btn').forEach(function(b) { if (b.parentElement === btn.parentElement) b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.querySelectorAll('.ticket-row').forEach(function(row) {
+        row.style.display = (status === 'all' || row.dataset.status === status) ? '' : 'none';
+    });
+}
+
+/* ── Global search ── */
+function globalSearch(query) {
+    if (!query) return;
+    var q = query.toLowerCase();
+    var panel = document.querySelector('.panel.active');
+    if (!panel) return;
+    panel.querySelectorAll('tbody tr').forEach(function(row) {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    if (!query) panel.querySelectorAll('tbody tr').forEach(function(r) { r.style.display = ''; });
+}
+document.getElementById('globalSearch').addEventListener('input', function() {
+    if (!this.value) {
+        document.querySelectorAll('tbody tr').forEach(function(r) { r.style.display = ''; });
+    }
+});
+
+/* ── Clock ── */
+function tick() { var el = document.getElementById('sb-clock'); if (el) el.textContent = new Date().toLocaleTimeString('en-GB', {hour12:false}); }
+tick(); setInterval(tick, 1000);
+</script>
+</body>
+</html>

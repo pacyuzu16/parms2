@@ -1,0 +1,1098 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PARMS — Smart Parking Management System</title>
+
+    <link rel="icon" href="{% static 'imgs/weblogo.svg' %}" type="image/x-icon">
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fonts: Plus Jakarta Sans for display, Inter for body -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Bootstrap grid/utilities only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Design system -->
+    <link rel="stylesheet" href="{% static 'css/natural_styles.css' %}">
+
+    <style>
+        /* ──────────────────────────────────────────────────────
+           NAVBAR
+           Opaque from the start — frosted glass on nav feels
+           unfinished. Solid background reads as intentional.
+        ────────────────────────────────────────────────────── */
+        .navbar {
+            background: #f7f8f7 !important;
+            border-bottom: 1px solid #dde3e0;
+            padding: 0;
+            height: 60px;
+        }
+        .navbar.scrolled {
+            box-shadow: 0 1px 6px rgba(20,27,25,0.07);
+        }
+        .navbar .container {
+            height: 60px;
+            display: flex;
+            align-items: center;
+        }
+        .navbar-brand {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: var(--ink) !important;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 0;
+        }
+        .navbar-brand .brand-dot {
+            width: 8px; height: 8px;
+            background: var(--forest);
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 2px;
+        }
+        .nav-link {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: var(--steel) !important;
+            padding: 6px 11px !important;
+            border-radius: var(--radius-sm);
+            letter-spacing: 0.005em;
+            transition: color 150ms, background 150ms;
+        }
+        .nav-link:hover {
+            color: var(--ink) !important;
+            background: var(--chalk);
+        }
+        .nav-link.active-link {
+            color: var(--forest) !important;
+            font-weight: 600;
+        }
+        .navbar-toggler {
+            border: 1px solid var(--dust);
+            border-radius: var(--radius-sm);
+            padding: 5px 9px;
+            color: var(--carbon);
+        }
+        .navbar-toggler:focus { box-shadow: none; }
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23242b27' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        /* ──────────────────────────────────────────────────────
+           HERO
+           Off-white background, no gradient.
+           The headline carries the weight — not a color effect.
+           Subtle decorative element: a quiet circular arc,
+           positioned slightly off-center (intentional asymmetry).
+        ────────────────────────────────────────────────────── */
+        .hero-section {
+            min-height: calc(100vh - 60px);
+            background: var(--parchment);
+            display: flex;
+            align-items: center;
+            padding: 80px 0 64px;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Quiet organic decoration — NOT a gradient orb */
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -120px;
+            right: -80px;
+            width: 560px;
+            height: 560px;
+            border: 80px solid var(--sage);
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0.55;
+        }
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            bottom: -60px;
+            left: -40px;
+            width: 280px;
+            height: 280px;
+            border: 40px solid var(--sage);
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0.35;
+        }
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: var(--sage);
+            color: var(--forest);
+            border: 1px solid var(--sage-mid);
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            margin-bottom: 22px;
+            letter-spacing: 0.01em;
+        }
+        .hero-tag::before {
+            content: '';
+            width: 6px; height: 6px;
+            background: var(--forest);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .hero-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: clamp(2rem, 5vw, 3.25rem);
+            font-weight: 800;
+            color: var(--ink);
+            line-height: 1.1;
+            letter-spacing: -0.04em;
+            margin-bottom: 18px;
+        }
+        .hero-title em {
+            font-style: normal;
+            color: var(--forest);
+            /* Underline decoration instead of color block — more editorial */
+            text-decoration: underline;
+            text-decoration-color: var(--sage-mid);
+            text-decoration-thickness: 3px;
+            text-underline-offset: 4px;
+        }
+        .hero-lead {
+            font-size: 1.0625rem;
+            color: var(--steel);
+            line-height: 1.7;
+            margin-bottom: 32px;
+            max-width: 480px;
+        }
+        .hero-cta { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 36px; }
+        .hero-trust {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8125rem;
+            color: var(--steel);
+            font-weight: 500;
+        }
+        .hero-trust .stars { color: #c8a84e; letter-spacing: -1px; font-size: 0.875rem; }
+        .hero-trust .divider {
+            width: 1px; height: 14px;
+            background: var(--dust);
+        }
+        .hero-img-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Subtle green "shelf" under the illustration — not a glow */
+        .hero-img-wrap::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 10%;
+            right: 10%;
+            height: 24px;
+            background: var(--sage-mid);
+            border-radius: 50%;
+            filter: blur(16px);
+            opacity: 0.6;
+            z-index: 0;
+        }
+        .hero-img-wrap img {
+            position: relative;
+            z-index: 1;
+            max-height: 420px;
+        }
+
+        /* ──────────────────────────────────────────────────────
+           STATS STRIP
+           Flat, no card borders. Let numbers breathe.
+        ────────────────────────────────────────────────────── */
+        .stats-strip {
+            background: var(--paper);
+            border-top: 1px solid var(--dust);
+            border-bottom: 1px solid var(--dust);
+            padding: 40px 0;
+        }
+        .stat-item { text-align: center; padding: 0 24px; }
+        .stat-number {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: var(--ink);
+            line-height: 1;
+            letter-spacing: -0.04em;
+            margin-bottom: 5px;
+        }
+        .stat-number .suffix { color: var(--forest); }
+        .stat-label  { font-size: 0.8125rem; color: var(--steel); font-weight: 500; }
+        .stat-sub    { font-size: 0.75rem;   color: var(--mist);  margin-top: 1px; }
+        .stat-rule   { width: 1px; background: var(--dust); align-self: stretch; margin: 8px 0; }
+
+        /* ──────────────────────────────────────────────────────
+           SECTIONS SHARED
+           Generous spacing. Not 60px padding on both sides —
+           slightly more on the bottom for visual weight.
+        ────────────────────────────────────────────────────── */
+        .section-eyebrow {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--forest);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+        }
+        .section-heading {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: clamp(1.5rem, 3vw, 2.125rem);
+            font-weight: 800;
+            color: var(--ink);
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+            margin-bottom: 14px;
+        }
+        .section-sub {
+            font-size: 1rem;
+            color: var(--steel);
+            line-height: 1.7;
+            max-width: 520px;
+        }
+
+        /* ──────────────────────────────────────────────────────
+           FEATURES
+           Left-aligned text (not centered) — more editorial.
+           Icon is a small accent, not the hero of the card.
+        ────────────────────────────────────────────────────── */
+        .features-section {
+            padding: 96px 0 80px;
+            background: var(--parchment);
+        }
+        .feature-card {
+            background: var(--paper);
+            border: 1px solid var(--dust);
+            border-radius: var(--radius-lg);
+            padding: 28px 26px;
+            height: 100%;
+            transition: border-color 200ms, box-shadow 200ms;
+        }
+        .feature-card:hover {
+            border-color: var(--sage-mid);
+            box-shadow: var(--shadow-medium);
+        }
+        .fi-wrap {
+            width: 38px; height: 38px;
+            border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+            margin-bottom: 16px;
+            flex-shrink: 0;
+        }
+        .fi-g  { background: var(--sage);       color: var(--forest); }
+        .fi-t  { background: #e2f5f1;            color: #1a6b57; }
+        .fi-b  { background: #eef2ff;            color: #3451b2; }
+        .fi-o  { background: #fef3e2;            color: #9a4e0c; }
+        .fi-p  { background: #f3f0ff;            color: #5b3fad; }
+        .fi-r  { background: #fef0ee;            color: #963228; }
+        .feature-card h5 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            color: var(--ink);
+            font-size: 0.9375rem;
+            letter-spacing: -0.01em;
+            margin-bottom: 7px;
+        }
+        .feature-card p {
+            color: var(--steel);
+            font-size: 0.875rem;
+            line-height: 1.65;
+            margin: 0;
+        }
+
+        /* ──────────────────────────────────────────────────────
+           HOW IT WORKS
+           Steps connected by a line — spatial, not card-based.
+        ────────────────────────────────────────────────────── */
+        .how-section { padding: 96px 0 80px; background: var(--paper); }
+        .step-num {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: var(--forest);
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            font-size: 0.9375rem;
+            margin: 0 auto 16px;
+            position: relative;
+            z-index: 1;
+        }
+        .step-wrap {
+            text-align: center;
+            padding: 0 16px;
+            position: relative;
+        }
+        /* Connecting rule between steps */
+        .step-wrap:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: calc(50% + 28px);
+            right: calc(-50% + 28px);
+            height: 1px;
+            background: var(--dust);
+        }
+        .step-wrap h5 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            font-size: 0.9375rem;
+            color: var(--ink);
+            margin-bottom: 8px;
+        }
+        .step-wrap p { color: var(--steel); font-size: 0.875rem; line-height: 1.65; }
+
+        /* ──────────────────────────────────────────────────────
+           TESTIMONIALS
+           Quote mark is typographic (not an icon).
+           No star ratings unless earned.
+        ────────────────────────────────────────────────────── */
+        .testimonials-section { padding: 96px 0 80px; background: var(--chalk); }
+        .tcard {
+            background: var(--paper);
+            border: 1px solid var(--dust);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            height: 100%;
+            transition: border-color 200ms;
+        }
+        .tcard:hover { border-color: var(--sage-mid); }
+        .tcard-quote {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 2.5rem;
+            color: var(--sage-mid);
+            line-height: 1;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .tcard p {
+            color: var(--carbon);
+            font-size: 0.9375rem;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        .tcard-author img {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1.5px solid var(--dust);
+        }
+        .tcard-author .name {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--ink);
+        }
+        .tcard-author .role { font-size: 0.8125rem; color: var(--mist); }
+        /* Stars — warm gold, not yellow */
+        .tcard-stars { color: #b89640; font-size: 0.75rem; letter-spacing: 1px; }
+
+        /* ──────────────────────────────────────────────────────
+           CTA BAND
+           Solid forest green. No gradient. The single-color
+           block reads as more confident than a gradient.
+        ────────────────────────────────────────────────────── */
+        .cta-section {
+            background: var(--forest);
+            padding: 80px 0;
+        }
+        .cta-section h2 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.03em;
+            margin-bottom: 12px;
+        }
+        .cta-section p { color: rgba(255,255,255,0.7); font-size: 1rem; margin-bottom: 32px; }
+        .btn-cta-primary {
+            background: white;
+            color: var(--forest);
+            border: none;
+            font-weight: 700;
+            padding: 11px 26px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9375rem;
+            transition: background 150ms, color 150ms;
+        }
+        .btn-cta-primary:hover { background: var(--chalk); color: var(--forest-dark); }
+        .btn-cta-ghost {
+            background: transparent;
+            color: rgba(255,255,255,0.85);
+            border: 1.5px solid rgba(255,255,255,0.3);
+            font-weight: 600;
+            padding: 11px 26px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9375rem;
+            transition: background 150ms, border-color 150ms;
+        }
+        .btn-cta-ghost:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.5); color: white; }
+
+        /* ──────────────────────────────────────────────────────
+           APP DOWNLOAD
+           Platform store badges — dark background convention.
+        ────────────────────────────────────────────────────── */
+        .app-section { padding: 88px 0 72px; background: var(--parchment); }
+        .app-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--ink);
+            color: rgba(255,255,255,0.9);
+            padding: 11px 20px;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            transition: background 150ms;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .app-btn:hover { background: var(--carbon); color: white; }
+        .app-btn-text small { font-size: 0.6875rem; opacity: 0.6; display: block; line-height: 1.2; }
+        .app-btn-text strong { font-size: 0.9375rem; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        /* ──────────────────────────────────────────────────────
+           TEAM
+           Simple, clean. Photo + name + role + social.
+           No card hover effects — team members are not products.
+        ────────────────────────────────────────────────────── */
+        .team-section { padding: 88px 0 72px; background: var(--paper); }
+        .team-card {
+            text-align: center;
+            padding: 0 16px;
+        }
+        .team-avatar {
+            width: 88px; height: 88px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2.5px solid var(--dust);
+            margin: 0 auto 14px;
+            display: block;
+            transition: border-color 200ms;
+        }
+        .team-card:hover .team-avatar { border-color: var(--forest); }
+        .team-card h5 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            font-size: 0.9375rem;
+            color: var(--ink);
+            margin-bottom: 3px;
+        }
+        .team-role { font-size: 0.8125rem; color: var(--forest); font-weight: 500; margin-bottom: 8px; }
+        .team-bio  { font-size: 0.8125rem; color: var(--steel); line-height: 1.55; margin-bottom: 12px; }
+        .team-social { display: flex; justify-content: center; gap: 6px; }
+        .team-social a {
+            width: 30px; height: 30px;
+            border-radius: var(--radius-xs);
+            border: 1px solid var(--dust);
+            background: var(--chalk);
+            color: var(--steel);
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none;
+            font-size: 0.75rem;
+            transition: background 150ms, border-color 150ms, color 150ms;
+        }
+        .team-social a:hover { background: var(--forest); border-color: var(--forest); color: white; }
+
+        /* ──────────────────────────────────────────────────────
+           FOOTER
+           Dark, not forest green — it's the close of the page,
+           it should recede, not compete with content.
+        ────────────────────────────────────────────────────── */
+        .site-footer {
+            background: #131815;
+            color: rgba(255,255,255,0.55);
+            padding: 64px 0 0;
+        }
+        .footer-brand {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 800;
+            color: rgba(255,255,255,0.9);
+            display: flex; align-items: center; gap: 9px;
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+        .footer-tagline {
+            font-size: 0.875rem;
+            color: rgba(255,255,255,0.38);
+            line-height: 1.65;
+            margin-bottom: 22px;
+            max-width: 260px;
+        }
+        .footer-social { display: flex; gap: 8px; }
+        .footer-social a {
+            width: 32px; height: 32px;
+            border-radius: var(--radius-xs);
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.45);
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: background 150ms, color 150ms;
+        }
+        .footer-social a:hover { background: var(--forest); color: white; }
+        .site-footer h6 {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            color: rgba(255,255,255,0.35);
+            margin-bottom: 16px;
+        }
+        .footer-links { list-style: none; padding: 0; margin: 0; }
+        .footer-links li { margin-bottom: 8px; }
+        .footer-links a {
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 150ms;
+        }
+        .footer-links a:hover { color: rgba(255,255,255,0.88); }
+        .footer-newsletter input {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.88);
+            border-radius: var(--radius-sm);
+            padding: 9px 13px;
+            font-size: 0.875rem;
+            width: 100%;
+            margin-bottom: 9px;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 150ms;
+        }
+        .footer-newsletter input::placeholder { color: rgba(255,255,255,0.25); }
+        .footer-newsletter input:focus { border-color: var(--forest); }
+        .footer-newsletter .btn-subscribe {
+            width: 100%;
+            background: var(--forest);
+            color: rgba(255,255,255,0.95);
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 9px 14px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 150ms;
+            font-family: 'Inter', sans-serif;
+        }
+        .footer-newsletter .btn-subscribe:hover { background: var(--forest-dark); }
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.07);
+            padding: 18px 0;
+            margin-top: 48px;
+            text-align: center;
+            color: rgba(255,255,255,0.22);
+            font-size: 0.8125rem;
+        }
+
+        /* ──────────────────────────────────────────────────────
+           ANIMATIONS — enter only, no loop animations
+        ────────────────────────────────────────────────────── */
+        .fade-up   { opacity: 0; transform: translateY(20px); transition: opacity 0.55s var(--ease-out), transform 0.55s var(--ease-out); }
+        .fade-left { opacity: 0; transform: translateX(-20px); transition: opacity 0.55s var(--ease-out), transform 0.55s var(--ease-out); }
+        .fade-right{ opacity: 0; transform: translateX(20px);  transition: opacity 0.55s var(--ease-out), transform 0.55s var(--ease-out); }
+        .fade-up.visible, .fade-left.visible, .fade-right.visible { opacity: 1; transform: none; }
+
+        @media (max-width: 991px) {
+            .hero-section { padding: 56px 0 48px; min-height: auto; }
+            .hero-section::before, .hero-section::after { display: none; }
+            .step-wrap::after { display: none; }
+            .features-section, .how-section, .testimonials-section,
+            .app-section, .team-section { padding: 64px 0 52px; }
+            .cta-section { padding: 56px 0; }
+        }
+        @media (max-width: 576px) {
+            .hero-title { font-size: 1.875rem; }
+            .stat-number { font-size: 1.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ══════ NAVBAR ══════ -->
+    <nav class="navbar navbar-expand-lg fixed-top" id="mainNav">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="{% static 'imgs/TrafficJam.svg' %}" alt="" height="28">
+                PARMS<span class="brand-dot"></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav ms-auto align-items-lg-center" style="gap:2px;">
+                    <li class="nav-item"><a class="nav-link active-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#how-it-works">How it works</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+                    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                        <a href="/login" class="btn btn-outline-secondary btn-sm">Sign in</a>
+                    </li>
+                    <li class="nav-item mt-2 mt-lg-0" style="margin-left:6px;">
+                        <a href="/signup" class="btn btn-primary btn-sm">Get started</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div style="padding-top:60px;">
+        {% block content %}
+
+        <!-- ══════ HERO ══════ -->
+        <section class="hero-section">
+            <div class="container position-relative" style="z-index:1;">
+                <div class="row align-items-center g-5">
+                    <div class="col-lg-6 fade-left">
+                        <div class="hero-tag">Smart parking for modern cities</div>
+                        <h1 class="hero-title">
+                            Find Your<br>
+                            <em>Perfect Space</em><br>
+                            In Seconds
+                        </h1>
+                        <p class="hero-lead">
+                            PARMS connects you to real-time parking availability across thousands of locations. Book, pay, and park — from one calm, simple platform.
+                        </p>
+                        <div class="hero-cta">
+                            <a href="/signup" class="btn btn-primary btn-lg">
+                                Get started free
+                            </a>
+                            <a href="#how-it-works" class="btn btn-outline-secondary btn-lg">
+                                See how it works
+                            </a>
+                        </div>
+                        <div class="hero-trust">
+                            <span class="stars">★★★★★</span>
+                            <span>4.9 / 5</span>
+                            <span class="divider"></span>
+                            <span>Trusted by 50,000+ drivers</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 fade-right">
+                        <div class="hero-img-wrap">
+                            <img src="{% static 'imgs/car_home.svg' %}" alt="Smart parking illustration"
+                                 class="img-fluid" style="max-height:400px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══════ STATS STRIP ══════ -->
+        <section class="stats-strip">
+            <div class="container">
+                <div class="d-flex align-items-center justify-content-center flex-wrap" style="gap:0;">
+                    <div class="stat-item">
+                        <div class="stat-number count" data-count="50000">0<span class="suffix">+</span></div>
+                        <div class="stat-label">Active Users</div>
+                        <div class="stat-sub">Growing daily</div>
+                    </div>
+                    <div class="stat-rule d-none d-md-block" style="height:52px;"></div>
+                    <div class="stat-item">
+                        <div class="stat-number count" data-count="15000">0<span class="suffix">+</span></div>
+                        <div class="stat-label">Parking Locations</div>
+                        <div class="stat-sub">Nationwide</div>
+                    </div>
+                    <div class="stat-rule d-none d-md-block" style="height:52px;"></div>
+                    <div class="stat-item">
+                        <div class="stat-number">99<span class="suffix">%</span></div>
+                        <div class="stat-label">Success Rate</div>
+                        <div class="stat-sub">Customer satisfaction</div>
+                    </div>
+                    <div class="stat-rule d-none d-md-block" style="height:52px;"></div>
+                    <div class="stat-item">
+                        <div class="stat-number">24<span class="suffix">h</span></div>
+                        <div class="stat-label">Saved per Week</div>
+                        <div class="stat-sub">Per user average</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══════ FEATURES ══════ -->
+        <section id="features" class="features-section">
+            <div class="container">
+                <!-- Left-aligned header — not centered — breaks the template look -->
+                <div class="row mb-5">
+                    <div class="col-lg-5 fade-left">
+                        <p class="section-eyebrow">Features</p>
+                        <h2 class="section-heading">Everything you need to park smarter</h2>
+                    </div>
+                    <div class="col-lg-5 offset-lg-1 d-flex align-items-end fade-right">
+                        <p class="section-sub">From real-time availability to automated billing — PARMS handles every aspect of your parking experience without friction.</p>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-lg-4 col-md-6 fade-up">
+                        <div class="feature-card">
+                            <div class="fi-wrap fi-g"><i class="fas fa-map-marker-alt"></i></div>
+                            <h5>Real-time Availability</h5>
+                            <p>See live space counts across all locations. No refresh needed — the data comes to you.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 fade-up">
+                        <div class="feature-card">
+                            <div class="fi-wrap fi-t"><i class="fas fa-qrcode"></i></div>
+                            <h5>Instant QR Tickets</h5>
+                            <p>Generate and scan QR-coded parking tickets in seconds. No paper, no queues.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 fade-up">
+                        <div class="feature-card">
+                            <div class="fi-wrap fi-b"><i class="fas fa-credit-card"></i></div>
+                            <h5>Smart Payments</h5>
+                            <p>Pay via MTN Mobile Money, PayPal, or card. Fee calculated on actual time parked.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 fade-up">
+                        <div class="feature-card">
+                            <div class="fi-wrap fi-o"><i class="fas fa-chart-line"></i></div>
+                            <h5>Analytics Dashboard</h5>
+                            <p>Revenue tracking, occupancy rates, and detailed usage reports — all in one view.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 fade-up">
+                        <div class="feature-card">
+                            <div class="fi-wrap fi-p"><i class="fas fa-shield-alt"></i></div>
+                            <h5>Secure by Design</h5>
+                            <p>Role-based access, encrypted data, and full audit logging built in from the start.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 fade-up">
+                        <div class="feature-card">
+                            <div class="fi-wrap fi-r"><i class="fas fa-mobile-alt"></i></div>
+                            <h5>Mobile First</h5>
+                            <p>Find parking, view history, manage vehicles — fully optimised for your phone.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══════ HOW IT WORKS ══════ -->
+        <section id="how-it-works" class="how-section">
+            <div class="container">
+                <div class="text-center mb-5 fade-up">
+                    <p class="section-eyebrow">How it works</p>
+                    <h2 class="section-heading">Three steps to parked</h2>
+                    <p class="section-sub mx-auto">PARMS is designed to get out of your way. Find, book, and park — then get on with your day.</p>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <div class="row g-4">
+                            <div class="col-md-4 fade-up">
+                                <div class="step-wrap">
+                                    <div class="step-num">1</div>
+                                    <h5>Search & Discover</h5>
+                                    <p>Browse available parking lots near your destination with live slot counts and pricing.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 fade-up">
+                                <div class="step-wrap">
+                                    <div class="step-num">2</div>
+                                    <h5>Book Your Space</h5>
+                                    <p>Reserve a space in seconds. Your QR-coded ticket is ready before you even start driving.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 fade-up">
+                                <div class="step-wrap">
+                                    <div class="step-num">3</div>
+                                    <h5>Park &amp; Pay</h5>
+                                    <p>Scan your QR code at the gate. Payment is calculated automatically on exit.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══════ TESTIMONIALS ══════ -->
+        <section class="testimonials-section">
+            <div class="container">
+                <div class="text-center mb-5 fade-up">
+                    <p class="section-eyebrow">Testimonials</p>
+                    <h2 class="section-heading">What drivers are saying</h2>
+                </div>
+                <div class="row g-4">
+                    <div class="col-lg-4 col-md-6 fade-up">
+                        <div class="tcard">
+                            <span class="tcard-quote">"</span>
+                            <p>PARMS has made finding parking so much easier. I book ahead and know exactly where to go. No more circling the block.</p>
+                            <div class="tcard-author d-flex align-items-center gap-3">
+                                <img src="{% static 'imgs/user1.png' %}" alt="Happy Tumukunde">
+                                <div>
+                                    <div class="name">Happy Tumukunde</div>
+                                    <div class="role">Software Developer</div>
+                                </div>
+                                <div class="ms-auto tcard-stars">★★★★★</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 fade-up">
+                        <div class="tcard">
+                            <span class="tcard-quote">"</span>
+                            <p>Simple, reliable, and effective. The app is user-friendly and finding parking is genuinely no longer stressful.</p>
+                            <div class="tcard-author d-flex align-items-center gap-3">
+                                <img src="{% static 'imgs/user2.png' %}" alt="John Doe">
+                                <div>
+                                    <div class="name">John Doe</div>
+                                    <div class="role">Business Owner</div>
+                                </div>
+                                <div class="ms-auto tcard-stars">★★★★★</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 fade-up">
+                        <div class="tcard">
+                            <span class="tcard-quote">"</span>
+                            <p>The QR ticket system is exactly right. I scan and go — no fumbling for paper tickets or dealing with attendants.</p>
+                            <div class="tcard-author d-flex align-items-center gap-3">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
+                                     style="width:40px;height:40px;background:var(--forest);font-size:0.875rem;">M</div>
+                                <div>
+                                    <div class="name">Marie Uwera</div>
+                                    <div class="role">Nurse, Kigali</div>
+                                </div>
+                                <div class="ms-auto tcard-stars">★★★★½</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══════ CTA ══════ -->
+        <section class="cta-section">
+            <div class="container text-center position-relative" style="z-index:1;">
+                <h2>Ready to park smarter?</h2>
+                <p>Join thousands of drivers who save time every day with PARMS.</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="/signup" class="btn-cta-primary btn">Create free account</a>
+                    <a href="/contact" class="btn-cta-ghost btn">Talk to us</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══════ APP DOWNLOAD ══════ -->
+        <section class="app-section" id="about">
+            <div class="container">
+                <div class="row align-items-center g-5">
+                    <div class="col-lg-6 fade-left">
+                        <p class="section-eyebrow">Mobile App</p>
+                        <h2 class="section-heading">Take PARMS<br>wherever you go</h2>
+                        <p style="color:var(--steel);font-size:1rem;margin-bottom:28px;line-height:1.7;">
+                            Download the app for instant parking search, ticket generation, and payment — right from your pocket.
+                        </p>
+                        <div class="d-flex gap-3 flex-wrap">
+                            <a href="#" class="app-btn">
+                                <img src="{% static 'imgs/playstore.svg' %}" width="26" alt="">
+                                <div class="app-btn-text">
+                                    <small>Get it on</small>
+                                    <strong>Google Play</strong>
+                                </div>
+                            </a>
+                            <a href="#" class="app-btn">
+                                <img src="{% static 'imgs/apple_icon.svg' %}" width="22" alt="">
+                                <div class="app-btn-text">
+                                    <small>Download on</small>
+                                    <strong>App Store</strong>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 fade-right text-center">
+                        <img src="{% static 'imgs/pms.png' %}" alt="PARMS app"
+                             class="img-fluid rounded-3"
+                             style="max-height:380px;box-shadow:var(--shadow-lg);">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══════ TEAM ══════ -->
+        <section class="team-section">
+            <div class="container">
+                <div class="text-center mb-5 fade-up">
+                    <p class="section-eyebrow">Our team</p>
+                    <h2 class="section-heading">The people behind PARMS</h2>
+                </div>
+                <div class="row g-4 justify-content-center">
+                    <div class="col-lg-3 col-md-4 col-sm-6 fade-up">
+                        <div class="team-card">
+                            <img src="{% static 'imgs/team1.jpg' %}" alt="IshPauline" class="team-avatar">
+                            <h5>IshPauline</h5>
+                            <p class="team-role">Technology Lead</p>
+                            <p class="team-bio">Overseeing technical development and system architecture.</p>
+                            <div class="team-social">
+                                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                                <a href="#"><i class="fab fa-twitter"></i></a>
+                                <a href="#"><i class="fab fa-github"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-4 col-sm-6 fade-up">
+                        <div class="team-card">
+                            <img src="{% static 'imgs/team2.jpg' %}" alt="Pacyuzu" class="team-avatar">
+                            <h5>Pacyuzu</h5>
+                            <p class="team-role">CEO &amp; Founder</p>
+                            <p class="team-bio">Leading PARMS with a vision for smarter parking for everyone.</p>
+                            <div class="team-social">
+                                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                                <a href="#"><i class="fab fa-twitter"></i></a>
+                                <a href="#"><i class="fab fa-github"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-4 col-sm-6 fade-up">
+                        <div class="team-card">
+                            <img src="{% static 'imgs/team3.jpg' %}" alt="Sigma" class="team-avatar">
+                            <h5>Sigma</h5>
+                            <p class="team-role">Operations Manager</p>
+                            <p class="team-bio">Ensuring smooth operations and exceptional user support.</p>
+                            <div class="team-social">
+                                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                                <a href="#"><i class="fab fa-twitter"></i></a>
+                                <a href="#"><i class="fab fa-github"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {% endblock %}
+    </div>
+
+    <!-- ══════ FOOTER ══════ -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="row g-5">
+                <div class="col-lg-4 col-md-6">
+                    <div class="footer-brand">
+                        <img src="{% static 'imgs/TrafficJam.svg' %}" alt="" height="24"
+                             style="filter:brightness(0) invert(1);opacity:0.7;">
+                        PARMS
+                    </div>
+                    <p class="footer-tagline">Smart parking management for modern cities. Find, book, and pay effortlessly.</p>
+                    <div class="footer-social">
+                        <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6>Platform</h6>
+                    <ul class="footer-links">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#how-it-works">How it works</a></li>
+                        <li><a href="/contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6>Account</h6>
+                    <ul class="footer-links">
+                        <li><a href="/login">Sign in</a></li>
+                        <li><a href="/signup">Sign up</a></li>
+                        <li><a href="#">Privacy</a></li>
+                        <li><a href="#">Terms</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <h6>Newsletter</h6>
+                    <p style="font-size:0.875rem;color:rgba(255,255,255,0.38);margin-bottom:12px;line-height:1.6;">
+                        Get the latest features and parking tips. No spam.
+                    </p>
+                    <div class="footer-newsletter">
+                        <input type="email" placeholder="your@email.com">
+                        <button class="btn-subscribe">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                © 2026 PARMS — Parking &amp; Resource Management System
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Scroll-reveal — enter once, no loop
+            var obs = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) {
+                    if (e.isIntersecting) {
+                        e.target.classList.add('visible');
+                        obs.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -32px 0px' });
+
+            document.querySelectorAll('.fade-up, .fade-left, .fade-right').forEach(function (el) {
+                obs.observe(el);
+            });
+
+            // Navbar — add .scrolled class after 40px, not 0
+            var nav = document.getElementById('mainNav');
+            window.addEventListener('scroll', function () {
+                nav.classList.toggle('scrolled', window.scrollY > 40);
+            });
+
+            // Counter animation (runs once when strip enters view)
+            var counted = false;
+            var countObs = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) {
+                    if (e.isIntersecting && !counted) {
+                        counted = true;
+                        document.querySelectorAll('.count').forEach(function (el) {
+                            var target = parseInt(el.dataset.count, 10);
+                            var suffix = el.querySelector('.suffix');
+                            var suffixText = suffix ? suffix.outerHTML : '';
+                            var cur = 0;
+                            var inc = target / 55;
+                            var t = setInterval(function () {
+                                cur += inc;
+                                if (cur >= target) { cur = target; clearInterval(t); }
+                                el.innerHTML = Math.floor(cur).toLocaleString() + suffixText;
+                            }, 24);
+                        });
+                    }
+                });
+            }, { threshold: 0.6 });
+
+            var strip = document.querySelector('.stats-strip');
+            if (strip) countObs.observe(strip);
+
+            // Smooth scroll for hash links
+            document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+                a.addEventListener('click', function (e) {
+                    var t = document.querySelector(this.getAttribute('href'));
+                    if (t) { e.preventDefault(); window.scrollTo({ top: t.offsetTop - 64, behavior: 'smooth' }); }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

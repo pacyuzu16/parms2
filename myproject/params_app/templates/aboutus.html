@@ -1,0 +1,468 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /*
+      About Us page — editorial, human-centered.
+      No Space Mono. No gradient headings. No card hover lifts.
+      Consistent with homepage design tokens.
+    */
+
+    /* ── Hero ── */
+    .about-hero {
+        background: var(--paper);
+        border-bottom: 1px solid var(--dust);
+        padding: 72px 0 56px;
+    }
+    .about-hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--forest);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 16px;
+    }
+    .about-hero-eyebrow span {
+        width: 20px;
+        height: 1px;
+        background: var(--forest);
+        display: inline-block;
+    }
+    .about-hero h1 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: clamp(2.25rem, 5vw, 3.5rem);
+        font-weight: 800;
+        color: var(--ink);
+        letter-spacing: -0.04em;
+        line-height: 1.1;
+        max-width: 740px;
+        margin-bottom: 20px;
+    }
+    .about-hero h1 em {
+        font-style: normal;
+        color: var(--forest);
+        text-decoration: underline;
+        text-decoration-color: var(--sage-mid);
+        text-underline-offset: 4px;
+    }
+    .about-hero p {
+        font-size: 1.0625rem;
+        color: var(--steel);
+        line-height: 1.75;
+        max-width: 580px;
+    }
+
+    /* ── Stats strip ── */
+    .about-stats {
+        background: var(--paper);
+        border-bottom: 1px solid var(--dust);
+        padding: 28px 0;
+    }
+    .about-stats-inner {
+        display: flex;
+        align-items: center;
+        gap: 0;
+    }
+    .about-stat {
+        flex: 1;
+        text-align: center;
+        padding: 8px 16px;
+        border-right: 1px solid var(--dust);
+    }
+    .about-stat:last-child { border-right: none; }
+    .about-stat .num {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.875rem;
+        font-weight: 800;
+        color: var(--ink);
+        letter-spacing: -0.04em;
+        line-height: 1;
+        margin-bottom: 3px;
+    }
+    .about-stat .lbl {
+        font-size: 0.75rem;
+        color: var(--mist);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    /* ── Mission section ── */
+    .about-mission {
+        padding: 80px 0;
+        background: var(--parchment);
+    }
+    .about-section-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--forest);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 12px;
+    }
+    .about-section-heading {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: clamp(1.5rem, 3vw, 2.125rem);
+        font-weight: 800;
+        color: var(--ink);
+        letter-spacing: -0.03em;
+        line-height: 1.2;
+        margin-bottom: 16px;
+    }
+    .about-section-body {
+        font-size: 0.9375rem;
+        color: var(--steel);
+        line-height: 1.75;
+    }
+
+    /* ── Values grid ── */
+    .about-values {
+        padding: 80px 0;
+        background: var(--paper);
+        border-top: 1px solid var(--dust);
+        border-bottom: 1px solid var(--dust);
+    }
+    .value-card {
+        padding: 24px 22px;
+        border: 1px solid var(--dust);
+        border-radius: var(--radius-md);
+        background: var(--paper);
+        transition: border-color 150ms;
+        height: 100%;
+    }
+    .value-card:hover { border-color: var(--sage-mid); }
+    .value-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--sage);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--forest);
+        font-size: 1rem;
+        margin-bottom: 16px;
+    }
+    .value-card h5 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 8px;
+    }
+    .value-card p {
+        font-size: 0.875rem;
+        color: var(--steel);
+        line-height: 1.65;
+        margin: 0;
+    }
+
+    /* ── Team section ── */
+    .about-team {
+        padding: 80px 0;
+        background: var(--parchment);
+    }
+    .team-card {
+        background: var(--paper);
+        border: 1px solid var(--dust);
+        border-radius: var(--radius-md);
+        padding: 28px 22px;
+        text-align: center;
+        transition: border-color 150ms;
+    }
+    .team-card:hover { border-color: var(--sage-mid); }
+    .team-avatar {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: var(--sage);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        font-size: 1.625rem;
+        color: var(--forest);
+    }
+    .team-card h5 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 3px;
+    }
+    .team-card .role {
+        font-size: 0.8125rem;
+        color: var(--mist);
+        font-weight: 500;
+    }
+
+    /* ── Rating section ── */
+    .about-rating {
+        padding: 72px 0 80px;
+        background: var(--paper);
+        border-top: 1px solid var(--dust);
+    }
+    .rating-card {
+        max-width: 540px;
+        margin: 0 auto;
+        background: var(--parchment);
+        border: 1px solid var(--dust);
+        border-radius: var(--radius-md);
+        padding: 36px 32px;
+        text-align: center;
+    }
+    .rating-card h4 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--ink);
+        letter-spacing: -0.02em;
+        margin-bottom: 6px;
+    }
+    .rating-card p {
+        font-size: 0.875rem;
+        color: var(--steel);
+        margin-bottom: 24px;
+    }
+    .star-row {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-bottom: 20px;
+    }
+    .star-row i {
+        font-size: 1.75rem;
+        color: var(--dust);
+        cursor: pointer;
+        transition: color 150ms;
+    }
+    .star-row i.active,
+    .star-row i:hover,
+    .star-row i.hover {
+        color: #c8a84e;
+    }
+    .rating-textarea {
+        width: 100%;
+        padding: 9px 13px;
+        border: 1.5px solid var(--dust);
+        border-radius: var(--radius-sm);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.875rem;
+        color: var(--carbon);
+        background: var(--paper);
+        outline: none;
+        resize: vertical;
+        min-height: 100px;
+        transition: border-color 150ms, box-shadow 150ms;
+        margin-bottom: 16px;
+    }
+    .rating-textarea::placeholder { color: var(--mist); }
+    .rating-textarea:focus {
+        border-color: var(--forest);
+        box-shadow: 0 0 0 3px rgba(44,95,71,0.10);
+    }
+    .rating-submit {
+        padding: 10px 28px;
+        background: var(--forest);
+        color: rgba(255,255,255,0.95);
+        border: 1px solid var(--forest-dark);
+        border-radius: var(--radius-sm);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 150ms;
+    }
+    .rating-submit:hover { background: var(--forest-dark); }
+    .rating-submit:active { background: #1d4a34; }
+
+    @media (max-width: 576px) {
+        .about-stats-inner { flex-wrap: wrap; }
+        .about-stat {
+            flex: 0 0 50%;
+            border-right: none;
+            border-bottom: 1px solid var(--dust);
+        }
+        .about-stat:nth-child(odd) { border-right: 1px solid var(--dust); }
+        .about-stat:last-child { border-bottom: none; }
+    }
+</style>
+
+<!-- ── Hero ── -->
+<section class="about-hero">
+    <div class="container">
+        <div class="about-hero-eyebrow"><span></span>About PARMS</div>
+        <h1>Parking, <em>simplified</em><br>for everyone</h1>
+        <p>PARMS is a smart parking management platform that connects drivers with available spaces in real time — making it easier to find, book, and pay for parking every day.</p>
+    </div>
+</section>
+
+<!-- ── Stats strip ── -->
+<div class="about-stats">
+    <div class="container">
+        <div class="about-stats-inner">
+            <div class="about-stat">
+                <div class="num">50K+</div>
+                <div class="lbl">Active Users</div>
+            </div>
+            <div class="about-stat">
+                <div class="num">15K+</div>
+                <div class="lbl">Parking Spots</div>
+            </div>
+            <div class="about-stat">
+                <div class="num">99%</div>
+                <div class="lbl">Success Rate</div>
+            </div>
+            <div class="about-stat">
+                <div class="num">24/7</div>
+                <div class="lbl">Platform Support</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Mission ── -->
+<section class="about-mission">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-5">
+                <p class="about-section-label">Our Mission</p>
+                <h2 class="about-section-heading">Reducing the daily friction of finding a parking spot</h2>
+            </div>
+            <div class="col-lg-7">
+                <p class="about-section-body">
+                    We started PARMS because we understood the frustration of circling blocks looking for parking. Our platform gives drivers instant visibility into available spaces, lets them reserve a spot before they arrive, and handles payment automatically — so they can focus on where they're going, not where they'll park.
+                </p>
+                <p class="about-section-body" style="margin-top:14px;">
+                    For parking operators, PARMS provides real-time occupancy data, automated billing, and management tools that replace manual processes — increasing efficiency and revenue without adding overhead.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Core values ── -->
+<section class="about-values">
+    <div class="container">
+        <p class="about-section-label">Core Values</p>
+        <h2 class="about-section-heading" style="margin-bottom:40px;">What we stand for</h2>
+        <div class="row g-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="value-card">
+                    <div class="value-icon"><i class="fas fa-bolt"></i></div>
+                    <h5>Speed</h5>
+                    <p>Every second counts. We optimize for instant booking confirmations and fast load times.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="value-card">
+                    <div class="value-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h5>Reliability</h5>
+                    <p>When you book a space, it's yours. We enforce reservations and back them up with support.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="value-card">
+                    <div class="value-icon"><i class="fas fa-eye"></i></div>
+                    <h5>Transparency</h5>
+                    <p>Clear pricing, honest occupancy data, and no hidden fees — ever.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="value-card">
+                    <div class="value-icon"><i class="fas fa-seedling"></i></div>
+                    <h5>Sustainability</h5>
+                    <p>Less time circling means less fuel burned. Better parking systems benefit everyone.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Team ── -->
+<section class="about-team">
+    <div class="container">
+        <p class="about-section-label">The Team</p>
+        <h2 class="about-section-heading" style="margin-bottom:40px;">Meet the people behind PARMS</h2>
+        <div class="row g-4">
+            <div class="col-sm-6 col-lg-4">
+                <div class="team-card">
+                    <div class="team-avatar"><i class="fas fa-user"></i></div>
+                    <h5>Jane Doe</h5>
+                    <p class="role">CEO &amp; Co-founder</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="team-card">
+                    <div class="team-avatar"><i class="fas fa-user"></i></div>
+                    <h5>John Smith</h5>
+                    <p class="role">Lead Engineer</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="team-card">
+                    <div class="team-avatar"><i class="fas fa-user"></i></div>
+                    <h5>Emily Johnson</h5>
+                    <p class="role">Head of Growth</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Rating ── -->
+<section class="about-rating">
+    <div class="container">
+        <div class="rating-card">
+            <h4>Rate our platform</h4>
+            <p>Your feedback helps us improve PARMS for every driver.</p>
+            <div class="star-row" id="starRow">
+                <i class="fas fa-star" data-val="1"></i>
+                <i class="fas fa-star" data-val="2"></i>
+                <i class="fas fa-star" data-val="3"></i>
+                <i class="fas fa-star" data-val="4"></i>
+                <i class="fas fa-star" data-val="5"></i>
+            </div>
+            <textarea class="rating-textarea" placeholder="Share your experience…"></textarea>
+            <br>
+            <button class="rating-submit" type="button" id="ratingBtn">Submit feedback</button>
+        </div>
+    </div>
+</section>
+
+<script>
+(function () {
+    const stars = document.querySelectorAll('#starRow i');
+    let selected = 0;
+
+    stars.forEach(function (star) {
+        star.addEventListener('mouseenter', function () {
+            const val = +this.dataset.val;
+            stars.forEach(function (s) {
+                s.classList.toggle('hover', +s.dataset.val <= val);
+            });
+        });
+        star.addEventListener('mouseleave', function () {
+            stars.forEach(function (s) { s.classList.remove('hover'); });
+        });
+        star.addEventListener('click', function () {
+            selected = +this.dataset.val;
+            stars.forEach(function (s) {
+                s.classList.toggle('active', +s.dataset.val <= selected);
+            });
+        });
+    });
+
+    document.getElementById('ratingBtn').addEventListener('click', function () {
+        if (!selected) { alert('Please select a star rating first.'); return; }
+        this.textContent = 'Thank you!';
+        this.disabled = true;
+    });
+}());
+</script>
+{% endblock %}
