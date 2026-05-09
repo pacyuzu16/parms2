@@ -4,6 +4,8 @@ from django.contrib.auth import logout as auth_logout, authenticate, login as au
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.db import transaction
+from django.urls import reverse
 from django.db.models import Sum, Count, Avg
 from django.db.models.functions import ExtractHour
 from django.utils import timezone
@@ -464,37 +466,44 @@ def book_space(request):
         return redirect('slots')
 
     try:
-        space = ParkingSpace.objects.select_related('parking_lot').get(
-            space_id=int(space_id), is_occupied=False
-        )
-    except (ValueError, ParkingSpace.DoesNotExist):
+        space_id_int = int(space_id)
+    except ValueError:
         messages.error(request, 'That space is not available. Please choose another.')
         return redirect('slots')
 
-    # Get or create a vehicle for this user
-    owner = request.user.get_full_name() or request.user.username
-    vehicle = Vehicle.objects.filter(owner_name__iexact=owner).first()
-    if not vehicle:
-        # Create a placeholder vehicle so the user can still get a ticket.
-        # They can update their plate from the profile page.
-        vehicle = Vehicle.objects.create(
-            plate_number='PENDING-' + str(request.user.pk),
-            vehicle_type='Car',
-            owner_name=owner,
+    with transaction.atomic():
+        try:
+            space = (ParkingSpace.objects
+                     .select_for_update()
+                     .select_related('parking_lot')
+                     .get(space_id=space_id_int, is_occupied=False))
+        except ParkingSpace.DoesNotExist:
+            messages.error(request, 'That space is not available. Please choose another.')
+            return redirect('slots')
+
+        # Get or create a vehicle for this user
+        owner = request.user.get_full_name() or request.user.username
+        vehicle = Vehicle.objects.filter(owner_name__iexact=owner).first()
+        if not vehicle:
+            # Create a placeholder vehicle so the user can still get a ticket.
+            # They can update their plate from the profile page.
+            vehicle = Vehicle.objects.create(
+                plate_number='PENDING-' + str(request.user.pk),
+                vehicle_type='Car',
+                owner_name=owner,
+            )
+
+        # Create the ticket and mark the space occupied
+        ticket = ParkingTicket.objects.create(
+            vehicle=vehicle,
+            parking_space=space,
+            user=request.user,
         )
+        space.is_occupied = True
+        space.save(update_fields=['is_occupied'])
 
-    # Create the ticket and mark the space occupied
-    ticket = ParkingTicket.objects.create(
-        vehicle=vehicle,
-        parking_space=space,
-        user=request.user,
-    )
-    space.is_occupied = True
-    space.save(update_fields=['is_occupied'])
-
-    lot = space.parking_lot
-    if lot.available_spaces > 0:
-        lot.available_spaces -= 1
+        lot = space.parking_lot
+        lot.available_spaces = lot.spaces.filter(is_occupied=False).count()
         lot.save(update_fields=['available_spaces'])
 
     messages.success(request, f'Space #{space.space_id} booked! Ticket #{ticket.ticket_id}')
@@ -697,10 +706,8 @@ def profile(request):
 
 @login_required
 def notifications(request):
-    owner_name    = request.user.get_full_name() or request.user.username
-    user_vehicles = Vehicle.objects.filter(owner_name__iexact=owner_name)
     tickets = (ParkingTicket.objects
-               .filter(vehicle__in=user_vehicles)
+               .filter(user=request.user)
                .select_related("vehicle", "parking_space__parking_lot")
                .order_by("-entry_time")[:30])
 
@@ -725,24 +732,46 @@ def notifications(request):
 # -- QR / Ticket generation ----------------------------------------------------
 
 def generate_qr_code(request):
-    img = qrcode.make("https://parms.app")
+    ticket_url = request.build_absolute_uri(reverse('ticket'))
+    img = qrcode.make(ticket_url)
     buf = BytesIO()
     img.save(buf, format="PNG")
     buf.seek(0)
     return HttpResponse(buf, content_type="image/png")
 
 
+@login_required
 def generate_ticket(request):
-    ticket_data = {
-        'id':            random.randint(1000, 9999),
-        'name':          'PARMS User',
-        'parking_area':  'Zone 01',
-        'duration':      '2 hrs',
-        'date':          datetime.datetime.now().strftime('%d-%m-%Y'),
-        'vehicle_plate': 'RAB 0000',
-        'time':          '10:00 - 12:00',
-        'phone':         '+250 700 000 000',
-    }
+    active_ticket = (
+        ParkingTicket.objects
+        .filter(user=request.user, exit_time__isnull=True)
+        .select_related('vehicle', 'parking_space__parking_lot')
+        .order_by('-entry_time')
+        .first()
+    )
+
+    if active_ticket:
+        ticket_data = {
+            'id':           active_ticket.ticket_id,
+            'name':         request.user.get_full_name() or request.user.username,
+            'parking_area': active_ticket.parking_space.parking_lot.location,
+            'date':         active_ticket.entry_time.strftime('%d-%m-%Y'),
+            'vehicle_plate': active_ticket.vehicle.plate_number,
+            'space':        f'#{active_ticket.parking_space.space_id} ({active_ticket.parking_space.space_type})',
+            'entry_time':   active_ticket.entry_time.strftime('%H:%M'),
+            'fee':          f'${active_ticket.calculated_fee()}' if active_ticket.fee else 'Calculated on exit',
+        }
+    else:
+        ticket_data = {
+            'id':           '—',
+            'name':         request.user.get_full_name() or request.user.username,
+            'parking_area': 'No active session',
+            'date':         datetime.datetime.now().strftime('%d-%m-%Y'),
+            'vehicle_plate': '—',
+            'space':        '—',
+            'entry_time':   '—',
+            'fee':          '—',
+        }
 
     from reportlab.pdfgen import canvas
     buffer = BytesIO()
@@ -752,9 +781,10 @@ def generate_ticket(request):
     c.drawString(100, 730, f"Name      : {ticket_data['name']}")
     c.drawString(100, 710, f"Location  : {ticket_data['parking_area']}")
     c.drawString(100, 690, f"Plate     : {ticket_data['vehicle_plate']}")
-    c.drawString(100, 670, f"Duration  : {ticket_data['duration']}")
+    c.drawString(100, 670, f"Space     : {ticket_data['space']}")
     c.drawString(100, 650, f"Date      : {ticket_data['date']}")
-    c.drawString(100, 630, f"Time      : {ticket_data['time']}")
+    c.drawString(100, 630, f"Entry     : {ticket_data['entry_time']}")
+    c.drawString(100, 610, f"Fee       : {ticket_data['fee']}")
     c.save()
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=True, filename="parms_ticket.pdf")
@@ -827,9 +857,13 @@ def admin_parking_lots(request):
 @_admin_required
 def admin_parking_lot_create(request):
     if request.method == 'POST':
-        location        = request.POST.get('location', '').strip()
-        total_spaces    = int(request.POST.get('total_spaces', 0))
-        available_spaces = int(request.POST.get('available_spaces', total_spaces))
+        location = request.POST.get('location', '').strip()
+        try:
+            total_spaces     = int(request.POST.get('total_spaces', 0))
+            available_spaces = int(request.POST.get('available_spaces', total_spaces))
+        except ValueError:
+            messages.error(request, "Total spaces must be a valid number.")
+            return redirect('/dashboard/?tab=parking')
 
         if not location or total_spaces <= 0:
             messages.error(request, "Location and total spaces are required.")
@@ -866,7 +900,11 @@ def admin_parking_lot_edit(request, lot_id):
             lot.delete()
             messages.success(request, 'Parking lot deleted.')
         else:
-            new_total = int(request.POST.get('total_spaces', lot.total_spaces))
+            try:
+                new_total = int(request.POST.get('total_spaces', lot.total_spaces))
+            except ValueError:
+                messages.error(request, "Total spaces must be a valid number.")
+                return redirect('/dashboard/?tab=parking')
             lot.location    = request.POST.get('location', lot.location).strip()
             lot.total_spaces = new_total
             lat_str = request.POST.get('latitude', '').strip()
@@ -1271,15 +1309,18 @@ def _notify_nearly_full(lot, rate):
     from django.contrib.auth.models import User as AuthUser
     active_tickets = ParkingTicket.objects.filter(
         parking_space__parking_lot=lot, exit_time__isnull=True
-    ).select_related('vehicle')
+    ).select_related('vehicle', 'user')
     users_notified = set()
     for t in active_tickets:
         try:
-            owner = AuthUser.objects.filter(
-                username__iexact=t.vehicle.owner_name
-            ).first() or AuthUser.objects.filter(
-                first_name__iexact=t.vehicle.owner_name.split()[0] if t.vehicle.owner_name else ''
-            ).first()
+            # Use the direct user FK first; fall back to name matching for legacy data
+            owner = t.user
+            if owner is None:
+                owner = AuthUser.objects.filter(
+                    username__iexact=t.vehicle.owner_name
+                ).first() or AuthUser.objects.filter(
+                    first_name__iexact=t.vehicle.owner_name.split()[0] if t.vehicle.owner_name else ''
+                ).first()
             if owner and owner.id not in users_notified:
                 UserNotification.objects.create(
                     user=owner,
@@ -1294,7 +1335,33 @@ def _notify_nearly_full(lot, rate):
 
 
 def _notify_space_available(lot):
-    pass
+    last_30 = timezone.now() - timedelta(days=30)
+    # Notify users who parked here recently but don't have an active session there now
+    recent_user_ids = (
+        ParkingTicket.objects
+        .filter(
+            parking_space__parking_lot=lot,
+            entry_time__gte=last_30,
+            user__isnull=False,
+            exit_time__isnull=False,  # completed sessions only
+        )
+        .exclude(
+            # exclude anyone currently parked here
+            user__in=ParkingTicket.objects.filter(
+                parking_space__parking_lot=lot, exit_time__isnull=True
+            ).values('user')
+        )
+        .values_list('user_id', flat=True)
+        .distinct()
+    )
+    for uid in recent_user_ids:
+        UserNotification.objects.create(
+            user_id=uid,
+            title=f'Space available at {lot.location}',
+            message=f'A parking space just opened up at {lot.location}. Book now before it fills up!',
+            notif_type='space_available',
+            lot=lot,
+        )
 
 
 # -- User Notification APIs ----------------------------------------------------
