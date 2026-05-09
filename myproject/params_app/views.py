@@ -5,17 +5,21 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import Sum, Count, Avg
+from django.db.models.functions import ExtractHour
 from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
 from io import BytesIO
 import qrcode, datetime, random
 
-from .models import ContactMessage, ParkingLot, Vehicle, ParkingSpace, ParkingTicket, Payment
+from .models import (
+    ContactMessage, ParkingLot, Vehicle, ParkingSpace,
+    ParkingTicket, Payment, ParkingDetectionEvent, UserNotification
+)
 from .forms import ContactMessageForm
 
 
-# ── helpers ────────────────────────────────────────────────────────────────────
+# -- helpers -------------------------------------------------------------------
 
 def _admin_required(view_func):
     """Decorator: login required + staff only, else redirect to userin."""
@@ -31,7 +35,63 @@ def _admin_required(view_func):
     return wrapper
 
 
-# ── Public views ───────────────────────────────────────────────────────────────
+def _compute_ml_insights():
+    """Derives actionable insights from real ticket data using statistical analysis."""
+    now = timezone.now()
+    current_hour = now.hour
+    last_30 = now - timedelta(days=30)
+
+    hourly_qs = (
+        ParkingTicket.objects
+        .filter(entry_time__gte=last_30)
+        .annotate(hour=ExtractHour('entry_time'))
+        .values('hour')
+        .annotate(count=Count('ticket_id'))
+        .order_by('hour')
+    )
+    hour_data = [0] * 24
+    for row in hourly_qs:
+        hour_data[int(row['hour'])] = row['count']
+
+    max_count = max(hour_data) if any(hour_data) else 1
+    peak_hour = hour_data.index(max(hour_data))
+
+    total_spaces = ParkingSpace.objects.count()
+    occupied     = ParkingSpace.objects.filter(is_occupied=True).count()
+    current_rate = round((occupied / total_spaces * 100) if total_spaces else 0)
+
+    next_hour     = (current_hour + 1) % 24
+    predicted_rate = round(min(100, (hour_data[next_hour] / max_count) * 90)) if max_count else 50
+
+    expected = round((hour_data[current_hour] / max_count) * 90) if max_count else 50
+    diff     = current_rate - expected
+    if diff > 15:
+        anomaly = {'type': 'high', 'msg': f'Occupancy {diff}% above expected for {current_hour:02d}:00'}
+    elif diff < -15:
+        anomaly = {'type': 'low',  'msg': f'Occupancy {abs(diff)}% below expected for {current_hour:02d}:00'}
+    else:
+        anomaly = None
+
+    hour_pcts = [round(c / max_count * 100) for c in hour_data]
+    hour_bars = [(f'{h:02d}', hour_pcts[h]) for h in range(24)]
+
+    return {
+        'hour_data':      hour_data,
+        'hour_pcts':      hour_pcts,
+        'hour_bars':      hour_bars,
+        'peak_hour':      peak_hour,
+        'peak_label':     f'{peak_hour:02d}:00 - {(peak_hour + 1) % 24:02d}:00',
+        'current_hour':   current_hour,
+        'current_rate':   current_rate,
+        'predicted_rate': predicted_rate,
+        'pred_direction': 'up' if predicted_rate > current_rate else 'down',
+        'anomaly':        anomaly,
+        'has_data':       any(hour_data),
+        'next_hour_label': f'{next_hour:02d}:00',
+    }
+
+
+# -- Public views --------------------------------------------------------------
 
 def home(request):
     return render(request, "index.html")
@@ -62,7 +122,7 @@ def contact_view(request):
     return render(request, 'contact.html')
 
 
-# ── Auth views ─────────────────────────────────────────────────────────────────
+# -- Auth views ----------------------------------------------------------------
 
 def signup(request):
     if request.method == 'POST':
@@ -90,7 +150,7 @@ def signup(request):
 
 def login(request):
     if request.user.is_authenticated:
-        return redirect('dashboard' if request.user.is_staff else 'userin')
+        return redirect('dashboard' if request.user.is_staff else 'map')
 
     if request.method == 'POST':
         email    = request.POST.get('email', '').strip()
@@ -105,7 +165,7 @@ def login(request):
         user = authenticate(request, username=user_obj.username, password=password)
         if user is not None:
             auth_login(request, user)
-            return redirect('dashboard' if user.is_staff else 'userin')
+            return redirect('dashboard' if user.is_staff else 'map')
 
         messages.error(request, "Incorrect password.")
         return redirect('login')
@@ -118,7 +178,7 @@ def logout(request):
     return redirect('home')
 
 
-# ── API ────────────────────────────────────────────────────────────────────────
+# -- API -----------------------------------------------------------------------
 
 def dashboard_data(request):
     data = {
@@ -131,46 +191,30 @@ def dashboard_data(request):
     return JsonResponse(data)
 
 
-# ── Admin dashboard (SPA) ──────────────────────────────────────────────────────
+# -- Admin dashboard (SPA) -----------------------------------------------------
 
 @_admin_required
 def dashboard(request):
-    today        = timezone.now().date()
-    last_30_days = today - timedelta(days=30)
-    last_7_days  = today - timedelta(days=7)
+    today = timezone.now().date()
 
-    # Revenue
-    total_revenue   = Payment.objects.aggregate(Sum('amount'))['amount__sum'] or 0
-    monthly_revenue = Payment.objects.filter(date__gte=last_30_days).aggregate(Sum('amount'))['amount__sum'] or 0
-    weekly_revenue  = Payment.objects.filter(date__gte=last_7_days).aggregate(Sum('amount'))['amount__sum'] or 0
-
-    # Tickets
     all_tickets       = ParkingTicket.objects.select_related('vehicle', 'parking_space__parking_lot').order_by('-entry_time')
     active_tickets    = all_tickets.filter(exit_time__isnull=True)
     completed_tickets = all_tickets.filter(exit_time__isnull=False)
 
-    # Spaces
     all_spaces       = ParkingSpace.objects.select_related('parking_lot')
     occupied_spaces  = all_spaces.filter(is_occupied=True)
     available_spaces = all_spaces.filter(is_occupied=False)
 
-    # Lists
     all_vehicles = Vehicle.objects.all().order_by('-vehicle_id')
     all_lots     = ParkingLot.objects.annotate(ticket_count=Count('spaces__tickets')).order_by('-lot_id')
     all_users    = User.objects.all().order_by('-date_joined')
     all_messages = ContactMessage.objects.all().order_by('-submitted_at')
 
-    # Reports
     vehicle_type_stats  = Vehicle.objects.values('vehicle_type').annotate(count=Count('vehicle_type')).order_by('-count')
-    payment_method_stats = Payment.objects.values('payment_method').annotate(
-        count=Count('payment_method'), total_amount=Sum('amount')
-    ).order_by('-total_amount')
     popular_lots = ParkingLot.objects.annotate(usage_count=Count('spaces__tickets')).order_by('-usage_count')[:8]
 
     context = {
         'active_tab': request.GET.get('tab', 'overview'),
-
-        # Overview numbers
         'total_users':             all_users.count(),
         'staff_users':             all_users.filter(is_staff=True).count(),
         'regular_users':           all_users.filter(is_staff=False).count(),
@@ -180,42 +224,50 @@ def dashboard(request):
         'active_tickets':          active_tickets.count(),
         'completed_tickets_count': completed_tickets.count(),
         'total_messages':          all_messages.count(),
-        'total_revenue':           total_revenue,
-        'monthly_revenue':         monthly_revenue,
-        'weekly_revenue':          weekly_revenue,
         'total_spaces':            all_spaces.count(),
         'occupied_spaces':         occupied_spaces.count(),
         'available_spaces':        available_spaces.count(),
-
-        # Recent
         'recent_tickets':  all_tickets[:8],
         'recent_messages': all_messages[:5],
         'recent_users':    all_users[:5],
-
-        # Full section lists (capped for performance)
         'all_tickets':  all_tickets[:200],
         'all_vehicles': all_vehicles[:200],
         'all_lots':     all_lots,
         'all_users':    all_users,
         'all_messages': all_messages,
         'active_ticket_list': active_tickets,
-
-        # Form helpers
         'vehicle_types': ['Car', 'Motorcycle', 'Truck'],
-
-        # Reports
         'popular_lots':          popular_lots,
         'vehicle_type_stats':    vehicle_type_stats,
-        'payment_method_stats':  payment_method_stats,
-        'avg_ticket_value':      Payment.objects.aggregate(Avg('amount'))['amount__avg'] or 0,
-        'total_transactions':    Payment.objects.count(),
+        'ml': _compute_ml_insights(),
+        'lots_occupancy': [
+            {
+                'id':        lot.lot_id,
+                'location':  lot.location,
+                'total':     lot.total_spaces,
+                'available': lot.available_spaces,
+                'occupied':  lot.total_spaces - lot.available_spaces,
+                'rate':      round(((lot.total_spaces - lot.available_spaces) / lot.total_spaces * 100)
+                             if lot.total_spaces else 0),
+            }
+            for lot in all_lots
+        ],
+        'recent_detection_events': ParkingDetectionEvent.objects.select_related('lot', 'space').order_by('-detected_at')[:20],
+        'detection_event_count':   ParkingDetectionEvent.objects.count(),
+        'entry_events_today':      ParkingDetectionEvent.objects.filter(
+                                       event_type='entry',
+                                       detected_at__date=today
+                                   ).count(),
+        'exit_events_today':       ParkingDetectionEvent.objects.filter(
+                                       event_type='exit',
+                                       detected_at__date=today
+                                   ).count(),
     }
     return render(request, 'dashboard.html', context)
 
 
 @_admin_required
 def update_settings(request):
-    """Handle settings form POST from the dashboard settings tab."""
     if request.method == 'POST':
         user = request.user
         new_username = request.POST.get('username', '').strip()
@@ -245,29 +297,75 @@ def update_settings(request):
     return redirect('/dashboard/?tab=settings')
 
 
-# ── Settings page (redirect to dashboard tab) ──────────────────────────────────
-
-@_admin_required
 def settings(request):
-    return redirect('/dashboard/?tab=settings')
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if request.user.is_staff:
+        return redirect('/dashboard/?tab=settings')
+    return redirect('profile')
 
 
-# ── Regular user views ─────────────────────────────────────────────────────────
+# -- Regular user views --------------------------------------------------------
 
 @login_required
 def userin(request):
-    owner_name   = request.user.get_full_name() or request.user.username
+    owner_name    = request.user.get_full_name() or request.user.username
     user_vehicles = Vehicle.objects.filter(owner_name__iexact=owner_name)
     user_tickets  = ParkingTicket.objects.filter(vehicle__in=user_vehicles).order_by('-entry_time')
     active        = user_tickets.filter(exit_time__isnull=True)
 
+    now      = timezone.now()
+    last_30  = now - timedelta(days=30)
+    hourly_qs = (
+        ParkingTicket.objects
+        .filter(entry_time__gte=last_30)
+        .annotate(hour=ExtractHour('entry_time'))
+        .values('hour')
+        .annotate(count=Count('ticket_id'))
+    )
+    hour_map  = {int(r['hour']): r['count'] for r in hourly_qs}
+    max_h     = max(hour_map.values()) if hour_map else 1
+    next_hour = (now.hour + 1) % 24
+    next_pct  = round((hour_map.get(next_hour, 0) / max_h) * 100) if max_h else 50
+
+    lots_data = []
+    for lot in ParkingLot.objects.prefetch_related('spaces').all():
+        total = lot.spaces.count()
+        occ   = lot.spaces.filter(is_occupied=True).count()
+        avail = total - occ
+        rate  = round(occ / total * 100) if total else 0
+        pred = min(100, round(rate * 0.7 + next_pct * 0.3))
+
+        if rate < 40:
+            rec_label, rec_color = 'Best Choice', 'green'
+        elif rate < 70:
+            rec_label, rec_color = 'Available', 'amber'
+        else:
+            rec_label, rec_color = 'Filling Up', 'red'
+
+        lots_data.append({
+            'lot':       lot,
+            'total':     total,
+            'occupied':  occ,
+            'available': avail,
+            'rate':      rate,
+            'pred':      pred,
+            'rec_label': rec_label,
+            'rec_color': rec_color,
+        })
+
+    lots_data.sort(key=lambda x: x['rate'])
+
     context = {
-        'user_vehicles':       user_vehicles,
-        'user_tickets':        user_tickets[:10],
-        'active_tickets':      active,
-        'total_vehicles':      user_vehicles.count(),
-        'total_tickets':       user_tickets.count(),
+        'user_vehicles':        user_vehicles,
+        'user_tickets':         user_tickets[:10],
+        'active_tickets':       active,
+        'total_vehicles':       user_vehicles.count(),
+        'total_tickets':        user_tickets.count(),
         'active_tickets_count': active.count(),
+        'lots_data':            lots_data,
+        'recommended_lots':     lots_data[:2],
+        'next_hour_label':      f'{next_hour:02d}:00',
     }
     return render(request, 'userin.html', context)
 
@@ -320,9 +418,31 @@ def parkings(request):
 
 @login_required
 def slots(request):
-    spaces   = ParkingSpace.objects.select_related('parking_lot').all()
+    all_lots = ParkingLot.objects.order_by('location')
+
+    # Parse lot_id from GET param safely
+    active_lot = None
+    raw = request.GET.get('lot_id', '').strip()
+    if raw:
+        try:
+            active_lot = ParkingLot.objects.get(lot_id=int(raw))
+        except (ValueError, ParkingLot.DoesNotExist):
+            active_lot = None
+
+    # Fall back to first lot with available spaces
+    if active_lot is None:
+        active_lot = all_lots.filter(available_spaces__gt=0).first() or all_lots.first()
+
+    spaces = (
+        ParkingSpace.objects.select_related('parking_lot').filter(parking_lot=active_lot)
+        if active_lot else ParkingSpace.objects.none()
+    )
+
     bookings = ParkingTicket.objects.select_related('parking_space', 'vehicle').order_by('-entry_time')[:10]
     context = {
+        'all_lots':        all_lots,
+        'active_lot':      active_lot,
+        'active_lot_id':   active_lot.lot_id if active_lot else None,
         'parking_spaces':  spaces,
         'recent_bookings': bookings,
         'total_spaces':    spaces.count(),
@@ -333,13 +453,134 @@ def slots(request):
 
 
 @login_required
+def book_space(request):
+    """POST: confirm a space booking → create ParkingTicket, mark space occupied."""
+    if request.method != 'POST':
+        return redirect('slots')
+
+    space_id = request.POST.get('space_id', '').strip()
+    if not space_id:
+        messages.error(request, 'No space selected.')
+        return redirect('slots')
+
+    try:
+        space = ParkingSpace.objects.select_related('parking_lot').get(
+            space_id=int(space_id), is_occupied=False
+        )
+    except (ValueError, ParkingSpace.DoesNotExist):
+        messages.error(request, 'That space is not available. Please choose another.')
+        return redirect('slots')
+
+    # Get or create a vehicle for this user
+    owner = request.user.get_full_name() or request.user.username
+    vehicle = Vehicle.objects.filter(owner_name__iexact=owner).first()
+    if not vehicle:
+        # Create a placeholder vehicle so the user can still get a ticket.
+        # They can update their plate from the profile page.
+        vehicle = Vehicle.objects.create(
+            plate_number='PENDING-' + str(request.user.pk),
+            vehicle_type='Car',
+            owner_name=owner,
+        )
+
+    # Create the ticket and mark the space occupied
+    ticket = ParkingTicket.objects.create(
+        vehicle=vehicle,
+        parking_space=space,
+        user=request.user,
+    )
+    space.is_occupied = True
+    space.save(update_fields=['is_occupied'])
+
+    lot = space.parking_lot
+    if lot.available_spaces > 0:
+        lot.available_spaces -= 1
+        lot.save(update_fields=['available_spaces'])
+
+    messages.success(request, f'Space #{space.space_id} booked! Ticket #{ticket.ticket_id}')
+    return redirect('ticket')
+
+
+@login_required
 def ticket(request):
-    return render(request, 'ticket.html')
+    """Show the user's active ticket and history — lookup by user FK first, fall back to owner_name."""
+    qs = ParkingTicket.objects.select_related(
+        'vehicle', 'parking_space__parking_lot'
+    )
+    # Primary: tickets linked directly to this user
+    user_tickets = qs.filter(user=request.user).order_by('-entry_time')
+
+    # Fallback: tickets whose vehicle owner_name matches (for legacy/seeded data)
+    if not user_tickets.exists():
+        owner = request.user.get_full_name() or request.user.username
+        vehicles = Vehicle.objects.filter(owner_name__iexact=owner)
+        user_tickets = qs.filter(vehicle__in=vehicles).order_by('-entry_time')
+
+    active_tickets = user_tickets.filter(exit_time__isnull=True)
+    context = {
+        'user_tickets':   user_tickets[:20],
+        'active_tickets': active_tickets,
+    }
+    return render(request, 'ticket.html', context)
 
 
 @login_required
 def destination(request):
-    return render(request, 'destination.html')
+    """Navigation page — shows route from user location to their active parking lot."""
+    # Find the active ticket — prefer user FK, fall back to owner_name
+    active_ticket = (
+        ParkingTicket.objects
+        .filter(user=request.user, exit_time__isnull=True)
+        .select_related('vehicle', 'parking_space__parking_lot')
+        .order_by('-entry_time')
+        .first()
+    )
+    if not active_ticket:
+        owner_name    = request.user.get_full_name() or request.user.username
+        user_vehicles = Vehicle.objects.filter(owner_name__iexact=owner_name)
+        active_ticket = (
+            ParkingTicket.objects
+            .filter(vehicle__in=user_vehicles, exit_time__isnull=True)
+            .select_related('vehicle', 'parking_space__parking_lot')
+            .order_by('-entry_time')
+            .first()
+        )
+
+    # Allow manually passing a lot_id via ?lot_id=X
+    lot_id = request.GET.get('lot_id')
+    target_lot = None
+    if lot_id:
+        try:
+            target_lot = ParkingLot.objects.get(lot_id=lot_id)
+        except ParkingLot.DoesNotExist:
+            pass
+    elif active_ticket and active_ticket.parking_space:
+        target_lot = active_ticket.parking_space.parking_lot
+
+    # Recent activity for the sidebar — use user FK (fast), no need for vehicle lookup
+    recent_tickets = (
+        ParkingTicket.objects
+        .filter(user=request.user)
+        .select_related('vehicle', 'parking_space__parking_lot')
+        .order_by('-entry_time')[:5]
+    )
+
+    # Use lot GPS if set; fall back to Kigali city centre so the map always loads
+    KIGALI_LAT, KIGALI_LNG = -1.9441, 30.0619
+    target_lat  = (target_lot.latitude  if target_lot and target_lot.latitude  else KIGALI_LAT)
+    target_lng  = (target_lot.longitude if target_lot and target_lot.longitude else KIGALI_LNG)
+    show_map    = target_lot is not None  # show map whenever we have a destination lot
+
+    context = {
+        'active_ticket': active_ticket,
+        'target_lot':    target_lot,
+        'recent_tickets': recent_tickets,
+        'target_lat':    target_lat  if show_map else None,
+        'target_lng':    target_lng  if show_map else None,
+        'target_name':   target_lot.location if target_lot else 'Your Parking Lot',
+        'has_gps':       bool(target_lot and target_lot.latitude and target_lot.longitude),
+    }
+    return render(request, 'destination.html', context)
 
 
 @login_required
@@ -349,7 +590,112 @@ def user_list(request):
     return redirect('/dashboard/?tab=users')
 
 
-# ── QR / Ticket generation ─────────────────────────────────────────────────────
+# -- Driver Profile ------------------------------------------------------------
+
+@login_required
+def profile(request):
+    owner_name    = request.user.get_full_name() or request.user.username
+    user_vehicles = Vehicle.objects.filter(owner_name__iexact=owner_name).order_by("vehicle_id")
+
+    if request.method == "POST":
+        action = request.POST.get("action", "")
+
+        if action == "update_profile":
+            fname        = request.POST.get("first_name", "").strip()
+            lname        = request.POST.get("last_name",  "").strip()
+            new_email    = request.POST.get("email",      "").strip()
+            new_password = request.POST.get("password",   "").strip()
+            request.user.first_name = fname
+            request.user.last_name  = lname
+            if new_email and new_email != request.user.email:
+                if User.objects.filter(email=new_email).exclude(pk=request.user.pk).exists():
+                    messages.error(request, "That email is already in use.")
+                    return redirect("profile")
+                request.user.email = new_email
+            if new_password:
+                if len(new_password) < 8:
+                    messages.error(request, "Password must be at least 8 characters.")
+                    return redirect("profile")
+                request.user.set_password(new_password)
+                messages.success(request, "Password updated. Please sign in again.")
+                request.user.save()
+                return redirect("login")
+            request.user.save()
+            messages.success(request, "Profile updated successfully.")
+            return redirect("profile")
+
+        elif action == "add_vehicle":
+            plate = request.POST.get("plate_number", "").strip().upper()
+            vtype = request.POST.get("vehicle_type", "Car")
+            if not plate:
+                messages.error(request, "Plate number is required.")
+            elif Vehicle.objects.filter(plate_number=plate).exists():
+                messages.error(request, "Vehicle " + plate + " is already registered.")
+            else:
+                Vehicle.objects.create(
+                    plate_number=plate, vehicle_type=vtype,
+                    owner_name=request.user.get_full_name() or request.user.username,
+                )
+                messages.success(request, "Vehicle " + plate + " added.")
+            return redirect("profile")
+
+        elif action == "remove_vehicle":
+            vid = request.POST.get("vehicle_id")
+            try:
+                v = Vehicle.objects.get(vehicle_id=vid, owner_name__iexact=owner_name)
+                plate = v.plate_number
+                v.delete()
+                messages.success(request, "Vehicle " + plate + " removed.")
+            except Vehicle.DoesNotExist:
+                messages.error(request, "Vehicle not found.")
+            return redirect("profile")
+
+    all_tickets = ParkingTicket.objects.filter(vehicle__in=user_vehicles).order_by("-entry_time")
+    active_now  = all_tickets.filter(exit_time__isnull=True)
+    total_spent = Payment.objects.filter(
+        ticket__vehicle__in=user_vehicles
+    ).aggregate(Sum("amount"))["amount__sum"] or 0
+
+    context = {
+        "user_vehicles":   user_vehicles,
+        "total_tickets":   all_tickets.count(),
+        "active_sessions": active_now.count(),
+        "total_spent":     total_spent,
+        "vehicle_types":   ["Car", "Motorcycle", "Truck"],
+    }
+    return render(request, "profile.html", context)
+
+
+# -- Driver Notifications ------------------------------------------------------
+
+@login_required
+def notifications(request):
+    owner_name    = request.user.get_full_name() or request.user.username
+    user_vehicles = Vehicle.objects.filter(owner_name__iexact=owner_name)
+    tickets = (ParkingTicket.objects
+               .filter(vehicle__in=user_vehicles)
+               .select_related("vehicle", "parking_space__parking_lot")
+               .order_by("-entry_time")[:30])
+
+    notifs = []
+    for t in tickets:
+        loc = (t.parking_space.parking_lot.location
+               if t.parking_space and t.parking_space.parking_lot else "Unknown")
+        notifs.append({"icon": "sign-in-alt", "color": "green",
+                       "title": "Session started - " + t.vehicle.plate_number,
+                       "detail": loc, "time": t.entry_time, "type": "entry"})
+        if t.exit_time:
+            fee_s = " - $" + str(t.fee) if t.fee else ""
+            notifs.append({"icon": "check-circle", "color": "blue",
+                           "title": "Session completed - " + t.vehicle.plate_number,
+                           "detail": loc + fee_s, "time": t.exit_time, "type": "exit"})
+
+    notifs.sort(key=lambda x: x["time"], reverse=True)
+    context = {"notifs": notifs[:25], "total_count": len(notifs)}
+    return render(request, "notifications.html", context)
+
+
+# -- QR / Ticket generation ----------------------------------------------------
 
 def generate_qr_code(request):
     img = qrcode.make("https://parms.app")
@@ -367,7 +713,7 @@ def generate_ticket(request):
         'duration':      '2 hrs',
         'date':          datetime.datetime.now().strftime('%d-%m-%Y'),
         'vehicle_plate': 'RAB 0000',
-        'time':          '10:00 – 12:00',
+        'time':          '10:00 - 12:00',
         'phone':         '+250 700 000 000',
     }
 
@@ -387,7 +733,7 @@ def generate_ticket(request):
     return FileResponse(buffer, as_attachment=True, filename="parms_ticket.pdf")
 
 
-# ── Admin CRUD — Contacts ──────────────────────────────────────────────────────
+# -- Admin CRUD - Contacts -----------------------------------------------------
 
 @_admin_required
 def admin_contacts(request):
@@ -403,7 +749,7 @@ def admin_contact_detail(request, message_id):
     return redirect('/dashboard/?tab=messages')
 
 
-# ── Admin CRUD — Vehicles ──────────────────────────────────────────────────────
+# -- Admin CRUD - Vehicles -----------------------------------------------------
 
 @_admin_required
 def admin_vehicles(request):
@@ -413,9 +759,9 @@ def admin_vehicles(request):
 @_admin_required
 def admin_vehicle_create(request):
     if request.method == 'POST':
-        plate       = request.POST.get('plate_number', '').strip().upper()
-        vtype       = request.POST.get('vehicle_type', 'Car')
-        owner       = request.POST.get('owner_name', '').strip()
+        plate = request.POST.get('plate_number', '').strip().upper()
+        vtype = request.POST.get('vehicle_type', 'Car')
+        owner = request.POST.get('owner_name', '').strip()
 
         if not plate or not owner:
             messages.error(request, "Plate number and owner name are required.")
@@ -444,7 +790,7 @@ def admin_vehicle_edit(request, vehicle_id):
     return redirect('/dashboard/?tab=vehicles')
 
 
-# ── Admin CRUD — Parking Lots ──────────────────────────────────────────────────
+# -- Admin CRUD - Parking Lots -------------------------------------------------
 
 @_admin_required
 def admin_parking_lots(request):
@@ -461,10 +807,17 @@ def admin_parking_lot_create(request):
         if not location or total_spaces <= 0:
             messages.error(request, "Location and total spaces are required.")
         else:
+            lat_str  = request.POST.get('latitude', '').strip()
+            lng_str  = request.POST.get('longitude', '').strip()
             lot = ParkingLot.objects.create(
                 location=location,
                 total_spaces=total_spaces,
                 available_spaces=available_spaces,
+                latitude=float(lat_str)  if lat_str  else None,
+                longitude=float(lng_str) if lng_str  else None,
+                hourly_rate=float(request.POST.get('hourly_rate', 5.00) or 5.00),
+                description=request.POST.get('description', '').strip(),
+                features=request.POST.get('features', '').strip(),
             )
             space_types = ['Compact', 'Large', 'Electric Vehicle']
             for i in range(total_spaces):
@@ -486,15 +839,50 @@ def admin_parking_lot_edit(request, lot_id):
             lot.delete()
             messages.success(request, 'Parking lot deleted.')
         else:
-            lot.location         = request.POST.get('location', lot.location).strip()
-            lot.total_spaces     = int(request.POST.get('total_spaces', lot.total_spaces))
-            lot.available_spaces = int(request.POST.get('available_spaces', lot.available_spaces))
+            new_total = int(request.POST.get('total_spaces', lot.total_spaces))
+            lot.location    = request.POST.get('location', lot.location).strip()
+            lot.total_spaces = new_total
+            lat_str = request.POST.get('latitude', '').strip()
+            lng_str = request.POST.get('longitude', '').strip()
+            lot.latitude    = float(lat_str) if lat_str else lot.latitude
+            lot.longitude   = float(lng_str) if lng_str else lot.longitude
+            lot.hourly_rate = float(request.POST.get('hourly_rate', lot.hourly_rate) or lot.hourly_rate)
+            lot.description = request.POST.get('description', lot.description).strip()
+            lot.features    = request.POST.get('features', lot.features).strip()
+
+            # ── Sync actual ParkingSpace records to match new total ──────────
+            current_count = lot.spaces.count()
+            space_types   = ['Compact', 'Compact', 'Large', 'Compact', 'Electric Vehicle',
+                             'Large', 'Compact', 'Compact', 'Large', 'Compact']
+
+            if new_total > current_count:
+                # Add missing spaces
+                for i in range(new_total - current_count):
+                    ParkingSpace.objects.create(
+                        parking_lot=lot,
+                        space_type=space_types[(current_count + i) % len(space_types)],
+                        is_occupied=False,
+                    )
+            elif new_total < current_count:
+                # Remove excess spaces — free ones first, occupied last
+                to_remove = current_count - new_total
+                free = list(lot.spaces.filter(is_occupied=False)[:to_remove])
+                for s in free:
+                    s.delete()
+                    to_remove -= 1
+                if to_remove > 0:
+                    # If still need to remove, take occupied ones too
+                    for s in lot.spaces.all()[:to_remove]:
+                        s.delete()
+
+            # ── Recalculate available_spaces from actual records ─────────────
+            lot.available_spaces = lot.spaces.filter(is_occupied=False).count()
             lot.save()
-            messages.success(request, 'Parking lot updated.')
+            messages.success(request, f"Parking lot updated — {lot.available_spaces} of {new_total} spaces available.")
     return redirect('/dashboard/?tab=parking')
 
 
-# ── Admin CRUD — Tickets ───────────────────────────────────────────────────────
+# -- Admin CRUD - Tickets ------------------------------------------------------
 
 @_admin_required
 def admin_tickets(request):
@@ -510,11 +898,9 @@ def admin_ticket_edit(request, ticket_id):
             t.exit_time = timezone.now()
             t.fee = Decimal(request.POST.get('fee', '0') or '0')
             t.save()
-            # Free up the parking space
             if t.parking_space:
                 t.parking_space.is_occupied = False
                 t.parking_space.save()
-            # Update lot available count
             if t.parking_space and t.parking_space.parking_lot:
                 lot = t.parking_space.parking_lot
                 lot.available_spaces = lot.spaces.filter(is_occupied=False).count()
@@ -531,7 +917,7 @@ def admin_ticket_edit(request, ticket_id):
     return redirect('/dashboard/?tab=tickets')
 
 
-# ── Admin CRUD — Users ─────────────────────────────────────────────────────────
+# -- Admin CRUD - Users --------------------------------------------------------
 
 @_admin_required
 def admin_users_management(request):
@@ -569,8 +955,451 @@ def admin_user_edit(request, user_id):
     return redirect('/dashboard/?tab=users')
 
 
-# ── Admin Reports ──────────────────────────────────────────────────────────────
+# -- Admin Reports -------------------------------------------------------------
 
 @_admin_required
 def admin_reports(request):
     return redirect('/dashboard/?tab=reports')
+
+
+# -- Map View ------------------------------------------------------------------
+
+@login_required
+def map_view(request):
+    """Interactive Leaflet map showing all parking lots with live occupancy."""
+    lots = ParkingLot.objects.filter(is_active=True).prefetch_related('spaces')
+    lots_data = []
+    for lot in lots:
+        total = lot.spaces.count()
+        occ   = lot.spaces.filter(is_occupied=True).count()
+        avail = total - occ
+        rate  = round(occ / total * 100) if total else 0
+        lots_data.append({
+            'id':        lot.lot_id,
+            'location':  lot.location,
+            'lat':       lot.latitude or -1.9441,
+            'lng':       lot.longitude or 30.0619,
+            'total':     total,
+            'occupied':  occ,
+            'available': avail,
+            'rate':      rate,
+            'status':    lot.status(),
+            'hourly_rate': float(lot.hourly_rate),
+            'features':  lot.features,
+        })
+    context = {
+        'lots_data':      lots_data,
+        'total_lots':     len(lots_data),
+        'total_available': sum(d['available'] for d in lots_data),
+    }
+    return render(request, 'map.html', context)
+
+
+# -- Smart Recommendations API -------------------------------------------------
+
+@login_required
+def api_recommendations(request):
+    """GET /api/recommendations/ - lots sorted by score (availability+price+distance)."""
+    import math
+
+    user_lat  = float(request.GET.get('lat',  -1.9441))
+    user_lng  = float(request.GET.get('lng',   30.0619))
+    max_price = float(request.GET.get('max_price', 9999))
+    min_slots = int(request.GET.get('min_slots', 1))
+
+    def haversine(lat1, lng1, lat2, lng2):
+        R = 6371
+        dlat = math.radians(lat2 - lat1)
+        dlng = math.radians(lng2 - lng1)
+        a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlng/2)**2
+        return R * 2 * math.asin(math.sqrt(a))
+
+    lots = ParkingLot.objects.filter(is_active=True).prefetch_related('spaces')
+    results = []
+    for lot in lots:
+        total = lot.spaces.count()
+        occ   = lot.spaces.filter(is_occupied=True).count()
+        avail = total - occ
+        rate  = round(occ / total * 100) if total else 0
+
+        if avail < min_slots:
+            continue
+        if float(lot.hourly_rate) > max_price:
+            continue
+
+        dist = haversine(user_lat, user_lng,
+                         lot.latitude  or -1.9441,
+                         lot.longitude or 30.0619)
+
+        avail_score = (avail / total * 100) if total else 0
+        price_score = max(0, 100 - float(lot.hourly_rate) * 5)
+        dist_score  = max(0, 100 - dist * 20)
+        score       = avail_score * 0.5 + price_score * 0.3 + dist_score * 0.2
+
+        if   score >= 70: rec = 'Best Choice'
+        elif score >= 45: rec = 'Good Option'
+        else:             rec = 'Available'
+
+        results.append({
+            'id':          lot.lot_id,
+            'location':    lot.location,
+            'lat':         lot.latitude  or -1.9441,
+            'lng':         lot.longitude or 30.0619,
+            'total':       total,
+            'available':   avail,
+            'occupied':    occ,
+            'rate':        rate,
+            'hourly_rate': float(lot.hourly_rate),
+            'features':    lot.features,
+            'distance_km': round(dist, 2),
+            'score':       round(score, 1),
+            'recommendation': rec,
+            'status':      lot.status(),
+        })
+
+    results.sort(key=lambda x: -x['score'])
+    return JsonResponse({'success': True, 'data': results, 'count': len(results)})
+
+
+# -- Availability Prediction API -----------------------------------------------
+
+@login_required
+def api_predictions(request, lot_id=None):
+    """GET /api/predictions/<lot_id>/ - 24-hour occupancy prediction."""
+    now      = timezone.now()
+    last_30  = now - timedelta(days=30)
+
+    if lot_id:
+        try:
+            lot = ParkingLot.objects.get(lot_id=lot_id)
+        except ParkingLot.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Lot not found'}, status=404)
+        tickets = ParkingTicket.objects.filter(
+            parking_space__parking_lot=lot,
+            entry_time__gte=last_30
+        )
+    else:
+        lot     = None
+        tickets = ParkingTicket.objects.filter(entry_time__gte=last_30)
+
+    hour_counts = [0] * 24
+    for t in tickets:
+        hour_counts[t.entry_time.hour] += 1
+
+    max_count = max(hour_counts) if any(hour_counts) else 1
+    total_spaces = (lot.total_spaces if lot else ParkingSpace.objects.count()) or 1
+
+    predictions = []
+    for h in range(24):
+        predicted_pct = round(min(100, hour_counts[h] / max_count * 85)) if max_count > 0 else 0
+        if h == now.hour:
+            actual = lot.occupancy_rate() if lot else round(
+                ParkingSpace.objects.filter(is_occupied=True).count() / total_spaces * 100
+            )
+            predicted_pct = round(predicted_pct * 0.4 + actual * 0.6)
+        predictions.append({
+            'hour':  h,
+            'label': f'{h:02d}:00',
+            'predicted_occupancy': predicted_pct,
+            'ticket_count': hour_counts[h],
+            'is_peak': hour_counts[h] == max(hour_counts) and hour_counts[h] > 0,
+            'is_current': h == now.hour,
+        })
+
+    peak_hour = hour_counts.index(max(hour_counts)) if any(hour_counts) else 0
+    return JsonResponse({
+        'success': True,
+        'lot_id': lot_id,
+        'lot_location': lot.location if lot else 'All Lots',
+        'peak_hour': peak_hour,
+        'peak_label': f'{peak_hour:02d}:00',
+        'predictions': predictions,
+        'has_data': any(hour_counts),
+    })
+
+
+# -- Detection Event APIs ------------------------------------------------------
+
+def _find_free_space(lot):
+    return lot.spaces.filter(is_occupied=False).first()
+
+
+def api_detect_entry(request):
+    """POST /api/detect-entry/ - Called by entrance camera/sensor."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
+
+    import json
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        data = request.POST
+
+    lot_id     = data.get('lot_id')
+    plate      = data.get('plate_number', '')
+    confidence = float(data.get('confidence', 1.0))
+    source     = data.get('source', 'api')
+
+    try:
+        lot = ParkingLot.objects.get(lot_id=lot_id)
+    except ParkingLot.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Lot not found'}, status=404)
+
+    space = _find_free_space(lot)
+    if not space:
+        return JsonResponse({'success': False, 'error': 'Lot is full'}, status=409)
+
+    space.is_occupied = True
+    space.save()
+    lot.available_spaces = lot.spaces.filter(is_occupied=False).count()
+    lot.save()
+
+    event = ParkingDetectionEvent.objects.create(
+        lot=lot, space=space, event_type='entry',
+        plate_number=plate, confidence=confidence, source=source, processed=True,
+    )
+
+    rate = lot.occupancy_rate()
+    if rate >= 80:
+        _notify_nearly_full(lot, rate)
+
+    return JsonResponse({
+        'success':   True,
+        'event_id':  event.id,
+        'space_id':  space.space_id,
+        'lot':       lot.location,
+        'occupancy': rate,
+        'message':   f'Entry recorded. Space {space.space_id} marked occupied.',
+    })
+
+
+def api_detect_exit(request):
+    """POST /api/detect-exit/ - Called by exit camera/sensor."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
+
+    import json
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        data = request.POST
+
+    lot_id     = data.get('lot_id')
+    plate      = data.get('plate_number', '')
+    space_id   = data.get('space_id')
+    confidence = float(data.get('confidence', 1.0))
+    source     = data.get('source', 'api')
+
+    try:
+        lot = ParkingLot.objects.get(lot_id=lot_id)
+    except ParkingLot.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Lot not found'}, status=404)
+
+    if space_id:
+        try:
+            space = ParkingSpace.objects.get(space_id=space_id, parking_lot=lot)
+        except ParkingSpace.DoesNotExist:
+            space = lot.spaces.filter(is_occupied=True).first()
+    else:
+        space = lot.spaces.filter(is_occupied=True).first()
+
+    if not space:
+        return JsonResponse({'success': False, 'error': 'No occupied spaces found'}, status=409)
+
+    open_ticket = ParkingTicket.objects.filter(
+        parking_space=space, exit_time__isnull=True
+    ).first()
+    if open_ticket:
+        open_ticket.exit_time = timezone.now()
+        open_ticket.fee = round(open_ticket.duration_hours() * float(lot.hourly_rate), 2)
+        open_ticket.save()
+
+    space.is_occupied = False
+    space.save()
+    lot.available_spaces = lot.spaces.filter(is_occupied=False).count()
+    lot.save()
+
+    event = ParkingDetectionEvent.objects.create(
+        lot=lot, space=space, event_type='exit',
+        plate_number=plate, confidence=confidence, source=source, processed=True,
+    )
+
+    if lot.available_spaces == 1:
+        _notify_space_available(lot)
+
+    return JsonResponse({
+        'success':    True,
+        'event_id':   event.id,
+        'space_id':   space.space_id,
+        'lot':        lot.location,
+        'occupancy':  lot.occupancy_rate(),
+        'ticket_closed': open_ticket is not None,
+        'message': f'Exit recorded. Space {space.space_id} is now free.',
+    })
+
+
+# -- Notification helpers ------------------------------------------------------
+
+def _notify_nearly_full(lot, rate):
+    from django.contrib.auth.models import User as AuthUser
+    active_tickets = ParkingTicket.objects.filter(
+        parking_space__parking_lot=lot, exit_time__isnull=True
+    ).select_related('vehicle')
+    users_notified = set()
+    for t in active_tickets:
+        try:
+            owner = AuthUser.objects.filter(
+                username__iexact=t.vehicle.owner_name
+            ).first() or AuthUser.objects.filter(
+                first_name__iexact=t.vehicle.owner_name.split()[0] if t.vehicle.owner_name else ''
+            ).first()
+            if owner and owner.id not in users_notified:
+                UserNotification.objects.create(
+                    user=owner,
+                    title=f'{lot.location} is nearly full',
+                    message=f'The parking lot is at {rate}% capacity. Consider leaving soon if your session is ending.',
+                    notif_type='nearly_full',
+                    lot=lot,
+                )
+                users_notified.add(owner.id)
+        except Exception:
+            pass
+
+
+def _notify_space_available(lot):
+    pass
+
+
+# -- User Notification APIs ----------------------------------------------------
+
+@login_required
+def api_user_notifications(request):
+    """GET /api/notifications/data/"""
+    base_qs = UserNotification.objects.filter(user=request.user)
+    unread  = base_qs.filter(is_read=False).count()
+    notifs  = base_qs.order_by('-created_at')[:30]
+    data = [{
+        'id':         n.id,
+        'title':      n.title,
+        'message':    n.message,
+        'type':       n.notif_type,
+        'is_read':    n.is_read,
+        'lot':        n.lot.location if n.lot else None,
+        'created_at': n.created_at.isoformat(),
+        'time_ago':   _time_ago(n.created_at),
+    } for n in notifs]
+    return JsonResponse({'success': True, 'notifications': data, 'unread': unread})
+
+
+@login_required
+def api_mark_notification_read(request, notif_id):
+    """POST /api/notifications/<id>/read/"""
+    if request.method == 'POST':
+        UserNotification.objects.filter(id=notif_id, user=request.user).update(is_read=True)
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False}, status=405)
+
+
+@login_required
+def api_mark_all_read(request):
+    """POST /api/notifications/mark-all-read/"""
+    if request.method == 'POST':
+        UserNotification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False}, status=405)
+
+
+def _time_ago(dt):
+    from django.utils import timezone as tz
+    diff = tz.now() - dt
+    s = diff.total_seconds()
+    if s < 60:    return 'Just now'
+    if s < 3600:  return f'{int(s/60)}m ago'
+    if s < 86400: return f'{int(s/3600)}h ago'
+    return f'{int(s/86400)}d ago'
+
+
+# -- Lot Detail API ------------------------------------------------------------
+
+@login_required
+def api_lot_detail(request, lot_id):
+    """GET /api/lot/<lot_id>/"""
+    try:
+        lot = ParkingLot.objects.get(lot_id=lot_id)
+    except ParkingLot.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Not found'}, status=404)
+
+    total = lot.spaces.count()
+    occ   = lot.spaces.filter(is_occupied=True).count()
+    avail = total - occ
+    rate  = round(occ / total * 100) if total else 0
+
+    recent = ParkingTicket.objects.filter(
+        parking_space__parking_lot=lot
+    ).select_related('vehicle').order_by('-entry_time')[:5]
+
+    return JsonResponse({
+        'success': True,
+        'lot': {
+            'id':          lot.lot_id,
+            'location':    lot.location,
+            'description': lot.description,
+            'lat':         lot.latitude,
+            'lng':         lot.longitude,
+            'total':       total,
+            'available':   avail,
+            'occupied':    occ,
+            'rate':        rate,
+            'status':      lot.status(),
+            'hourly_rate': float(lot.hourly_rate),
+            'features':    [f.strip() for f in lot.features.split(',') if f.strip()],
+        },
+        'recent': [{
+            'plate': t.vehicle.plate_number,
+            'entry': t.entry_time.isoformat(),
+            'active': t.exit_time is None,
+        } for t in recent],
+    })
+
+
+# -- Map data ------------------------------------------------------------------
+
+@login_required
+def api_map_data(request):
+    """GET /api/map-data/"""
+    lots = ParkingLot.objects.filter(is_active=True).prefetch_related('spaces')
+    data = []
+    for lot in lots:
+        total = lot.spaces.count()
+        occ   = lot.spaces.filter(is_occupied=True).count()
+        avail = total - occ
+        data.append({
+            'id':        lot.lot_id,
+            'location':  lot.location,
+            'lat':       lot.latitude  or -1.9441,
+            'lng':       lot.longitude or 30.0619,
+            'total':     total,
+            'available': avail,
+            'rate':      round(occ/total*100) if total else 0,
+            'status':    lot.status(),
+            'hourly_rate': float(lot.hourly_rate),
+        })
+    return JsonResponse({'success': True, 'lots': data, 'count': len(data)})
+
+
+# -- Admin: Detection Event management ----------------------------------------
+
+@_admin_required
+def admin_detection_events(request):
+    events = ParkingDetectionEvent.objects.select_related('lot', 'space').order_by('-detected_at')[:100]
+    context = {'events': events, 'total': events.count(), 'active_tab': 'detection'}
+    return render(request, 'dashboard.html', context)
+
+
+# -- Error handlers ------------------------------------------------------------
+
+def error_404(request, exception=None):
+    return render(request, '404.html', status=404)
+
+def error_500(request):
+    return render(request, '500.html', status=500)

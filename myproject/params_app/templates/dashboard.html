@@ -352,6 +352,9 @@
             <li><a href="#" data-tab="reports">
                 <i class="fas fa-chart-bar"></i><span>Reports</span>
             </a></li>
+            <li><a href="#" data-tab="overview">
+                <i class="fas fa-brain"></i><span>ML Insights</span>
+            </a></li>
         </ul>
     </div>
 
@@ -465,6 +468,124 @@
                     </div>
                 </div>
             </div>
+
+
+            <!-- ML Insights Row -->
+            <div class="three-col" style="margin-bottom:20px;">
+
+                <!-- Peak Hours -->
+                <div class="card">
+                    <div class="card-hdr">
+                        <h4><i class="fas fa-chart-line" style="color:var(--purple);"></i> Peak Hour</h4>
+                        <span class="badge b-purple">AI Insight</span>
+                    </div>
+                    <div class="card-body">
+                        {% if ml.has_data %}
+                        <div style="font-size:1.8rem;font-weight:800;color:var(--text);letter-spacing:-0.03em;line-height:1;">{{ ml.peak_label }}</div>
+                        <div style="font-size:0.8rem;color:var(--muted);margin-top:5px;">Busiest period (last 30 days)</div>
+                        {% else %}
+                        <div style="color:var(--muted);font-size:0.86rem;">No historical data yet - insights appear after first bookings.</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Occupancy Prediction -->
+                <div class="card">
+                    <div class="card-hdr">
+                        <h4><i class="fas fa-brain" style="color:var(--teal);"></i> Next Hour Forecast</h4>
+                        <span class="badge b-blue">Predicting next hour</span>
+                    </div>
+                    <div class="card-body">
+                        <div style="display:flex;align-items:flex-end;gap:16px;margin-bottom:10px;">
+                            <div>
+                                <div style="font-size:0.75rem;color:var(--muted);margin-bottom:2px;">Now</div>
+                                <div style="font-size:1.6rem;font-weight:800;color:var(--text);">{{ ml.current_rate }}%</div>
+                            </div>
+                            <i class="fas fa-arrow-{% if ml.pred_direction == 'up' %}up" style="color:var(--red){% else %}down" style="color:var(--green){% endif %};font-size:1.1rem;margin-bottom:8px;"></i>
+                            <div>
+                                <div style="font-size:0.75rem;color:var(--muted);margin-bottom:2px;">Predicted</div>
+                                <div style="font-size:1.6rem;font-weight:800;color:{% if ml.pred_direction == 'up' %}var(--red){% else %}var(--green){% endif %};">{{ ml.predicted_rate }}%</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:{{ ml.predicted_rate }}%;background:{% if ml.predicted_rate > 75 %}var(--red){% elif ml.predicted_rate > 45 %}var(--amber){% else %}var(--green){% endif %};"></div></div>
+                    </div>
+                </div>
+
+                <!-- Anomaly Detection -->
+                <div class="card">
+                    <div class="card-hdr">
+                        <h4><i class="fas fa-shield-alt" style="color:var(--amber);"></i> Anomaly Detection</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if ml.anomaly %}
+                        <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:8px;background:{% if ml.anomaly.type == 'high' %}#fef9c3{% else %}#eff6ff{% endif %};">
+                            <i class="fas fa-{% if ml.anomaly.type == 'high' %}exclamation-triangle{% else %}info-circle{% endif %}" style="color:{% if ml.anomaly.type == 'high' %}var(--amber){% else %}var(--blue){% endif %};margin-top:2px;flex-shrink:0;"></i>
+                            <p style="font-size:0.84rem;color:var(--text);margin:0;line-height:1.5;">{{ ml.anomaly.msg }}</p>
+                        </div>
+                        {% else %}
+                        <div style="display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:8px;background:#f0fdf4;">
+                            <i class="fas fa-check-circle" style="color:var(--green);"></i>
+                            <p style="font-size:0.84rem;color:#166534;margin:0;">Occupancy is within normal range for this hour.</p>
+                        </div>
+                        {% endif %}
+                        <div style="margin-top:12px;font-size:0.78rem;color:var(--muted);">Based on 30-day historical patterns</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Lot Monitor -->
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-hdr">
+                    <h4><i class="fas fa-satellite-dish" style="color:var(--green);"></i> Live Parking Lot Monitor</h4>
+                    <span style="font-size:0.78rem;color:var(--muted);">Updates on each page load</span>
+                </div>
+                <div class="card-body">
+                    {% if lots_occupancy %}
+                    <div style="display:flex;flex-direction:column;gap:12px;">
+                    {% for lot in lots_occupancy %}
+                    <div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                            <span style="font-size:0.86rem;font-weight:600;color:var(--text);">{{ lot.location }}</span>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <span style="font-size:0.75rem;color:var(--muted);">{{ lot.available }}/{{ lot.total }} free</span>
+                                <span class="badge {% if lot.rate >= 80 %}b-red{% elif lot.rate >= 50 %}b-amber{% else %}b-green{% endif %}">{{ lot.rate }}%</span>
+                            </div>
+                        </div>
+                        <div class="progress-bar" style="height:8px;">
+                            <div class="progress-fill" style="width:{{ lot.rate }}%;background:{% if lot.rate >= 80 %}var(--red){% elif lot.rate >= 50 %}var(--amber){% else %}var(--green){% endif %};"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state" style="padding:20px;"><i class="fas fa-parking"></i><p>No parking lots configured yet</p></div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if ml.has_data %}
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-hdr">
+                    <h4><i class="fas fa-chart-bar" style="color:var(--blue);"></i> 24-Hour Traffic Pattern <span style="font-size:0.78rem;font-weight:400;color:var(--muted);">(last 30 days)</span></h4>
+                </div>
+                <div class="card-body">
+                    <div style="display:flex;align-items:flex-end;gap:3px;height:70px;padding-bottom:4px;">
+                    {% for hour_label, pct in ml.hour_bars %}
+                    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+                        <div style=width:100%;border-radius:3px 3px 0 0;background:{% if hour_label == ml.peak_hour|stringformat:'02d' %}var(--purple){% else %}var(--green){% endif %};opacity:{% if pct == 0 %}0.15{% else %}1{% endif %};height:{{ pct }}%;min-height:3px; title={{ hour_label }}:00 - {{ pct }}%></div>
+                    </div>
+                    {% endfor %}
+                    </div>
+                    <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:0.68rem;color:var(--muted);">
+                        <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:00</span>
+                    </div>
+                    <div style="margin-top:8px;font-size:0.76rem;color:var(--muted);">
+                        <span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--purple);display:inline-block;"></span> Peak hour</span>
+                        <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--green);display:inline-block;"></span> Normal hours</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
 
             <div class="two-col">
                 <!-- Recent tickets -->
@@ -706,17 +827,33 @@
             <div class="card">
                 <div class="tbl-wrap">
                     <table>
-                        <thead><tr><th>ID</th><th>Location</th><th>Total Spaces</th><th>Available</th><th>Occupancy</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Location</th><th>GPS</th><th>Spaces</th><th>Available</th><th>$\/hr</th><th>Occupancy</th><th>Actions</th></tr></thead>
                         <tbody>
                         {% for lot in all_lots %}
                         <tr>
                             <td style="color:var(--muted);">{{ lot.lot_id }}</td>
-                            <td><strong>{{ lot.location }}</strong></td>
+                            <td>
+                                <strong>{{ lot.location }}</strong>
+                                {% if lot.description %}<div style="font-size:0.75rem;color:var(--muted);margin-top:1px;">{{ lot.description|truncatechars:40 }}</div>{% endif %}
+                            </td>
+                            <td>
+                                {% if lot.latitude and lot.longitude %}
+                                <a href="https://maps.google.com/?q={{ lot.latitude }},{{ lot.longitude }}" target="_blank"
+                                   style="font-size:0.78rem;color:var(--green);font-weight:600;" title="{{ lot.latitude }}, {{ lot.longitude }}">
+                                    <i class="fas fa-map-marker-alt"></i> View
+                                </a>
+                                {% else %}
+                                <span style="font-size:0.75rem;color:var(--muted);">Not set</span>
+                                {% endif %}
+                            </td>
                             <td>{{ lot.total_spaces }}</td>
                             <td>
                                 <span class="badge {% if lot.available_spaces == 0 %}b-red{% elif lot.available_spaces < 10 %}b-amber{% else %}b-green{% endif %}">
                                     {{ lot.available_spaces }}
                                 </span>
+                            </td>
+                            <td style="font-size:0.84rem;font-weight:600;color:var(--green);">
+                                ${{ lot.hourly_rate }}
                             </td>
                             <td style="min-width:120px;">
                                 {% if lot.total_spaces > 0 %}
@@ -729,7 +866,7 @@
                             <td>
                                 <div style="display:flex;gap:6px;">
                                     <button class="btn btn-sm btn-outline"
-                                        onclick="openEditLot('{{ lot.lot_id }}','{{ lot.location }}','{{ lot.total_spaces }}','{{ lot.available_spaces }}')">
+                                        onclick="openEditLot('{{ lot.lot_id }}','{{ lot.location|escapejs }}','{{ lot.total_spaces }}','{{ lot.available_spaces }}','{{ lot.hourly_rate }}','{{ lot.latitude|default:'' }}','{{ lot.longitude|default:'' }}','{{ lot.description|escapejs }}','{{ lot.features|escapejs }}')">
                                         <i class="fas fa-pen"></i>
                                     </button>
                                     <form method="POST" action="{% url 'admin_parking_lot_edit' lot.lot_id %}" style="display:inline;" onsubmit="return confirm('Delete lot {{ lot.location }}?');">
@@ -873,23 +1010,23 @@
             <div class="three-col" style="margin-bottom:20px;">
                 <div class="card">
                     <div class="card-body" style="text-align:center;">
-                        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">Total Revenue</div>
-                        <div style="font-size:2.2rem;font-weight:800;color:var(--green);">${{ total_revenue|floatformat:2 }}</div>
+                        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">Total Sessions</div>
+                        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:2.2rem;font-weight:800;color:var(--green);">{{ total_tickets }}</div>
                         <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">All time</div>
                     </div>
                 </div>
                 <div class="card">
                     <div class="card-body" style="text-align:center;">
-                        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">Monthly Revenue</div>
-                        <div style="font-size:2.2rem;font-weight:800;color:var(--blue);">${{ monthly_revenue|floatformat:2 }}</div>
-                        <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">Last 30 days</div>
+                        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">Active Right Now</div>
+                        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:2.2rem;font-weight:800;color:var(--blue);">{{ active_tickets }}</div>
+                        <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">Live sessions</div>
                     </div>
                 </div>
                 <div class="card">
                     <div class="card-body" style="text-align:center;">
-                        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">Avg Ticket Value</div>
-                        <div style="font-size:2.2rem;font-weight:800;color:var(--amber);">${{ avg_ticket_value|floatformat:2 }}</div>
-                        <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">{{ total_transactions }} transactions</div>
+                        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">Available Spaces</div>
+                        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:2.2rem;font-weight:800;color:var(--amber);">{{ available_spaces }}</div>
+                        <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">Across all lots</div>
                     </div>
                 </div>
             </div>
@@ -931,23 +1068,7 @@
                     </div>
                 </div>
 
-                <!-- Payment methods -->
-                <div class="card">
-                    <div class="card-hdr"><h4><i class="fas fa-credit-card" style="color:var(--amber);"></i> Payment Methods</h4></div>
-                    <div class="card-body">
-                        {% for pm in payment_method_stats %}
-                        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f1f5f9;">
-                            <span style="font-size:0.86rem;">{{ pm.payment_method }}</span>
-                            <div style="display:flex;gap:10px;align-items:center;">
-                                <span class="badge b-amber">${{ pm.total_amount|floatformat:0 }}</span>
-                                <span style="font-size:0.78rem;color:var(--muted);">{{ pm.count }} txns</span>
-                            </div>
-                        </div>
-                        {% empty %}
-                        <div class="empty-state" style="padding:20px;"><p>No payment data yet</p></div>
-                        {% endfor %}
-                    </div>
-                </div>
+
 
                 <!-- Summary stats -->
                 <div class="card">
@@ -960,7 +1081,7 @@
                             <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:0.86rem;">Total Tickets</span><strong>{{ total_tickets }}</strong></div>
                             <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:0.86rem;">Active Sessions</span><strong style="color:var(--amber);">{{ active_tickets }}</strong></div>
                             <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:0.86rem;">Total Spaces</span><strong>{{ total_spaces }}</strong></div>
-                            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:0.86rem;">Available Spaces</span><strong style="color:var(--green);">{{ available_spaces }}</strong></div>
+                            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:0.86rem;">Available Now</span><strong style="color:var(--green);">{{ available_spaces }}</strong></div>
                         </div>
                     </div>
                 </div>
@@ -1107,17 +1228,43 @@
                 <div class="form-row single">
                     <div class="fg">
                         <label>Location / Name *</label>
-                        <input type="text" name="location" placeholder="e.g. Makuza Underground" required>
+                        <input type="text" name="location" placeholder="e.g. Makuza Underground Parking" required>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="fg">
                         <label>Total Spaces *</label>
-                        <input type="number" name="total_spaces" min="1" placeholder="100" required>
+                        <input type="number" name="total_spaces" min="1" placeholder="50" required>
                     </div>
                     <div class="fg">
-                        <label>Initially Available</label>
-                        <input type="number" name="available_spaces" min="0" placeholder="Same as total">
+                        <label>Hourly Rate ($)</label>
+                        <input type="number" name="hourly_rate" min="0" step="0.50" placeholder="5.00" value="5.00">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="fg">
+                        <label>Latitude <span style="color:var(--muted);font-weight:400;">(GPS)</span></label>
+                        <input type="number" name="latitude" step="0.000001" placeholder="e.g. -1.9500">
+                    </div>
+                    <div class="fg">
+                        <label>Longitude <span style="color:var(--muted);font-weight:400;">(GPS)</span></label>
+                        <input type="number" name="longitude" step="0.000001" placeholder="e.g. 30.0619">
+                    </div>
+                </div>
+                <div style="font-size:0.75rem;color:var(--muted);margin-top:-8px;margin-bottom:10px;">
+                    <i class="fas fa-info-circle"></i>
+                    GPS tip: open <a href="https://maps.google.com" target="_blank" style="color:var(--green);">Google Maps</a>, right-click your location and copy the coordinates.
+                </div>
+                <div class="form-row single">
+                    <div class="fg">
+                        <label>Description</label>
+                        <input type="text" name="description" placeholder="Brief description of the parking area">
+                    </div>
+                </div>
+                <div class="form-row single">
+                    <div class="fg">
+                        <label>Features <span style="color:var(--muted);font-weight:400;">(comma-separated)</span></label>
+                        <input type="text" name="features" placeholder="e.g. CCTV, Covered, EV Charging, 24/7">
                     </div>
                 </div>
             </div>
@@ -1151,14 +1298,40 @@
                         <input type="number" name="total_spaces" id="el-total" min="1">
                     </div>
                     <div class="fg">
-                        <label>Available Spaces</label>
-                        <input type="number" name="available_spaces" id="el-available" min="0">
+                        <label>Hourly Rate ($)</label>
+                        <input type="number" name="hourly_rate" id="el-rate" min="0" step="0.50">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="fg">
+                        <label>Latitude <span style="color:var(--muted);font-weight:400;">(GPS)</span></label>
+                        <input type="number" name="latitude" id="el-lat" step="0.000001" placeholder="-1.9500">
+                    </div>
+                    <div class="fg">
+                        <label>Longitude <span style="color:var(--muted);font-weight:400;">(GPS)</span></label>
+                        <input type="number" name="longitude" id="el-lng" step="0.000001" placeholder="30.0619">
+                    </div>
+                </div>
+                <div style="font-size:0.75rem;color:var(--muted);margin-top:-8px;margin-bottom:10px;">
+                    <i class="fas fa-info-circle"></i>
+                    GPS tip: open <a href="https://maps.google.com" target="_blank" style="color:var(--green);">Google Maps</a>, right-click the lot and copy coordinates.
+                </div>
+                <div class="form-row single">
+                    <div class="fg">
+                        <label>Description</label>
+                        <input type="text" name="description" id="el-description" placeholder="Brief description">
+                    </div>
+                </div>
+                <div class="form-row single">
+                    <div class="fg">
+                        <label>Features <span style="color:var(--muted);font-weight:400;">(comma-separated)</span></label>
+                        <input type="text" name="features" id="el-features" placeholder="CCTV, Covered, EV Charging">
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeModal('modal-edit-lot')">Cancel</button>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
             </div>
         </form>
     </div>
@@ -1261,11 +1434,15 @@ function openEditVehicle(id, plate, type, owner) {
 }
 
 /* ── Edit lot ── */
-function openEditLot(id, location, total, available) {
+function openEditLot(id, location, total, available, rate, lat, lng, description, features) {
     document.getElementById('edit-lot-form').action = '/manage/parking-lots/' + id + '/edit/';
-    document.getElementById('el-location').value = location;
-    document.getElementById('el-total').value = total;
-    document.getElementById('el-available').value = available;
+    document.getElementById('el-location').value    = location    || '';
+    document.getElementById('el-total').value       = total       || '';
+    document.getElementById('el-rate').value        = rate        || '5.00';
+    document.getElementById('el-lat').value         = lat         || '';
+    document.getElementById('el-lng').value         = lng         || '';
+    document.getElementById('el-description').value = description || '';
+    document.getElementById('el-features').value    = features    || '';
     openModal('modal-edit-lot');
 }
 

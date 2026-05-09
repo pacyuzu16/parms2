@@ -88,7 +88,7 @@
 
                 <!-- Action row -->
                 <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;">
-                    <a href="{% url 'destination' %}" class="qa-btn qa-btn-primary">
+                    <a href="{% url 'destination' %}{% if active_tickets %}?lot_id={{ active_tickets.first.parking_space.parking_lot.lot_id }}{% endif %}" class="qa-btn qa-btn-primary">
                         <i class="fas fa-route"></i> Navigate to Parking
                     </a>
                     <a href="{% url 'slots' %}" class="qa-btn qa-btn-outline">
@@ -193,7 +193,7 @@
                 {% endfor %}
             </div>
             <div class="ap-footer">
-                <a href="{% url 'billings' %}">Billing history <i class="fas fa-arrow-right"></i></a>
+                <a href="{% url 'ticket' %}">All tickets <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
 

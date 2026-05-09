@@ -2,152 +2,200 @@
 {% load static %}
 
 {% block content %}
+<style>
+    /* Space grid cells */
+    .space-cell {
+        padding: 10px 6px;
+        border-radius: 8px;
+        text-align: center;
+        transition: all 0.15s;
+        user-select: none;
+    }
+    .space-free {
+        border: 1.5px solid var(--border);
+        background: var(--white);
+        cursor: pointer;
+        color: var(--text);
+    }
+    .space-free:hover {
+        border-color: var(--green);
+        background: var(--green-pale);
+    }
+    .space-taken {
+        border: 1.5px solid #fecaca;
+        background: #fef2f2;
+        cursor: not-allowed;
+        color: #b91c1c;
+        opacity: 0.7;
+    }
+    .space-selected {
+        border-color: var(--green) !important;
+        background: var(--green) !important;
+        color: white !important;
+    }
+    /* Confirm panel */
+    .confirm-panel {
+        display: none;
+        background: var(--white);
+        border: 1.5px solid var(--green);
+        border-radius: var(--radius);
+        padding: 18px 20px;
+        margin-top: 14px;
+        box-shadow: 0 0 0 3px rgba(44,95,71,0.08);
+    }
+</style>
+
 <div class="content-grid">
 
-    <!-- Left: space selection + payment -->
+    <!-- Left: stats + space grid -->
     <div>
-        <!-- Availability summary -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
-            <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;box-shadow:var(--shadow-sm);">
-                <div style="font-size:1.7rem;font-weight:800;color:var(--text);">{{ total_spaces }}</div>
-                <div style="font-size:0.78rem;color:var(--muted);margin-top:3px;font-weight:500;">Total Spaces</div>
+
+        <!-- Lot selector -->
+        {% if all_lots %}
+        <style>
+            .lot-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 6px 14px;
+                border-radius: 20px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                text-decoration: none;
+                border: 1.5px solid var(--border);
+                background: var(--white);
+                color: var(--text);
+                transition: all 0.15s;
+                cursor: pointer;
+            }
+            .lot-pill:hover {
+                border-color: var(--green);
+                color: var(--green);
+            }
+            .lot-pill.active {
+                background: var(--green);
+                color: white;
+                border-color: var(--green);
+            }
+        </style>
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:16px;box-shadow:var(--shadow-sm);">
+            <div style="font-size:0.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">
+                <i class="fas fa-map-marker-alt" style="color:var(--green);"></i> Select Parking Lot
             </div>
-            <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;box-shadow:var(--shadow-sm);">
-                <div style="font-size:1.7rem;font-weight:800;color:#2c5f47;">{{ available_spaces }}</div>
-                <div style="font-size:0.78rem;color:var(--muted);margin-top:3px;font-weight:500;">Available</div>
-            </div>
-            <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;box-shadow:var(--shadow-sm);">
-                <div style="font-size:1.7rem;font-weight:800;color:#dc2626;">{{ occupied_spaces }}</div>
-                <div style="font-size:0.78rem;color:var(--muted);margin-top:3px;font-weight:500;">Occupied</div>
-            </div>
-        </div>
-
-        <!-- Payment method selection -->
-        <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:16px;">
-            <div style="padding:16px 20px;border-bottom:1px solid var(--border);">
-                <h5 style="font-size:0.95rem;font-weight:700;color:var(--text);margin:0;display:flex;align-items:center;gap:8px;">
-                    <i class="fas fa-credit-card" style="color:#2c5f47;"></i> Select Payment Method
-                </h5>
-            </div>
-            <div style="padding:16px 20px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
-
-                <div class="pay-card" onclick="selectPayment('mtn',this)"
-                     style="border:2px solid var(--border);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s;">
-                    <img src="{% static 'imgs/mtn.png' %}" alt="MTN MoMo" style="height:40px;object-fit:contain;margin-bottom:8px;">
-                    <div style="font-size:0.82rem;font-weight:600;color:var(--text);">MTN MoMo</div>
-                    <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;">Mobile Money</div>
-                </div>
-
-                <div class="pay-card" onclick="selectPayment('paypal',this)"
-                     style="border:2px solid var(--border);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s;">
-                    <img src="{% static 'imgs/paypal.png' %}" alt="PayPal" style="height:40px;object-fit:contain;margin-bottom:8px;">
-                    <div style="font-size:0.82rem;font-weight:600;color:var(--text);">PayPal</div>
-                    <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;">Online Payment</div>
-                </div>
-
-                <div class="pay-card" onclick="selectPayment('cash',this)"
-                     style="border:2px solid var(--border);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s;">
-                    <div style="font-size:2rem;margin-bottom:8px;">💵</div>
-                    <div style="font-size:0.82rem;font-weight:600;color:var(--text);">Cash</div>
-                    <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;">Pay on arrival</div>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- Payment details form (shown after selection) -->
-        <div id="pay-form-wrap" style="display:none;background:white;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;">
-            <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-                <h5 style="font-size:0.95rem;font-weight:700;color:var(--text);margin:0;display:flex;align-items:center;gap:8px;">
-                    <i class="fas fa-lock" style="color:#2c5f47;"></i> Payment Details
-                </h5>
-                <button onclick="resetPayment()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.82rem;">
-                    <i class="fas fa-arrow-left"></i> Change
-                </button>
-            </div>
-            <div style="padding:20px;">
-
-                <!-- MTN form -->
-                <div id="form-mtn" class="pay-option" style="display:none;">
-                    <label style="font-size:0.82rem;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">MTN Mobile Number</label>
-                    <input type="tel" placeholder="078XXXXXXX" class="form-control" style="margin-bottom:0;">
-                </div>
-
-                <!-- PayPal form -->
-                <div id="form-paypal" class="pay-option" style="display:none;">
-                    <label style="font-size:0.82rem;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">PayPal Email</label>
-                    <input type="email" placeholder="your@email.com" class="form-control" style="margin-bottom:0;">
-                </div>
-
-                <!-- Cash info -->
-                <div id="form-cash" class="pay-option" style="display:none;">
-                    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px;display:flex;gap:10px;">
-                        <i class="fas fa-info-circle" style="color:#2c5f47;margin-top:2px;"></i>
-                        <p style="font-size:0.86rem;color:#166534;margin:0;line-height:1.6;">
-                            Pay in cash at the parking attendant booth when you arrive. Present your ticket QR code for verification.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Booking summary -->
-                <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px;">
-                    <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-                        <span style="font-size:0.84rem;color:var(--muted);">Parking Duration</span>
-                        <span style="font-size:0.84rem;font-weight:600;">2 hours</span>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
-                        <span style="font-size:0.84rem;color:var(--muted);">Estimated Fee</span>
-                        <span style="font-size:1rem;font-weight:800;color:#2c5f47;">$5.00</span>
-                    </div>
-                    <div style="display:flex;gap:8px;">
-                        <button onclick="resetPayment()" style="flex:1;padding:9px;border:1.5px solid var(--border);border-radius:8px;background:white;color:var(--text);font-size:0.86rem;font-weight:600;cursor:pointer;">
-                            Cancel
-                        </button>
-                        <a href="{% url 'ticket' %}" style="flex:2;padding:9px;background:#2c5f47;border:none;border-radius:8px;color:white;font-size:0.86rem;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">
-                            <i class="fas fa-lock"></i> Confirm &amp; Book
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Available spaces list -->
-        {% if parking_spaces %}
-        <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;margin-top:16px;">
-            <div style="padding:14px 20px;border-bottom:1px solid var(--border);">
-                <h5 style="font-size:0.9rem;font-weight:700;margin:0;display:flex;align-items:center;gap:7px;">
-                    <i class="fas fa-th" style="color:#2c5f47;"></i> Available Spaces
-                </h5>
-            </div>
-            <div style="padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;">
-                {% for space in parking_spaces %}
-                <div style="padding:10px 6px;border-radius:8px;text-align:center;border:1.5px solid {% if space.is_occupied %}#fecaca{% else %}#bbf7d0{% endif %};background:{% if space.is_occupied %}#fef2f2{% else %}#f0fdf4{% endif %};cursor:{% if space.is_occupied %}not-allowed{% else %}pointer{% endif %};transition:all 0.15s;"
-                     {% if not space.is_occupied %}onclick="document.querySelectorAll('.space-cell').forEach(function(el){el.style.borderColor='';el.style.background='';el.style.color='';});this.style.borderColor='#2c5f47';this.style.background='#2c5f47';this.style.color='white';"{% endif %} class="space-cell">
-                    <div style="font-size:0.7rem;font-weight:700;color:{% if space.is_occupied %}#b91c1c{% else %}#166534{% endif %};">
-                        #{{ space.space_id }}
-                    </div>
-                    <div style="font-size:0.62rem;color:{% if space.is_occupied %}#b91c1c{% else %}#166534{% endif %};margin-top:2px;">
-                        {% if space.is_occupied %}Taken{% else %}Free{% endif %}
-                    </div>
-                </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                {% for lot in all_lots %}
+                <a href="{% url 'slots' %}?lot_id={{ lot.lot_id }}"
+                   class="lot-pill{% if active_lot_id == lot.lot_id %} active{% endif %}">
+                    <span style="width:7px;height:7px;border-radius:50%;flex-shrink:0;
+                        background:{% if lot.available_spaces > 5 %}#22c55e{% elif lot.available_spaces > 0 %}#f59e0b{% else %}#ef4444{% endif %};"></span>
+                    {{ lot.location|truncatechars:22 }}
+                    <span style="font-size:0.7rem;opacity:0.8;">({{ lot.available_spaces }} free)</span>
+                </a>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
+
+        <!-- Active lot name -->
+        {% if active_lot %}
+        <div style="margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:10px;background:rgba(44,95,71,0.1);display:flex;align-items:center;justify-content:center;color:var(--green);font-size:1rem;">
+                <i class="fas fa-parking"></i>
+            </div>
+            <div>
+                <div style="font-size:1rem;font-weight:700;color:var(--text);">{{ active_lot.location }}</div>
+                {% if active_lot.hourly_rate %}<div style="font-size:0.78rem;color:var(--muted);">${{ active_lot.hourly_rate }}/hr</div>{% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Stats -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;">
+            <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;box-shadow:var(--shadow-sm);">
+                <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.7rem;font-weight:800;color:var(--text);">{{ total_spaces }}</div>
+                <div style="font-size:0.78rem;color:var(--muted);margin-top:3px;">Total Spaces</div>
+            </div>
+            <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;box-shadow:var(--shadow-sm);">
+                <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.7rem;font-weight:800;color:var(--green);">{{ available_spaces }}</div>
+                <div style="font-size:0.78rem;color:var(--muted);margin-top:3px;">Available</div>
+            </div>
+            <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;box-shadow:var(--shadow-sm);">
+                <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.7rem;font-weight:800;color:#dc2626;">{{ occupied_spaces }}</div>
+                <div style="font-size:0.78rem;color:var(--muted);margin-top:3px;">Occupied</div>
+            </div>
+        </div>
+
+        <!-- Space grid -->
+        {% if parking_spaces %}
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;">
+            <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+                <h5 style="font-size:0.9rem;font-weight:700;margin:0;display:flex;align-items:center;gap:7px;">
+                    <i class="fas fa-th" style="color:var(--green);"></i> Select a Space
+                </h5>
+                <div style="display:flex;gap:12px;font-size:0.75rem;color:var(--muted);">
+                    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--white);border:1.5px solid var(--border);vertical-align:middle;margin-right:4px;"></span>Free</span>
+                    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--green);vertical-align:middle;margin-right:4px;"></span>Selected</span>
+                    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#fef2f2;border:1.5px solid #fecaca;vertical-align:middle;margin-right:4px;"></span>Taken</span>
+                </div>
+            </div>
+            <div style="padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px;">
+                {% for space in parking_spaces %}
+                <div class="space-cell {% if space.is_occupied %}space-taken{% else %}space-free{% endif %}"
+                     {% if not space.is_occupied %}
+                     onclick="selectSpace(this, '{{ space.space_id }}', '{{ space.space_type }}')"
+                     {% endif %}>
+                    <div style="font-size:0.7rem;font-weight:700;">#{{ space.space_id }}</div>
+                    <div style="font-size:0.62rem;margin-top:2px;opacity:0.8;">{{ space.space_type|truncatechars:7 }}</div>
+                    <div style="font-size:0.58rem;margin-top:1px;">{% if space.is_occupied %}Taken{% else %}Free{% endif %}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Confirm booking panel (appears on space selection) -->
+        <div class="confirm-panel" id="confirm-panel">
+            <form method="POST" action="{% url 'book_space' %}">
+                {% csrf_token %}
+                <input type="hidden" name="space_id" id="confirm-space-input">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                    <div style="width:40px;height:40px;border-radius:10px;background:var(--green-pale);display:flex;align-items:center;justify-content:center;color:var(--green);font-size:1.1rem;flex-shrink:0;">
+                        <i class="fas fa-parking"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:0.9rem;font-weight:700;color:var(--text);">Space <span id="confirm-space-id"></span> selected</div>
+                        <div style="font-size:0.78rem;color:var(--muted);">Type: <span id="confirm-space-type"></span></div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button type="button" onclick="clearSelection()"
+                            style="flex:1;padding:9px;border:1.5px solid var(--border);border-radius:8px;background:var(--white);color:var(--muted);font-size:0.86rem;font-weight:600;cursor:pointer;">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            style="flex:2;padding:9px;background:var(--green);border:none;border-radius:8px;color:white;font-size:0.86rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+                        <i class="fas fa-check"></i> Confirm Booking
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:40px;text-align:center;color:var(--muted);">
+            <i class="fas fa-parking" style="font-size:2rem;opacity:0.2;display:block;margin-bottom:10px;"></i>
+            <p style="font-size:0.875rem;margin:0;">No parking spaces found.<br>Ask an admin to add a parking lot.</p>
+        </div>
+        {% endif %}
     </div>
 
-    <!-- Right: Recent bookings -->
+    <!-- Right: recent bookings -->
     <div>
         <div class="activities-panel">
             <div class="ap-header">
-                <h5><i class="fas fa-history" style="color:#2c5f47;"></i> Recent Bookings</h5>
+                <h5><i class="fas fa-history" style="color:var(--green);"></i> Recent Bookings</h5>
             </div>
             <div class="ap-body">
                 {% for booking in recent_bookings %}
                 <div class="activity-row">
-                    <div class="act-avatar">
-                        <i class="fas fa-car"></i>
-                    </div>
+                    <div class="act-avatar"><i class="fas fa-car"></i></div>
                     <div class="act-info">
                         <strong>{{ booking.vehicle.plate_number }}</strong>
                         <div class="act-meta">
@@ -169,40 +217,52 @@
                 {% endfor %}
             </div>
             <div class="ap-footer">
-                <a href="{% url 'billings' %}">View billing history <i class="fas fa-arrow-right"></i></a>
+                <a href="{% url 'ticket' %}">My tickets <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
 
-        <!-- Security note -->
-        <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-top:14px;box-shadow:var(--shadow-sm);text-align:center;">
-            <i class="fas fa-shield-alt" style="font-size:1.6rem;color:#2c5f47;display:block;margin-bottom:8px;"></i>
-            <div style="font-size:0.86rem;font-weight:600;color:var(--text);margin-bottom:4px;">Secure Payments</div>
-            <p style="font-size:0.78rem;color:var(--muted);margin:0;line-height:1.6;">
-                All transactions are encrypted. We never store your card or mobile money details.
-            </p>
+        <!-- Quick info -->
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-top:14px;box-shadow:var(--shadow-sm);">
+            <div style="font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:8px;">
+                <i class="fas fa-info-circle" style="color:var(--green);"></i> How it works
+            </div>
+            <ol style="font-size:0.78rem;color:var(--muted);margin:0;padding-left:16px;line-height:1.8;">
+                <li>Click a free space to select it</li>
+                <li>Press <strong>Confirm Booking</strong></li>
+                <li>Show your ticket QR code at the entrance</li>
+            </ol>
         </div>
     </div>
 
 </div>
 
-<style>
-.pay-card:hover { border-color: #2c5f47 !important; background: #f0fdf4 !important; }
-.pay-card.selected { border-color: #2c5f47 !important; background: #2c5f47 !important; color: white; }
-.pay-card.selected div { color: white !important; }
-</style>
-
 <script>
-function selectPayment(method, card) {
-    document.querySelectorAll('.pay-card').forEach(function(c) { c.classList.remove('selected'); });
-    card.classList.add('selected');
-    document.querySelectorAll('.pay-option').forEach(function(f) { f.style.display = 'none'; });
-    document.getElementById('form-' + method).style.display = 'block';
-    document.getElementById('pay-form-wrap').style.display = 'block';
-    document.getElementById('pay-form-wrap').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+let selectedCell = null;
+
+function selectSpace(el, spaceId, spaceType) {
+    // Clear previous selection
+    if (selectedCell) {
+        selectedCell.classList.remove('space-selected');
+    }
+    // Select new
+    el.classList.add('space-selected');
+    selectedCell = el;
+
+    // Populate confirm panel
+    document.getElementById('confirm-space-id').textContent = '#' + spaceId;
+    document.getElementById('confirm-space-type').textContent = spaceType;
+    document.getElementById('confirm-space-input').value = spaceId;
+    const panel = document.getElementById('confirm-panel');
+    panel.style.display = 'block';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
-function resetPayment() {
-    document.querySelectorAll('.pay-card').forEach(function(c) { c.classList.remove('selected'); });
-    document.getElementById('pay-form-wrap').style.display = 'none';
+
+function clearSelection() {
+    if (selectedCell) {
+        selectedCell.classList.remove('space-selected');
+        selectedCell = null;
+    }
+    document.getElementById('confirm-panel').style.display = 'none';
 }
 </script>
 {% endblock %}

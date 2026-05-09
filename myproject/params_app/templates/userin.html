@@ -186,37 +186,6 @@
         .wb-stat .val { font-size: 1.8rem; font-weight: 800; line-height: 1; }
         .wb-stat .lbl { font-size: 0.75rem; opacity: 0.75; margin-top: 2px; }
 
-        /* ===== VEHICLE TYPE SELECTOR ===== */
-        .type-selector {
-            background: var(--white);
-            border-radius: var(--radius);
-            padding: 22px 24px;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 24px;
-        }
-        .type-selector h5 { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 16px; }
-        .vehicle-types { display: flex; gap: 10px; flex-wrap: wrap; }
-        .vtype-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            padding: 14px 18px;
-            border-radius: 10px;
-            border: 2px solid var(--border);
-            background: var(--bg);
-            cursor: pointer;
-            transition: var(--trans);
-            min-width: 80px;
-            text-decoration: none;
-            color: var(--muted);
-        }
-        .vtype-btn i { font-size: 1.4rem; }
-        .vtype-btn span { font-size: 0.76rem; font-weight: 600; }
-        .vtype-btn:hover  { border-color: var(--green); color: var(--green); background: var(--green-pale); }
-        .vtype-btn.active { border-color: var(--green); color: white; background: var(--green); }
-
         /* ===== LAYOUT GRID ===== */
         .content-grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
 
@@ -401,6 +370,149 @@
             color: var(--text);
         }
 
+        /* ===== NOTIFICATION BADGE (count) ===== */
+        .notif-count {
+            position: absolute;
+            top: -4px; right: -4px;
+            min-width: 18px; height: 18px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.62rem;
+            font-weight: 800;
+            border-radius: 9px;
+            border: 2px solid white;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 3px;
+            display: none;
+        }
+
+        /* ===== USER DROPDOWN ===== */
+        .user-menu-wrap { position: relative; }
+        .user-chip { cursor: pointer; text-decoration: none; }
+        .user-avatar-initial {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background: var(--green);
+            color: white;
+            font-size: 0.82rem;
+            font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            border: 2px solid rgba(255,255,255,0.6);
+        }
+        .user-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 220px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: 0 12px 40px rgba(20,27,25,0.14);
+            z-index: 1000;
+            display: none;
+            overflow: hidden;
+        }
+        .user-dropdown.open { display: block; animation: dropDown 0.18s ease; }
+        @keyframes dropDown {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .ud-header {
+            padding: 14px 16px;
+            display: flex; align-items: center; gap: 10px;
+            background: #f8faf9;
+            border-bottom: 1px solid var(--border);
+        }
+        .ud-avatar-lg {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            background: var(--green);
+            color: white;
+            font-size: 1rem;
+            font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .ud-name  { font-size: 0.86rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+        .ud-email { font-size: 0.72rem; color: var(--muted); }
+        .ud-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text);
+            text-decoration: none;
+            transition: background 0.12s;
+            cursor: pointer;
+            border: none; background: none; width: 100%; text-align: left;
+        }
+        .ud-item:hover { background: #f5f7f6; }
+        .ud-item i { width: 16px; color: var(--muted); }
+        .ud-item:hover i { color: var(--green); }
+        .ud-divider { height: 1px; background: var(--border); margin: 2px 0; }
+        .ud-logout { color: #dc2626; }
+        .ud-logout i { color: #dc2626; }
+        .ud-logout:hover { background: #fef2f2; }
+        .ud-notif-badge {
+            margin-left: auto;
+            background: #ef4444;
+            color: white;
+            font-size: 0.62rem;
+            font-weight: 800;
+            min-width: 18px; height: 18px;
+            border-radius: 9px;
+            display: none; align-items: center; justify-content: center;
+            padding: 0 4px;
+        }
+
+        /* ===== TOAST NOTIFICATIONS ===== */
+        #toast-container {
+            position: fixed;
+            top: 76px; right: 18px;
+            z-index: 9997;
+            display: flex; flex-direction: column; gap: 10px;
+            max-width: 340px;
+            pointer-events: none;
+        }
+        .toast-item {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 8px 28px rgba(20,27,25,0.13);
+            padding: 13px 16px;
+            display: flex; align-items: flex-start; gap: 11px;
+            pointer-events: auto;
+            animation: toastIn 0.28s cubic-bezier(0.34,1.56,0.64,1);
+            border-left: 4px solid var(--green);
+        }
+        .toast-item.toast-error  { border-left-color: #ef4444; }
+        .toast-item.toast-warn   { border-left-color: #f59e0b; }
+        .toast-item.toast-info   { border-left-color: #3b82f6; }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(60px) scale(0.95); }
+            to   { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        .toast-out {
+            animation: toastOut 0.22s ease forwards;
+        }
+        @keyframes toastOut {
+            to { opacity: 0; transform: translateX(60px); max-height: 0; padding: 0; margin: 0; }
+        }
+        .toast-icon { font-size: 1rem; margin-top: 1px; flex-shrink: 0; color: var(--green); }
+        .toast-item.toast-error  .toast-icon { color: #ef4444; }
+        .toast-item.toast-warn   .toast-icon { color: #f59e0b; }
+        .toast-item.toast-info   .toast-icon { color: #3b82f6; }
+        .toast-body { flex: 1; min-width: 0; }
+        .toast-title { font-size: 0.83rem; font-weight: 700; color: var(--text); line-height: 1.3; }
+        .toast-msg   { font-size: 0.78rem; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+        .toast-close {
+            font-size: 0.75rem; color: var(--muted); cursor: pointer;
+            background: none; border: none; padding: 0; flex-shrink: 0;
+            opacity: 0.6;
+        }
+        .toast-close:hover { opacity: 1; }
+
         /* ===== LOGOUT MODAL ===== */
         .modal-overlay {
             position: fixed; inset: 0;
@@ -462,33 +574,60 @@
             </a>
 
             <nav class="header-nav">
-                <a href="{% url 'userin' %}" class="active">
+                <a href="{% url 'userin' %}">
                     <i class="fas fa-th-large"></i> Dashboard
                 </a>
-                <a href="{% url 'parkings' %}">
-                    <i class="fas fa-parking"></i> Parking
+                <a href="{% url 'map' %}">
+                    <i class="fas fa-map"></i> Map
                 </a>
-                <a href="{% url 'billings' %}">
-                    <i class="fas fa-receipt"></i> Billing
+                <a href="{% url 'slots' %}">
+                    <i class="fas fa-parking"></i> Find Space
                 </a>
-                <a href="{% url 'settings' %}">
-                    <i class="fas fa-cog"></i> Settings
+                <a href="{% url 'ticket' %}">
+                    <i class="fas fa-ticket-alt"></i> My Ticket
                 </a>
             </nav>
 
             <div class="header-actions">
-                <div class="notif-btn" title="Notifications">
+
+                <!-- Notification bell -->
+                <a href="{% url 'notifications' %}" class="notif-btn" title="Notifications" style="position:relative;text-decoration:none;">
                     <i class="fas fa-bell"></i>
-                    <span class="notif-dot"></span>
-                </div>
-                <div class="user-chip">
-                    <img src="{% static 'imgs/user1.png' %}" alt="User">
-                    <span>{{ request.user.username }}</span>
-                </div>
-                <a href="#" class="logout-btn" onclick="showLogout(event)">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span class="d-none d-md-inline">Logout</span>
+                    <span class="notif-count" id="notif-count"></span>
                 </a>
+
+                <!-- User dropdown -->
+                <div class="user-menu-wrap">
+                    <div class="user-chip" onclick="toggleUserMenu(event)" role="button" aria-expanded="false">
+                        <div class="user-avatar-initial">{{ request.user.username|slice:":1"|upper }}</div>
+                        <span>{{ request.user.username }}</span>
+                        <i class="fas fa-chevron-down" style="font-size:0.62rem;opacity:0.5;margin-left:2px;"></i>
+                    </div>
+                    <div class="user-dropdown" id="user-dropdown">
+                        <div class="ud-header">
+                            <div class="ud-avatar-lg">{{ request.user.username|slice:":1"|upper }}</div>
+                            <div>
+                                <div class="ud-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+                                <div class="ud-email">{{ request.user.email|default:"—" }}</div>
+                            </div>
+                        </div>
+                        <a href="{% url 'profile' %}" class="ud-item">
+                            <i class="fas fa-user"></i> Profile
+                        </a>
+                        <a href="{% url 'notifications' %}" class="ud-item">
+                            <i class="fas fa-bell"></i> Notifications
+                            <span class="ud-notif-badge" id="ud-notif-badge"></span>
+                        </a>
+                        <a href="{% url 'ticket' %}" class="ud-item">
+                            <i class="fas fa-ticket-alt"></i> My Ticket
+                        </a>
+                        <div class="ud-divider"></div>
+                        <a href="#" class="ud-item ud-logout" onclick="showLogout(event)">
+                            <i class="fas fa-sign-out-alt"></i> Sign out
+                        </a>
+                    </div>
+                </div>
+
             </div>
         </div>
     </header>
@@ -514,38 +653,34 @@
             </div>
         </div>
 
-        <!-- Vehicle Type Selector -->
-        <div class="type-selector">
-            <h5><i class="fas fa-car me-2" style="color:var(--green);"></i>Select Vehicle Type to Find Parking</h5>
-            <div class="vehicle-types">
-                <a href="{% url 'slots' %}" class="vtype-btn active">
-                    <i class="fas fa-car"></i>
-                    <span>Car</span>
-                </a>
-                <a href="{% url 'slots' %}" class="vtype-btn">
-                    <i class="fas fa-motorcycle"></i>
-                    <span>Motorcycle</span>
-                </a>
-                <a href="{% url 'slots' %}" class="vtype-btn">
-                    <i class="fas fa-truck"></i>
-                    <span>Truck</span>
-                </a>
-                <a href="{% url 'slots' %}" class="vtype-btn">
-                    <i class="fas fa-bus"></i>
-                    <span>Bus</span>
-                </a>
-                <a href="{% url 'slots' %}" class="vtype-btn">
-                    <i class="fas fa-bicycle"></i>
-                    <span>Bicycle</span>
-                </a>
-                <a href="{% url 'slots' %}" class="vtype-btn">
-                    <i class="fas fa-search"></i>
-                    <span>All Types</span>
-                </a>
+                {% block content %}
+
+        <!-- Smart Recommendations -->
+        {% if recommended_lots %}
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:20px;box-shadow:var(--shadow-sm);">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                <i class="fas fa-brain" style="color:var(--green);"></i>
+                <span style="font-size:0.9rem;font-weight:700;color:var(--text);">Smart Recommendations</span>
+                <span style="font-size:0.72rem;background:rgba(44,95,71,0.1);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:600;">ML-powered</span>
+                <span style="font-size:0.78rem;color:var(--muted);margin-left:auto;">Best lots for right now</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+            {% for d in recommended_lots %}
+            <a href="{% url 'slots' %}" style="display:block;padding:14px 16px;border-radius:10px;border:1.5px solid {% if d.rec_color == 'green' %}#a3d9bc{% elif d.rec_color == 'amber' %}#fde68a{% else %}#fca5a5{% endif %};background:{% if d.rec_color == 'green' %}#f0fdf4{% elif d.rec_color == 'amber' %}#fffbeb{% else %}#fef2f2{% endif %};text-decoration:none;transition:box-shadow 0.15s;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                    <span style="font-size:0.84rem;font-weight:700;color:var(--text);">{{ d.lot.location|truncatechars:22 }}</span>
+                    <span style="font-size:0.68rem;font-weight:700;padding:2px 7px;border-radius:20px;background:{% if d.rec_color == 'green' %}var(--green){% elif d.rec_color == 'amber' %}var(--amber){% else %}var(--red){% endif %};color:white;">{{ d.rec_label }}</span>
+                </div>
+                <div style="font-size:1.4rem;font-weight:800;color:var(--text);letter-spacing:-0.03em;line-height:1;">{{ d.available }} <span style="font-size:0.78rem;font-weight:500;color:var(--muted);">free of {{ d.total }}</span></div>
+                <div style="margin-top:8px;font-size:0.72rem;color:var(--muted);display:flex;align-items:center;gap:4px;">
+                    <i class="fas fa-chart-line" style="color:{% if d.rec_color == 'green' %}var(--green){% else %}var(--amber){% endif %};"></i>
+                    Predicted {{ d.pred }}% occupied by {{ next_hour_label }}
+                </div>
+            </a>
+            {% endfor %}
             </div>
         </div>
-
-        {% block content %}
+        {% endif %}
 
         <!-- Main Grid -->
         <div class="content-grid">
@@ -556,57 +691,68 @@
                     <i class="fas fa-map-marker-alt" style="color:var(--green);"></i>
                     Available Parking Locations
                 </div>
-                <div class="parking-grid">
 
+                {% if lots_data %}
+                <div class="parking-grid">
+                {% for d in lots_data %}
+                <div class="pcard">
+                    <div class="pcard-img">
+                        {% if forloop.counter == 1 %}
+                        <img src="{% static 'imgs/zone01-parking.jpg' %}" alt="{{ d.lot.location }}">
+                        {% elif forloop.counter == 2 %}
+                        <img src="{% static 'imgs/zone02-parking.jpg' %}" alt="{{ d.lot.location }}">
+                        {% elif forloop.counter == 3 %}
+                        <img src="{% static 'imgs/zone23-parking.jpg' %}" alt="{{ d.lot.location }}">
+                        {% else %}
+                        <img src="{% static 'imgs/zone35-parking.jpg' %}" alt="{{ d.lot.location }}">
+                        {% endif %}
+                        <div class="pcard-overlay"></div>
+                        <span class="pcard-status {% if d.available == 0 %}st-full{% elif d.rate >= 70 %}st-limited{% else %}st-available{% endif %}">
+                            {% if d.available == 0 %}Full{% elif d.rate >= 70 %}Limited{% else %}Available{% endif %}
+                        </span>
+                        <span class="pcard-name">{{ d.lot.location|truncatechars:24 }}</span>
+                        <a href="{% url 'slots' %}" class="pcard-slots">
+                            <i class="fas fa-parking"></i> {{ d.available }} free
+                        </a>
+                    </div>
+                    <!-- Occupancy bar + ML prediction -->
+                    <div style="padding:10px 12px;background:var(--white);">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                            <span style="font-size:0.7rem;color:var(--muted);">{{ d.rate }}% occupied</span>
+                            <span style="font-size:0.68rem;color:{% if d.rec_color == 'green' %}var(--green){% elif d.rec_color == 'amber' %}var(--amber){% else %}var(--red){% endif %};font-weight:600;">
+                                <i class="fas fa-chart-line"></i> {{ d.pred }}% at {{ next_hour_label }}
+                            </span>
+                        </div>
+                        <div style="height:4px;border-radius:2px;background:var(--border);overflow:hidden;">
+                            <div style="height:100%;border-radius:2px;width:{{ d.rate }}%;background:{% if d.rate >= 80 %}#ef4444{% elif d.rate >= 50 %}#f59e0b{% else %}var(--green){% endif %};"></div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                </div>
+                {% else %}
+                <!-- Fallback: hardcoded cards when no lots in DB -->
+                <div class="parking-grid">
                     <div class="pcard">
                         <div class="pcard-img">
                             <img src="{% static 'imgs/zone01-parking.jpg' %}" alt="Makuza Underground">
                             <div class="pcard-overlay"></div>
                             <span class="pcard-status st-available">Available</span>
                             <span class="pcard-name">Makuza Underground</span>
-                            <a href="{% url 'slots' %}" class="pcard-slots">
-                                <i class="fas fa-parking"></i> 324 free
-                            </a>
+                            <a href="{% url 'slots' %}" class="pcard-slots"><i class="fas fa-parking"></i> -- free</a>
                         </div>
                     </div>
-
                     <div class="pcard">
                         <div class="pcard-img">
                             <img src="{% static 'imgs/zone02-parking.jpg' %}" alt="Zone 51 Parking">
                             <div class="pcard-overlay"></div>
                             <span class="pcard-status st-limited">Limited</span>
                             <span class="pcard-name">Zone 51 Parking</span>
-                            <a href="{% url 'slots' %}" class="pcard-slots">
-                                <i class="fas fa-parking"></i> 87 free
-                            </a>
+                            <a href="{% url 'slots' %}" class="pcard-slots"><i class="fas fa-parking"></i> -- free</a>
                         </div>
                     </div>
-
-                    <div class="pcard">
-                        <div class="pcard-img">
-                            <img src="{% static 'imgs/zone23-parking.jpg' %}" alt="City Tower Underground">
-                            <div class="pcard-overlay"></div>
-                            <span class="pcard-status st-available">Available</span>
-                            <span class="pcard-name">City Tower Underground</span>
-                            <a href="{% url 'slots' %}" class="pcard-slots">
-                                <i class="fas fa-parking"></i> 156 free
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="pcard">
-                        <div class="pcard-img">
-                            <img src="{% static 'imgs/zone35-parking.jpg' %}" alt="Umurava Parking">
-                            <div class="pcard-overlay"></div>
-                            <span class="pcard-status st-available">Available</span>
-                            <span class="pcard-name">Umurava Parking</span>
-                            <a href="{% url 'slots' %}" class="pcard-slots">
-                                <i class="fas fa-parking"></i> 243 free
-                            </a>
-                        </div>
-                    </div>
-
                 </div>
+                {% endif %}
 
                 <div class="text-center mt-3">
                     <a href="{% url 'parkings' %}" class="qa-btn qa-btn-outline" style="display:inline-flex;">
@@ -615,88 +761,43 @@
                 </div>
             </div>
 
-            <!-- Right: Recent Activities -->
+            <!-- Right: Recent Activities + Quick Actions -->
             <div>
                 <div class="activities-panel">
                     <div class="ap-header">
                         <h5><i class="fas fa-clock" style="color:var(--green);"></i> Recent Activities</h5>
-                        <span style="font-size:0.75rem;color:var(--muted);">Last 5 sessions</span>
+                        <span style="font-size:0.75rem;color:var(--muted);">Last sessions</span>
                     </div>
                     <div class="ap-body">
-
+                    {% if user_tickets %}
+                        {% for t in user_tickets %}
                         <div class="activity-row">
                             <div class="act-avatar">
                                 <img src="{% static 'imgs/whitecarturnedback.png' %}" alt="car">
                             </div>
                             <div class="act-info">
-                                <strong>Parking Session #1111</strong>
+                                <strong>{{ t.vehicle.plate_number }}</strong>
                                 <div class="act-meta">
-                                    <span><i class="fas fa-clock"></i> 2h 30m</span>
-                                    <span><i class="fas fa-map-marker-alt"></i> Zone 43</span>
+                                    <span><i class="fas fa-map-marker-alt"></i> {{ t.parking_space.parking_lot.location|truncatechars:16 }}</span>
+                                    <span><i class="fas fa-clock"></i> {{ t.entry_time|timesince }} ago</span>
                                 </div>
                             </div>
-                            <span class="act-tag tag-done">DONE</span>
-                        </div>
-
-                        <div class="activity-row">
-                            <div class="act-avatar">
-                                <img src="{% static 'imgs/whitecarturnedback.png' %}" alt="car">
-                            </div>
-                            <div class="act-info">
-                                <strong>Parking Session #2222</strong>
-                                <div class="act-meta">
-                                    <span><i class="fas fa-clock"></i> 1h 30m</span>
-                                    <span><i class="fas fa-map-marker-alt"></i> Zone 44</span>
-                                </div>
-                            </div>
-                            <span class="act-tag tag-done">DONE</span>
-                        </div>
-
-                        <div class="activity-row">
-                            <div class="act-avatar">
-                                <img src="{% static 'imgs/whitecarturnedback.png' %}" alt="car">
-                            </div>
-                            <div class="act-info">
-                                <strong>Parking Session #3333</strong>
-                                <div class="act-meta">
-                                    <span><i class="fas fa-clock"></i> 3h 30m</span>
-                                    <span><i class="fas fa-map-marker-alt"></i> Zone 51</span>
-                                </div>
-                            </div>
+                            {% if not t.exit_time %}
                             <span class="act-tag tag-active">ACTIVE</span>
-                        </div>
-
-                        <div class="activity-row">
-                            <div class="act-avatar">
-                                <img src="{% static 'imgs/whitecarturnedback.png' %}" alt="car">
-                            </div>
-                            <div class="act-info">
-                                <strong>Parking Session #4444</strong>
-                                <div class="act-meta">
-                                    <span><i class="fas fa-clock"></i> 1h 00m</span>
-                                    <span><i class="fas fa-map-marker-alt"></i> Zone 51</span>
-                                </div>
-                            </div>
+                            {% else %}
                             <span class="act-tag tag-done">DONE</span>
+                            {% endif %}
                         </div>
-
-                        <div class="activity-row">
-                            <div class="act-avatar">
-                                <img src="{% static 'imgs/whitecarturnedback.png' %}" alt="car">
-                            </div>
-                            <div class="act-info">
-                                <strong>Parking Session #4328</strong>
-                                <div class="act-meta">
-                                    <span><i class="fas fa-clock"></i> 1h 30m</span>
-                                    <span><i class="fas fa-map-marker-alt"></i> Zone 77</span>
-                                </div>
-                            </div>
-                            <span class="act-tag tag-done">DONE</span>
+                        {% endfor %}
+                    {% else %}
+                        <div style="text-align:center;padding:28px 16px;color:var(--muted);">
+                            <i class="fas fa-parking" style="font-size:1.8rem;opacity:0.2;display:block;margin-bottom:8px;"></i>
+                            <p style="font-size:0.84rem;margin:0;">No parking sessions yet</p>
                         </div>
-
+                    {% endif %}
                     </div>
                     <div class="ap-footer">
-                        <a href="{% url 'billings' %}">View all activities <i class="fas fa-arrow-right"></i></a>
+                        <a href="{% url 'ticket' %}">View all sessions <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
 
@@ -710,9 +811,7 @@
                         <a href="{% url 'ticket' %}" class="qa-btn qa-btn-outline">
                             <i class="fas fa-ticket-alt"></i> My Tickets
                         </a>
-                        <a href="{% url 'billings' %}" class="qa-btn qa-btn-ghost">
-                            <i class="fas fa-receipt"></i> Billing History
-                        </a>
+                        
                     </div>
                 </div>
             </div>
@@ -720,6 +819,24 @@
 
         {% endblock %}
     </main>
+
+    <!-- ===== TOAST CONTAINER ===== -->
+    <div id="toast-container"></div>
+
+    <!-- ===== DJANGO MESSAGES → TOASTS ===== -->
+    {% if messages %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% for msg in messages %}
+        showToast(
+            "{{ msg.tags|title }}",
+            "{{ msg|escapejs }}",
+            "{% if 'error' in msg.tags %}error{% elif 'warning' in msg.tags %}warn{% else %}success{% endif %}"
+        );
+        {% endfor %}
+    });
+    </script>
+    {% endif %}
 
     <!-- ===== LOGOUT MODAL ===== -->
     <div class="modal-overlay" id="logoutModal">
@@ -740,53 +857,121 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Vehicle type selection highlight
-        document.querySelectorAll('.vtype-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.vtype-btn').forEach(function(b) { b.classList.remove('active'); });
-                this.classList.add('active');
-            });
-        });
+    /* ── TOAST SYSTEM ── */
+    const TOAST_ICONS = {
+        success: '<i class="fas fa-check-circle toast-icon"></i>',
+        error:   '<i class="fas fa-times-circle toast-icon"></i>',
+        warn:    '<i class="fas fa-exclamation-triangle toast-icon"></i>',
+        info:    '<i class="fas fa-info-circle toast-icon"></i>',
+    };
+    const TOAST_TITLES = { success: 'Success', error: 'Error', warn: 'Warning', info: 'Info' };
 
-        // Logout modal
-        function showLogout(e) {
-            e.preventDefault();
-            var modal = document.getElementById('logoutModal');
-            modal.style.display = 'flex';
-            requestAnimationFrame(function() { modal.classList.add('show'); });
+    function showToast(title, message, type) {
+        type = type || 'success';
+        var el = document.createElement('div');
+        el.className = 'toast-item toast-' + type;
+        el.innerHTML =
+            (TOAST_ICONS[type] || TOAST_ICONS.info) +
+            '<div class="toast-body">' +
+                '<div class="toast-title">' + (title || TOAST_TITLES[type]) + '</div>' +
+                (message ? '<div class="toast-msg">' + message + '</div>' : '') +
+            '</div>' +
+            '<button class="toast-close" onclick="dismissToast(this.parentElement)">&#x2715;</button>';
+        document.getElementById('toast-container').appendChild(el);
+        setTimeout(function() { dismissToast(el); }, 5000);
+    }
+    function dismissToast(el) {
+        if (!el || el._dismissing) return;
+        el._dismissing = true;
+        el.classList.add('toast-out');
+        setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 240);
+    }
+
+    /* ── USER DROPDOWN ── */
+    function toggleUserMenu(e) {
+        e.stopPropagation();
+        var dd = document.getElementById('user-dropdown');
+        dd.classList.toggle('open');
+    }
+    document.addEventListener('click', function() {
+        var dd = document.getElementById('user-dropdown');
+        if (dd) dd.classList.remove('open');
+    });
+
+    /* ── LOGOUT MODAL ── */
+    function showLogout(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById('user-dropdown').classList.remove('open');
+        var modal = document.getElementById('logoutModal');
+        modal.style.display = 'flex';
+        requestAnimationFrame(function() { modal.classList.add('show'); });
+    }
+    function hideLogout() {
+        var modal = document.getElementById('logoutModal');
+        modal.classList.remove('show');
+        setTimeout(function() { modal.style.display = 'none'; }, 250);
+    }
+    document.getElementById('doLogout').addEventListener('click', function() {
+        this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Signing out…';
+        this.disabled = true;
+        var form = document.createElement('form');
+        form.method = 'POST'; form.action = '/logout/';
+        var csrf = document.querySelector('[name=csrfmiddlewaretoken]') ||
+                   document.querySelector('meta[name="csrf-token"]');
+        if (csrf) {
+            var inp = document.createElement('input');
+            inp.type = 'hidden'; inp.name = 'csrfmiddlewaretoken';
+            inp.value = csrf.getAttribute('content') || csrf.value;
+            form.appendChild(inp);
         }
-        function hideLogout() {
-            var modal = document.getElementById('logoutModal');
-            modal.classList.remove('show');
-            setTimeout(function() { modal.style.display = 'none'; }, 250);
-        }
+        document.body.appendChild(form);
+        form.submit();
+    });
+    document.getElementById('logoutModal').addEventListener('click', function(e) {
+        if (e.target === this) hideLogout();
+    });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') hideLogout(); });
 
-        document.getElementById('doLogout').addEventListener('click', function() {
-            this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Signing out…';
-            this.disabled = true;
-            var form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/logout/';
-            var csrf = document.querySelector('[name=csrfmiddlewaretoken]') ||
-                       document.querySelector('meta[name="csrf-token"]');
-            if (csrf) {
-                var inp = document.createElement('input');
-                inp.type = 'hidden';
-                inp.name = 'csrfmiddlewaretoken';
-                inp.value = csrf.getAttribute('content') || csrf.value;
-                form.appendChild(inp);
-            }
-            document.body.appendChild(form);
-            form.submit();
-        });
+    /* ── NOTIFICATION BADGE POLL ── */
+    var _lastUnread = 0;
+    (function pollNotifs() {
+        fetch('/api/notifications/data/')
+            .then(function(r) { return r.json(); })
+            .then(function(resp) {
+                var n = (resp && resp.unread) ? resp.unread : 0;
 
-        // Close modal on outside click
-        document.getElementById('logoutModal').addEventListener('click', function(e) {
-            if (e.target === this) hideLogout();
-        });
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') hideLogout();
-        });
+                // Bell badge
+                var bell = document.getElementById('notif-count');
+                if (bell) {
+                    if (n > 0) {
+                        bell.textContent = n > 99 ? '99+' : n;
+                        bell.style.display = 'flex';
+                    } else {
+                        bell.style.display = 'none';
+                    }
+                }
+
+                // Dropdown badge
+                var udBadge = document.getElementById('ud-notif-badge');
+                if (udBadge) {
+                    if (n > 0) {
+                        udBadge.textContent = n > 99 ? '99+' : n;
+                        udBadge.style.display = 'flex';
+                    } else {
+                        udBadge.style.display = 'none';
+                    }
+                }
+
+                // Toast when NEW notifications arrive (not on first load)
+                if (_lastUnread > 0 && n > _lastUnread) {
+                    showToast('New notification', 'You have ' + n + ' unread notifications.', 'info');
+                }
+                _lastUnread = n;
+            })
+            .catch(function() {});
+        setTimeout(pollNotifs, 30000);
+    })();
     </script>
 </body>
 </html>

@@ -1,0 +1,166 @@
+﻿{% extends "userin.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .profile-avatar {
+        width:72px;height:72px;border-radius:50%;background:var(--green);color:white;
+        display:flex;align-items:center;justify-content:center;
+        font-family:'Plus Jakarta Sans',sans-serif;font-size:1.75rem;font-weight:800;
+        flex-shrink:0;margin-right:20px;
+    }
+    .p-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:16px;}
+    .p-card-hdr{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+    .p-card-hdr h5{font-size:0.9rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;margin:0;}
+    .p-card-body{padding:20px;}
+    .p-field{margin-bottom:14px;}
+    .p-label{display:block;font-size:0.8rem;font-weight:600;color:var(--muted);margin-bottom:5px;}
+    .p-input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Inter',sans-serif;font-size:0.875rem;color:var(--text);background:var(--white);outline:none;transition:border-color 150ms,box-shadow 150ms;}
+    .p-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(44,95,71,0.10);}
+    .p-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .p-btn{padding:9px 20px;border-radius:8px;font-family:'Inter',sans-serif;font-size:0.875rem;font-weight:600;cursor:pointer;}
+    .p-btn-primary{background:var(--green);color:white;border:1px solid var(--green-dark);}
+    .p-btn-primary:hover{background:var(--green-dark);}
+    .p-btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border);}
+    .p-btn-ghost:hover{border-color:#b8cfc8;color:var(--text);}
+    .p-btn-danger{padding:6px 12px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;}
+    .p-btn-danger:hover{background:#dc2626;color:white;border-color:#dc2626;}
+    .vehicle-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);}
+    .vehicle-row:last-child{border-bottom:none;}
+    .vtype-chip{padding:3px 9px;border-radius:20px;font-size:0.72rem;font-weight:700;}
+    .vt-car{background:#dbeafe;color:#1e40af;}
+    .vt-moto{background:#ede9fe;color:#6d28d9;}
+    .vt-truck{background:#fef9c3;color:#854d0e;}
+    .flash-msg{display:flex;align-items:center;gap:9px;padding:10px 14px;border-radius:8px;font-size:0.86rem;margin-bottom:14px;}
+    .flash-success{background:#f0fdf4;border:1px solid #a3d9bc;color:#1c5c3b;}
+    .flash-error{background:#fef0ee;border:1px solid #f2b8b2;color:#7a1f18;}
+    @media(max-width:640px){.p-row{grid-template-columns:1fr;}.content-grid{grid-template-columns:1fr!important;}}
+</style>
+
+{% if messages %}
+{% for msg in messages %}
+<div class="flash-msg flash-{% if msg.tags == 'error' %}error{% else %}success{% endif %}">
+    <i class="fas fa-{% if msg.tags == 'error' %}exclamation-circle{% else %}check-circle{% endif %}"></i>
+    <span>{{ msg }}</span>
+</div>
+{% endfor %}
+{% endif %}
+
+<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:24px;display:flex;align-items:center;box-shadow:var(--shadow-sm);margin-bottom:20px;">
+    <div class="profile-avatar">{{ request.user.username|first|upper }}</div>
+    <div style="flex:1;min-width:0;">
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.25rem;font-weight:800;color:var(--text);letter-spacing:-0.02em;">{{ request.user.get_full_name|default:request.user.username }}</div>
+        <div style="font-size:0.84rem;color:var(--muted);margin-top:2px;">{{ request.user.email|default:"No email set" }}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;">
+            <span style="font-size:0.78rem;color:var(--muted);"><i class="fas fa-car" style="color:var(--green);"></i> {{ user_vehicles.count }} vehicle{{ user_vehicles.count|pluralize }}</span>
+            <span style="font-size:0.78rem;color:var(--muted);"><i class="fas fa-ticket-alt" style="color:var(--green);"></i> {{ total_tickets }} session{{ total_tickets|pluralize }}</span>
+            {% if active_sessions %}<span style="font-size:0.78rem;color:var(--green);font-weight:600;"><i class="fas fa-circle" style="font-size:7px;"></i> {{ active_sessions }} active now</span>{% endif %}
+            {% if total_spent %}<span style="font-size:0.78rem;color:var(--muted);"><i class="fas fa-dollar-sign" style="color:var(--green);"></i> ${{ total_spent|floatformat:2 }} spent</span>{% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="content-grid">
+    <div>
+        <div class="p-card">
+            <div class="p-card-hdr"><h5><i class="fas fa-user" style="color:var(--green);"></i> Personal Information</h5></div>
+            <div class="p-card-body">
+                <form method="POST" action="{% url 'profile' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_profile">
+                    <div class="p-row">
+                        <div class="p-field">
+                            <label class="p-label">First Name</label>
+                            <input class="p-input" type="text" name="first_name" value="{{ request.user.first_name }}" placeholder="First name">
+                        </div>
+                        <div class="p-field">
+                            <label class="p-label">Last Name</label>
+                            <input class="p-input" type="text" name="last_name" value="{{ request.user.last_name }}" placeholder="Last name">
+                        </div>
+                    </div>
+                    <div class="p-field">
+                        <label class="p-label">Username <span style="color:#94a3b8;font-weight:400;">(read-only)</span></label>
+                        <input class="p-input" type="text" value="{{ request.user.username }}" disabled style="background:var(--bg);color:var(--muted);">
+                    </div>
+                    <div class="p-field">
+                        <label class="p-label">Email Address</label>
+                        <input class="p-input" type="email" name="email" value="{{ request.user.email }}" placeholder="you@example.com">
+                    </div>
+                    <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
+                        <div class="p-field">
+                            <label class="p-label">New Password <span style="color:#94a3b8;font-weight:400;">(leave blank to keep current)</span></label>
+                            <input class="p-input" type="password" name="password" placeholder="8+ characters" autocomplete="new-password">
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;">
+                        <button type="reset" class="p-btn p-btn-ghost">Reset</button>
+                        <button type="submit" class="p-btn p-btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="p-card">
+            <div class="p-card-hdr"><h5><i class="fas fa-info-circle" style="color:var(--blue);"></i> Account Details</h5></div>
+            <div class="p-card-body" style="display:flex;flex-direction:column;gap:10px;font-size:0.86rem;">
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Account type</span><strong>{% if request.user.is_staff %}Administrator{% else %}Driver{% endif %}</strong></div>
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Status</span><span style="background:#dcfce7;color:#166534;font-size:0.72rem;font-weight:700;padding:2px 8px;border-radius:20px;">{% if request.user.is_active %}Active{% else %}Inactive{% endif %}</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Member since</span><strong>{{ request.user.date_joined|date:"d F Y" }}</strong></div>
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Last login</span><strong>{{ request.user.last_login|date:"d M Y, H:i"|default:"—" }}</strong></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="p-card">
+            <div class="p-card-hdr">
+                <h5><i class="fas fa-car" style="color:var(--green);"></i> My Vehicles <span style="font-weight:400;color:var(--muted);font-size:0.8rem;">({{ user_vehicles.count }})</span></h5>
+            </div>
+            {% if user_vehicles %}
+            <div>
+                {% for v in user_vehicles %}
+                <div class="vehicle-row">
+                    <div style="width:38px;height:38px;border-radius:10px;background:var(--green-pale);display:flex;align-items:center;justify-content:center;color:var(--green);font-size:1rem;flex-shrink:0;">
+                        <i class="fas fa-{% if v.vehicle_type == 'Car' %}car{% elif v.vehicle_type == 'Motorcycle' %}motorcycle{% else %}truck{% endif %}"></i>
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-family:monospace;font-weight:700;font-size:0.9rem;color:var(--text);">{{ v.plate_number }}</div>
+                        <span class="vtype-chip {% if v.vehicle_type == 'Car' %}vt-car{% elif v.vehicle_type == 'Motorcycle' %}vt-moto{% else %}vt-truck{% endif %}">{{ v.vehicle_type }}</span>
+                    </div>
+                    <form method="POST" action="{% url 'profile' %}" onsubmit="return confirm('Remove {{ v.plate_number }}?');">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="remove_vehicle">
+                        <input type="hidden" name="vehicle_id" value="{{ v.vehicle_id }}">
+                        <button type="submit" class="p-btn-danger"><i class="fas fa-trash"></i></button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align:center;padding:28px;color:var(--muted);">
+                <i class="fas fa-car" style="font-size:2rem;opacity:0.2;display:block;margin-bottom:8px;"></i>
+                <p style="font-size:0.84rem;margin:0;">No vehicles yet. Add one below.</p>
+            </div>
+            {% endif %}
+            <div style="border-top:1px solid var(--border);padding:16px 20px;background:var(--bg);">
+                <div style="font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:12px;"><i class="fas fa-plus" style="color:var(--green);"></i> Register New Vehicle</div>
+                <form method="POST" action="{% url 'profile' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_vehicle">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                        <div>
+                            <label class="p-label">Plate Number *</label>
+                            <input class="p-input" type="text" name="plate_number" placeholder="e.g. RAB 1234 A" required style="text-transform:uppercase;">
+                        </div>
+                        <div>
+                            <label class="p-label">Vehicle Type</label>
+                            <select class="p-input" name="vehicle_type">
+                                {% for vt in vehicle_types %}<option value="{{ vt }}">{{ vt }}</option>{% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="p-btn p-btn-primary" style="width:100%;"><i class="fas fa-plus"></i> Add Vehicle</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

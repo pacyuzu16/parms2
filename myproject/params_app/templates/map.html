@@ -1,0 +1,326 @@
+﻿{% extends "userin.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .map-page { display: grid; grid-template-columns: 300px 1fr; gap: 16px; height: calc(100vh - 140px); min-height: 520px; }
+    .map-sidebar { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); }
+    .map-sidebar-hdr { padding: 14px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .map-sidebar-hdr h5 { font-size: 0.88rem; font-weight: 700; color: var(--text); margin: 0 0 10px; display: flex; align-items: center; gap: 7px; }
+    .map-search { width: 100%; padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 0.82rem; color: var(--text); background: var(--bg); outline: none; transition: border-color 150ms; }
+    .map-search:focus { border-color: var(--green); }
+    .lot-list { flex: 1; overflow-y: auto; }
+    .lot-item { padding: 12px 16px; border-bottom: 1px solid #f0f4f2; cursor: pointer; transition: background 0.1s; }
+    .lot-item:hover { background: var(--bg); }
+    .lot-item.active { background: rgba(44,95,71,0.08); border-left: 3px solid var(--green); }
+    .lot-name { font-size: 0.875rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .lot-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .lot-avail { font-size: 0.75rem; color: var(--muted); }
+    .lot-badge { font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; }
+    .b-ok   { background: #dcfce7; color: #166534; }
+    .b-busy { background: #fef9c3; color: #854d0e; }
+    .b-full { background: #fee2e2; color: #b91c1c; }
+    .lot-dist { font-size: 0.72rem; color: var(--muted); display: flex; align-items: center; gap: 3px; }
+    .lot-price { font-size: 0.72rem; color: var(--muted); }
+    .map-wrap { position: relative; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+    #parking-map { width: 100%; height: 100%; }
+    .map-top-bar { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; gap: 6px; }
+    .filter-pill { padding: 6px 14px; background: white; border: 1px solid var(--border); border-radius: 20px; font-size: 0.78rem; font-weight: 600; color: var(--text); cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: all 150ms; white-space: nowrap; }
+    .filter-pill.active { background: var(--green); color: white; border-color: var(--green); }
+    .locate-btn { position: absolute; bottom: 80px; right: 12px; z-index: 1000; width: 40px; height: 40px; background: white; border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.12); font-size: 1rem; color: var(--green); transition: background 150ms; }
+    .locate-btn:hover { background: var(--green); color: white; }
+    .map-legend { position: absolute; bottom: 16px; left: 12px; z-index: 1000; background: white; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 0.72rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .leg-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+    .leg-row:last-child { margin-bottom: 0; }
+    .leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .loc-toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 9999; background: var(--green); color: white; padding: 10px 20px; border-radius: 8px; font-size: 0.84rem; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; }
+    @media (max-width: 768px) {
+        .map-page { grid-template-columns: 1fr; height: auto; }
+        .map-wrap { height: 420px; }
+        .lot-list { max-height: 260px; }
+        .map-top-bar { width: calc(100% - 24px); justify-content: center; }
+    }
+</style>
+
+<div class="loc-toast" id="locToast"></div>
+
+<!-- Page header -->
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+    <div>
+        <h4 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.05rem;font-weight:800;color:var(--text);margin:0 0 2px;">
+            <i class="fas fa-map-marker-alt" style="color:var(--green);"></i>
+            Live Parking Map
+        </h4>
+        <p style="font-size:0.8rem;color:var(--muted);margin:0;" id="map-subtitle">
+            {{ total_lots }} location{{ total_lots|pluralize }} · {{ total_available }} space{{ total_available|pluralize }} available
+        </p>
+    </div>
+    <a href="{% url 'slots' %}" class="qa-btn qa-btn-primary" style="font-size:0.82rem;padding:7px 16px;">
+        <i class="fas fa-parking"></i> Book a Space
+    </a>
+</div>
+
+<div class="map-page">
+    <!-- Sidebar -->
+    <div class="map-sidebar">
+        <div class="map-sidebar-hdr">
+            <h5><i class="fas fa-list" style="color:var(--green);"></i> Nearby Parking</h5>
+            <input class="map-search" type="text" id="lotSearch" placeholder="Search by name…" oninput="filterLots(this.value)">
+        </div>
+        <div class="lot-list" id="lotList">
+            {% for lot in lots_data %}
+            <div class="lot-item" id="li-{{ lot.id }}"
+                 data-name="{{ lot.location|lower }}"
+                 data-rate="{{ lot.rate }}"
+                 onclick="focusLot({{ lot.id }}, {{ lot.lat }}, {{ lot.lng }})">
+                <div class="lot-name">{{ lot.location|truncatechars:26 }}</div>
+                <div class="lot-meta">
+                    <span class="lot-badge {% if lot.rate >= 80 %}b-full{% elif lot.rate >= 50 %}b-busy{% else %}b-ok{% endif %}">
+                        {% if lot.rate >= 80 %}Full{% elif lot.rate >= 50 %}Busy{% else %}Available{% endif %}
+                    </span>
+                    <span class="lot-avail">{{ lot.available }}/{{ lot.total }} free</span>
+                    <span class="lot-price"><i class="fas fa-dollar-sign" style="font-size:9px;"></i>${{ lot.hourly_rate }}/hr</span>
+                    <span class="lot-dist" id="dist-{{ lot.id }}"></span>
+                </div>
+            </div>
+            {% empty %}
+            <div style="text-align:center;padding:32px 16px;color:var(--muted);">
+                <i class="fas fa-parking" style="font-size:2rem;opacity:0.2;display:block;margin-bottom:8px;"></i>
+                <p style="font-size:0.84rem;margin:0;">No parking lots added yet.</p>
+                {% if request.user.is_staff %}
+                <a href="/dashboard/?tab=parking" style="font-size:0.8rem;color:var(--green);font-weight:600;">Add lots in admin</a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Map -->
+    <div class="map-wrap">
+        <div id="parking-map"></div>
+
+        <!-- Filter pills -->
+        <div class="map-top-bar">
+            <button class="filter-pill active" onclick="setFilter('all',this)">All</button>
+            <button class="filter-pill" onclick="setFilter('available',this)">Available</button>
+            <button class="filter-pill" onclick="setFilter('busy',this)">Busy</button>
+            <button class="filter-pill" onclick="setFilter('full',this)">Full</button>
+        </div>
+
+        <!-- Locate me button -->
+        <button class="locate-btn" onclick="locateUser()" title="Find my location">
+            <i class="fas fa-location-arrow"></i>
+        </button>
+
+        <!-- Legend -->
+        <div class="map-legend">
+            <div class="leg-row"><div class="leg-dot" style="background:#166534;"></div><span>Available</span></div>
+            <div class="leg-row"><div class="leg-dot" style="background:#854d0e;"></div><span>Busy</span></div>
+            <div class="leg-row"><div class="leg-dot" style="background:#b91c1c;"></div><span>Full</span></div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const LOTS = {{ lots_data|safe }};
+let map, markers = {}, userMarker = null, userLatLng = null;
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function pinColor(rate) {
+    return rate >= 80 ? '#b91c1c' : rate >= 50 ? '#b45309' : '#166534';
+}
+
+function makeIcon(rate) {
+    const c = pinColor(rate);
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="38" viewBox="0 0 30 38">
+        <path d="M15 0C6.7 0 0 6.7 0 15c0 9.8 15 23 15 23S30 24.8 30 15C30 6.7 23.3 0 15 0z" fill="${c}" stroke="white" stroke-width="1.5"/>
+        <text x="15" y="20" text-anchor="middle" fill="white" font-size="12" font-weight="bold" font-family="Inter,sans-serif">P</text>
+    </svg>`;
+    return L.divIcon({ html: svg, iconSize: [30,38], iconAnchor: [15,38], popupAnchor: [0,-38], className: '' });
+}
+
+function makeUserIcon() {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+        <circle cx="10" cy="10" r="8" fill="#2c5f47" stroke="white" stroke-width="2"/>
+        <circle cx="10" cy="10" r="3" fill="white"/>
+    </svg>`;
+    return L.divIcon({ html: svg, iconSize: [20,20], iconAnchor: [10,10], className: '' });
+}
+
+function haversine(lat1, lng1, lat2, lng2) {
+    const R = 6371, dLat = (lat2-lat1)*Math.PI/180, dLng = (lng2-lng1)*Math.PI/180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+    return R * 2 * Math.asin(Math.sqrt(a));
+}
+
+function popup(lot, dist) {
+    const c = pinColor(lot.rate);
+    const feats = lot.features ? lot.features.split(',').filter(Boolean)
+        .map(f => `<span style="background:#f1f5f9;padding:1px 6px;border-radius:4px;font-size:11px;">${f.trim()}</span>`).join(' ') : '';
+    const distStr = dist !== null ? `<span style="font-size:0.75rem;color:#4f5a55;"><i class="fas fa-location-arrow" style="font-size:9px;"></i> ${dist < 1 ? Math.round(dist*1000)+'m' : dist.toFixed(1)+'km'} away</span>` : '';
+    return `<div style="font-family:'Inter',sans-serif;min-width:210px;max-width:240px;">
+        <div style="font-weight:800;font-size:0.9rem;margin-bottom:6px;color:#161b19;">${lot.location}</div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:0.78rem;color:#4f5a55;">${lot.available}/${lot.total} spaces free</span>
+            <span style="font-size:0.78rem;font-weight:700;color:${c};">${lot.rate}% full</span>
+        </div>
+        <div style="height:5px;background:#e5e7eb;border-radius:3px;margin-bottom:8px;overflow:hidden;">
+            <div style="height:100%;width:${lot.rate}%;background:${c};border-radius:3px;"></div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+            <span style="font-size:0.78rem;color:#4f5a55;"><i class="fas fa-dollar-sign" style="font-size:9px;"></i> $${lot.hourly_rate}/hr</span>
+            ${distStr}
+        </div>
+        ${feats ? `<div style="margin-bottom:10px;display:flex;flex-wrap:wrap;gap:3px;">${feats}</div>` : ''}
+        <a href="/slots/" style="display:block;text-align:center;padding:7px;background:#2c5f47;color:white;border-radius:6px;font-size:0.82rem;font-weight:600;text-decoration:none;">
+            <i class="fas fa-parking"></i> Book a Space
+        </a>
+    </div>`;
+}
+
+// ── Map init ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+    map = L.map('parking-map').setView([-1.9441, 30.0619], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19, attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    LOTS.forEach(function(lot) {
+        const m = L.marker([lot.lat, lot.lng], { icon: makeIcon(lot.rate) })
+            .addTo(map).bindPopup(popup(lot, null), { maxWidth: 260 });
+        m.lotData = lot;
+        markers[lot.id] = m;
+    });
+
+    if (LOTS.length > 0) {
+        const bounds = L.latLngBounds(LOTS.map(l => [l.lat, l.lng]));
+        map.fitBounds(bounds.pad(0.25));
+    }
+
+    // Auto-ask location on load
+    if (navigator.geolocation) {
+        showToast('📍 Getting your location…');
+        navigator.geolocation.getCurrentPosition(onLocationSuccess, onLocationError, {
+            enableHighAccuracy: true, timeout: 8000
+        });
+    }
+});
+
+// ── Geolocation ───────────────────────────────────────────────────────────────
+function onLocationSuccess(pos) {
+    userLatLng = [pos.coords.latitude, pos.coords.longitude];
+    placeUserMarker(userLatLng[0], userLatLng[1]);
+    updateDistances(userLatLng[0], userLatLng[1]);
+    sortListByDistance(userLatLng[0], userLatLng[1]);
+    showToast('✓ Location found — showing nearby parking');
+}
+
+function onLocationError(err) {
+    console.warn('Geolocation:', err.message);
+    showToast('Location unavailable — showing all lots');
+}
+
+function locateUser() {
+    if (!navigator.geolocation) { showToast('Geolocation not supported'); return; }
+    showToast('📍 Finding your location…');
+    navigator.geolocation.getCurrentPosition(onLocationSuccess, onLocationError, { enableHighAccuracy: true, timeout: 8000 });
+}
+
+function placeUserMarker(lat, lng) {
+    if (userMarker) map.removeLayer(userMarker);
+    userMarker = L.marker([lat, lng], { icon: makeUserIcon() })
+        .addTo(map).bindPopup('<strong style="font-family:Inter,sans-serif;">You are here</strong>');
+    map.setView([lat, lng], 14);
+}
+
+function updateDistances(userLat, userLng) {
+    LOTS.forEach(function(lot) {
+        const dist = haversine(userLat, userLng, lot.lat, lot.lng);
+        lot._dist = dist;
+        const el = document.getElementById('dist-' + lot.id);
+        if (el) {
+            el.innerHTML = '<i class="fas fa-location-arrow" style="font-size:9px;"></i> ' +
+                (dist < 1 ? Math.round(dist * 1000) + 'm' : dist.toFixed(1) + 'km');
+        }
+        if (markers[lot.id]) {
+            markers[lot.id].setPopupContent(popup(lot, dist));
+        }
+    });
+}
+
+function sortListByDistance(userLat, userLng) {
+    const listEl = document.getElementById('lotList');
+    const items = Array.from(listEl.querySelectorAll('.lot-item'));
+    items.sort(function(a, b) {
+        const la = LOTS.find(l => 'li-' + l.id === a.id);
+        const lb = LOTS.find(l => 'li-' + l.id === b.id);
+        return (la && la._dist || 999) - (lb && lb._dist || 999);
+    });
+    items.forEach(function(item) { listEl.appendChild(item); });
+    document.getElementById('map-subtitle').textContent =
+        LOTS.length + ' location' + (LOTS.length !== 1 ? 's' : '') +
+        ' · sorted by distance from you';
+}
+
+// ── UI helpers ────────────────────────────────────────────────────────────────
+function focusLot(id, lat, lng) {
+    map.setView([lat, lng], 16);
+    if (markers[id]) markers[id].openPopup();
+    document.querySelectorAll('.lot-item').forEach(el => el.classList.remove('active'));
+    const item = document.getElementById('li-' + id);
+    if (item) { item.classList.add('active'); item.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+}
+
+function setFilter(type, btn) {
+    document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    Object.values(markers).forEach(function(m) {
+        const r = m.lotData.rate;
+        const show = type === 'all'
+            || (type === 'available' && r < 50)
+            || (type === 'busy'      && r >= 50 && r < 80)
+            || (type === 'full'      && r >= 80);
+        if (show) { if (!map.hasLayer(m)) m.addTo(map); }
+        else      { if ( map.hasLayer(m)) map.removeLayer(m); }
+    });
+}
+
+function filterLots(q) {
+    const lq = q.toLowerCase();
+    document.querySelectorAll('.lot-item').forEach(el => {
+        el.style.display = el.dataset.name.includes(lq) ? '' : 'none';
+    });
+}
+
+function showToast(msg) {
+    const t = document.getElementById('locToast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.style.display = 'none', 3000);
+}
+
+// ── Auto-refresh every 30s ────────────────────────────────────────────────────
+setInterval(function () {
+    fetch('/api/map-data/').then(r => r.json()).then(function(resp) {
+        if (!resp.success) return;
+        resp.lots.forEach(function(lot) {
+            if (!markers[lot.id]) return;
+            markers[lot.id].lotData = lot;
+            markers[lot.id].setIcon(makeIcon(lot.rate));
+            const d = lot._dist !== undefined ? lot._dist : null;
+            markers[lot.id].setPopupContent(popup(lot, d));
+            const badge = document.querySelector('#li-' + lot.id + ' .lot-badge');
+            if (badge) {
+                badge.textContent = lot.rate >= 80 ? 'Full' : lot.rate >= 50 ? 'Busy' : 'Available';
+                badge.className = 'lot-badge ' + (lot.rate >= 80 ? 'b-full' : lot.rate >= 50 ? 'b-busy' : 'b-ok');
+            }
+            const avail = document.querySelector('#li-' + lot.id + ' .lot-avail');
+            if (avail) avail.textContent = lot.available + '/' + lot.total + ' free';
+        });
+    }).catch(() => {});
+}, 30000);
+</script>
+{% endblock %}
