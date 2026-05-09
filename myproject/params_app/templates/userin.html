@@ -599,23 +599,31 @@
                 <!-- User dropdown -->
                 <div class="user-menu-wrap">
                     <div class="user-chip" onclick="toggleUserMenu(event)" role="button" aria-expanded="false">
-                        {% if request.user.profile.photo %}
-                        <img src="{{ request.user.profile.photo.url }}" alt="avatar"
-                             style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid var(--green);flex-shrink:0;">
+                        {% with purl=request.user.profile.photo_url %}
+                        {% if purl %}
+                        <img src="{{ purl }}" alt="avatar"
+                             style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid var(--green);flex-shrink:0;"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                        <div class="user-avatar-initial" style="display:none;">{{ request.user.username|slice:":1"|upper }}</div>
                         {% else %}
                         <div class="user-avatar-initial">{{ request.user.username|slice:":1"|upper }}</div>
                         {% endif %}
+                        {% endwith %}
                         <span>{{ request.user.username }}</span>
                         <i class="fas fa-chevron-down" style="font-size:0.62rem;opacity:0.5;margin-left:2px;"></i>
                     </div>
                     <div class="user-dropdown" id="user-dropdown">
                         <div class="ud-header">
-                            {% if request.user.profile.photo %}
-                            <img src="{{ request.user.profile.photo.url }}" alt="avatar"
-                                 style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--green);flex-shrink:0;">
+                            {% with purl=request.user.profile.photo_url %}
+                            {% if purl %}
+                            <img src="{{ purl }}" alt="avatar"
+                                 style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--green);flex-shrink:0;"
+                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                            <div class="ud-avatar-lg" style="display:none;">{{ request.user.username|slice:":1"|upper }}</div>
                             {% else %}
                             <div class="ud-avatar-lg">{{ request.user.username|slice:":1"|upper }}</div>
                             {% endif %}
+                            {% endwith %}
                             <div>
                                 <div class="ud-name">{{ request.user.get_full_name|default:request.user.username }}</div>
                                 <div class="ud-email">{{ request.user.email|default:"—" }}</div>

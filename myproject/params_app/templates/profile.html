@@ -49,12 +49,16 @@
 <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:24px;display:flex;align-items:center;box-shadow:var(--shadow-sm);margin-bottom:20px;">
     <!-- Avatar: real photo or initial -->
     <div style="position:relative;margin-right:20px;flex-shrink:0;">
-        {% if user_profile.photo %}
-        <img src="{{ user_profile.photo.url }}" alt="Profile photo"
-             style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid var(--green);">
+        {% with purl=user_profile.photo_url %}
+        {% if purl %}
+        <img src="{{ purl }}" alt="Profile photo"
+             style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid var(--green);"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div class="profile-avatar" style="margin-right:0;display:none;">{{ request.user.username|first|upper }}</div>
         {% else %}
         <div class="profile-avatar" style="margin-right:0;">{{ request.user.username|first|upper }}</div>
         {% endif %}
+        {% endwith %}
         <!-- Camera icon overlay to trigger upload -->
         <label for="photo-quick-upload"
                style="position:absolute;bottom:0;right:0;width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.65rem;border:2px solid white;"
@@ -131,9 +135,15 @@
                 <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
                     <!-- Preview -->
                     <div style="position:relative;flex-shrink:0;">
-                        {% if user_profile.photo %}
-                        <img id="photo-preview" src="{{ user_profile.photo.url }}" alt="Photo"
-                             style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--green);">
+                        {% with purl=user_profile.photo_url %}
+                        {% if purl %}
+                        <img id="photo-preview" src="{{ purl }}" alt="Photo"
+                             style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--green);"
+                             onerror="this.style.display='none';document.getElementById('photo-preview-initial').style.display='flex';">
+                        <div id="photo-preview-initial"
+                             style="display:none;width:90px;height:90px;border-radius:50%;background:var(--green);color:white;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:2rem;font-weight:800;">
+                            {{ request.user.username|first|upper }}
+                        </div>
                         {% else %}
                         <div id="photo-preview-initial"
                              style="width:90px;height:90px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:2rem;font-weight:800;">
@@ -141,6 +151,7 @@
                         </div>
                         <img id="photo-preview" src="" alt="" style="display:none;width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--green);">
                         {% endif %}
+                        {% endwith %}
                     </div>
                     <!-- Upload form -->
                     <div style="flex:1;min-width:180px;">
@@ -159,7 +170,7 @@
                                 <button type="submit" id="save-photo-btn" class="p-btn p-btn-primary" style="display:none;">
                                     <i class="fas fa-save"></i> Save Photo
                                 </button>
-                                {% if user_profile.photo %}
+                                {% if user_profile.photo_url %}
                                 <button type="button" class="p-btn p-btn-danger"
                                         onclick="if(confirm('Remove your profile photo?')){document.getElementById('rm-photo-form').submit();}">
                                     <i class="fas fa-trash"></i> Remove

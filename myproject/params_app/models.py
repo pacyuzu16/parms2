@@ -118,9 +118,20 @@ class UserProfile(models.Model):
         return f"Profile of {self.user.username}"
 
     def photo_url(self):
-        if self.photo:
-            return self.photo.url
-        return None
+        """Return the photo URL only if the file actually exists on disk.
+        Returns None when running on Render after a redeploy wipes the
+        ephemeral filesystem — callers/templates fall back to the initial avatar."""
+        if not self.photo:
+            return None
+        try:
+            # .path raises NotImplementedError on cloud storages (S3 etc.)
+            # In that case trust the URL and let the browser onerror handle it.
+            import os
+            if not os.path.exists(self.photo.path):
+                return None
+        except (NotImplementedError, ValueError):
+            pass
+        return self.photo.url
 
 
 # -- Contact Message -----------------------------------------------------------
