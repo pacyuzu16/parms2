@@ -47,7 +47,21 @@
 {% endif %}
 
 <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:24px;display:flex;align-items:center;box-shadow:var(--shadow-sm);margin-bottom:20px;">
-    <div class="profile-avatar">{{ request.user.username|first|upper }}</div>
+    <!-- Avatar: real photo or initial -->
+    <div style="position:relative;margin-right:20px;flex-shrink:0;">
+        {% if user_profile.photo %}
+        <img src="{{ user_profile.photo.url }}" alt="Profile photo"
+             style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid var(--green);">
+        {% else %}
+        <div class="profile-avatar" style="margin-right:0;">{{ request.user.username|first|upper }}</div>
+        {% endif %}
+        <!-- Camera icon overlay to trigger upload -->
+        <label for="photo-quick-upload"
+               style="position:absolute;bottom:0;right:0;width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.65rem;border:2px solid white;"
+               title="Change photo">
+            <i class="fas fa-camera"></i>
+        </label>
+    </div>
     <div style="flex:1;min-width:0;">
         <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.25rem;font-weight:800;color:var(--text);letter-spacing:-0.02em;">{{ request.user.get_full_name|default:request.user.username }}</div>
         <div style="font-size:0.84rem;color:var(--muted);margin-top:2px;">{{ request.user.email|default:"No email set" }}</div>
@@ -110,6 +124,58 @@
         </div>
     </div>
     <div>
+        <!-- Photo Upload Card -->
+        <div class="p-card" style="margin-bottom:16px;">
+            <div class="p-card-hdr"><h5><i class="fas fa-camera" style="color:var(--green);"></i> Profile Photo</h5></div>
+            <div class="p-card-body">
+                <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+                    <!-- Preview -->
+                    <div style="position:relative;flex-shrink:0;">
+                        {% if user_profile.photo %}
+                        <img id="photo-preview" src="{{ user_profile.photo.url }}" alt="Photo"
+                             style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--green);">
+                        {% else %}
+                        <div id="photo-preview-initial"
+                             style="width:90px;height:90px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:2rem;font-weight:800;">
+                            {{ request.user.username|first|upper }}
+                        </div>
+                        <img id="photo-preview" src="" alt="" style="display:none;width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--green);">
+                        {% endif %}
+                    </div>
+                    <!-- Upload form -->
+                    <div style="flex:1;min-width:180px;">
+                        <form method="POST" action="{% url 'profile' %}" enctype="multipart/form-data" id="photo-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="update_photo">
+                            <input type="file" name="photo" id="photo-quick-upload" accept="image/*"
+                                   style="display:none;" onchange="previewPhoto(this)">
+                            <p style="font-size:0.8rem;color:var(--muted);margin-bottom:10px;line-height:1.5;">
+                                Upload a JPEG, PNG or WebP image.<br>Max size: <strong>5 MB</strong>.
+                            </p>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                <label for="photo-quick-upload" class="p-btn p-btn-primary" style="cursor:pointer;">
+                                    <i class="fas fa-upload"></i> Choose Photo
+                                </label>
+                                <button type="submit" id="save-photo-btn" class="p-btn p-btn-primary" style="display:none;">
+                                    <i class="fas fa-save"></i> Save Photo
+                                </button>
+                                {% if user_profile.photo %}
+                                <button type="button" class="p-btn p-btn-danger"
+                                        onclick="if(confirm('Remove your profile photo?')){document.getElementById('rm-photo-form').submit();}">
+                                    <i class="fas fa-trash"></i> Remove
+                                </button>
+                                {% endif %}
+                            </div>
+                        </form>
+                        <form id="rm-photo-form" method="POST" action="{% url 'profile' %}" style="display:none;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="remove_photo">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="p-card">
             <div class="p-card-hdr">
                 <h5><i class="fas fa-car" style="color:var(--green);"></i> My Vehicles <span style="font-weight:400;color:var(--muted);font-size:0.8rem;">({{ user_vehicles.count }})</span></h5>
@@ -163,4 +229,21 @@
         </div>
     </div>
 </div>
+<script>
+function previewPhoto(input) {
+    if (!input.files || !input.files[0]) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        // Show img preview, hide initial-letter div
+        var preview = document.getElementById('photo-preview');
+        var initial = document.getElementById('photo-preview-initial');
+        if (preview) { preview.src = e.target.result; preview.style.display = 'block'; }
+        if (initial) initial.style.display = 'none';
+        // Show Save button
+        var saveBtn = document.getElementById('save-photo-btn');
+        if (saveBtn) saveBtn.style.display = 'inline-flex';
+    };
+    reader.readAsDataURL(input.files[0]);
+}
+</script>
 {% endblock %}

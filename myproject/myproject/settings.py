@@ -147,6 +147,10 @@ if DEBUG:
 else:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# ── Media files (user uploads) ────────────────────────────────────────────────
+MEDIA_URL  = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 
 # ── Security (production only) ────────────────────────────────────────────────
 # Render sits behind an HTTPS reverse proxy. These settings are required for

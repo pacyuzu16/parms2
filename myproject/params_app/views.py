@@ -14,7 +14,7 @@ import qrcode, datetime, random
 
 from .models import (
     ContactMessage, ParkingLot, Vehicle, ParkingSpace,
-    ParkingTicket, Payment, ParkingDetectionEvent, UserNotification
+    ParkingTicket, Payment, ParkingDetectionEvent, UserNotification, UserProfile
 )
 from .forms import ContactMessageForm
 
@@ -596,6 +596,7 @@ def user_list(request):
 def profile(request):
     owner_name    = request.user.get_full_name() or request.user.username
     user_vehicles = Vehicle.objects.filter(owner_name__iexact=owner_name).order_by("vehicle_id")
+    user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
 
     if request.method == "POST":
         action = request.POST.get("action", "")
@@ -624,6 +625,35 @@ def profile(request):
             messages.success(request, "Profile updated successfully.")
             return redirect("profile")
 
+        elif action == "update_photo":
+            photo = request.FILES.get("photo")
+            if photo:
+                # Validate: image only, max 5 MB
+                allowed = ('image/jpeg', 'image/png', 'image/webp', 'image/gif')
+                if photo.content_type not in allowed:
+                    messages.error(request, "Please upload a JPEG, PNG, WebP or GIF image.")
+                    return redirect("profile")
+                if photo.size > 5 * 1024 * 1024:
+                    messages.error(request, "Photo must be under 5 MB.")
+                    return redirect("profile")
+                # Delete old photo file to save disk space
+                if user_profile.photo:
+                    user_profile.photo.delete(save=False)
+                user_profile.photo = photo
+                user_profile.save()
+                messages.success(request, "Profile photo updated!")
+            else:
+                messages.error(request, "No photo was selected.")
+            return redirect("profile")
+
+        elif action == "remove_photo":
+            if user_profile.photo:
+                user_profile.photo.delete(save=False)
+                user_profile.photo = None
+                user_profile.save()
+                messages.success(request, "Profile photo removed.")
+            return redirect("profile")
+
         elif action == "add_vehicle":
             plate = request.POST.get("plate_number", "").strip().upper()
             vtype = request.POST.get("vehicle_type", "Car")
@@ -650,17 +680,14 @@ def profile(request):
                 messages.error(request, "Vehicle not found.")
             return redirect("profile")
 
-    all_tickets = ParkingTicket.objects.filter(vehicle__in=user_vehicles).order_by("-entry_time")
-    active_now  = all_tickets.filter(exit_time__isnull=True)
-    total_spent = Payment.objects.filter(
-        ticket__vehicle__in=user_vehicles
-    ).aggregate(Sum("amount"))["amount__sum"] or 0
+    all_tickets  = ParkingTicket.objects.filter(user=request.user).order_by("-entry_time")
+    active_now   = all_tickets.filter(exit_time__isnull=True)
 
     context = {
+        "user_profile":    user_profile,
         "user_vehicles":   user_vehicles,
         "total_tickets":   all_tickets.count(),
         "active_sessions": active_now.count(),
-        "total_spent":     total_spent,
         "vehicle_types":   ["Car", "Motorcycle", "Truck"],
     }
     return render(request, "profile.html", context)

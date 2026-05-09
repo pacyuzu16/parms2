@@ -13,7 +13,10 @@ python manage.py collectstatic --no-input
 echo "==> [3/4] Applying database migrations..."
 python manage.py migrate --no-input
 
-echo "==> [4/4] Creating superuser (skips if already exists)..."
+echo "==> [4/5] Creating superuser (skips if already exists)..."
 python create_superuser.py
+
+echo "==> [5/5] Seeding parking lot data (skips existing)..."
+python manage.py seed_data
 
 echo "==> Build complete."

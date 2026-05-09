@@ -109,6 +109,20 @@ class Payment(models.Model):
         return f"Payment {self.payment_id} for Ticket {self.ticket}"
 
 
+# -- User Profile (avatar photo) -----------------------------------------------
+class UserProfile(models.Model):
+    user  = models.OneToOneField(AuthUser, on_delete=models.CASCADE, related_name='profile')
+    photo = models.ImageField(upload_to='profiles/', null=True, blank=True)
+
+    def __str__(self):
+        return f"Profile of {self.user.username}"
+
+    def photo_url(self):
+        if self.photo:
+            return self.photo.url
+        return None
+
+
 # -- Contact Message -----------------------------------------------------------
 class ContactMessage(models.Model):
     full_name    = models.CharField(max_length=100)
