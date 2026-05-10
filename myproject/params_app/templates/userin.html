@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,9 +17,10 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --green:      #2c5f47;
-            --green-dark: #234d39;
-            --green-pale: #e6f0eb;
+            --green:      #c5e8d5;   /* mint fill — backgrounds, borders, badges */
+            --green-dark: #9dd4b8;   /* hover fill */
+            --green-pale: #eaf7f2;   /* ultra-light tint */
+            --green-ink:  #1a6640;   /* dark green for text/icons ON white */
             --teal:       #3d7560;
             --bg:         #f7f8f7;
             --white:      #ffffff;
@@ -90,8 +91,8 @@
             align-items: center;
             gap: 6px;
         }
-        .header-nav a:hover { color: var(--green); background: rgba(44,95,71,0.07); }
-        .header-nav a.active { color: var(--green); background: rgba(44,95,71,0.09); font-weight: 600; }
+        .header-nav a:hover { color: var(--green-ink); background: rgba(197,232,213,0.25); }
+        .header-nav a.active { color: var(--green-ink); background: rgba(197,232,213,0.35); font-weight: 600; }
         .header-actions { display: flex; align-items: center; gap: 10px; }
         .notif-btn {
             width: 38px; height: 38px;
@@ -105,7 +106,7 @@
             position: relative;
             font-size: 0.95rem;
         }
-        .notif-btn:hover { background: var(--green-pale); color: var(--green); border-color: var(--green); }
+        .notif-btn:hover { background: var(--green-pale); color: var(--green-ink); border-color: var(--green-dark); }
         .notif-dot {
             position: absolute;
             top: 6px; right: 6px;
@@ -151,7 +152,7 @@
             background: var(--green);
             border-radius: 14px;
             padding: 28px 32px;
-            color: white;
+            color: var(--green-ink);
             margin-bottom: 24px;
             display: flex;
             align-items: center;
@@ -348,7 +349,7 @@
         .qa-btn-primary:hover {
             background: var(--green-dark);
             color: white;
-            box-shadow: 0 1px 3px rgba(20,27,25,0.16), 0 4px 8px rgba(44,95,71,0.18);
+            box-shadow: 0 1px 3px rgba(20,27,25,0.16), 0 4px 8px rgba(144,210,180,0.18);
         }
         .qa-btn-outline {
             background: transparent;
@@ -499,7 +500,7 @@
         @keyframes toastOut {
             to { opacity: 0; transform: translateX(60px); max-height: 0; padding: 0; margin: 0; }
         }
-        .toast-icon { font-size: 1rem; margin-top: 1px; flex-shrink: 0; color: var(--green); }
+        .toast-icon { font-size: 1rem; margin-top: 1px; flex-shrink: 0; color: var(--green-ink); }
         .toast-item.toast-error  .toast-icon { color: #ef4444; }
         .toast-item.toast-warn   .toast-icon { color: #f59e0b; }
         .toast-item.toast-info   .toast-icon { color: #3b82f6; }
@@ -679,7 +680,7 @@
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
                 <i class="fas fa-brain" style="color:var(--green);"></i>
                 <span style="font-size:0.9rem;font-weight:700;color:var(--text);">Smart Recommendations</span>
-                <span style="font-size:0.72rem;background:rgba(44,95,71,0.1);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:600;">ML-powered</span>
+                <span style="font-size:0.72rem;background:rgba(144,210,180,0.1);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:600;">ML-powered</span>
                 <span style="font-size:0.78rem;color:var(--muted);margin-left:auto;">Best lots for right now</span>
             </div>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
