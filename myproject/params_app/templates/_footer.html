@@ -1,0 +1,80 @@
+{% load static %}{% now "Y" as current_year %}
+<footer style="background:#c5e8d5;border-top:1px solid #a8d4bc;margin-top:48px;padding:48px 0 0;">
+    <style>
+        .pf-brand{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.1rem;font-weight:800;color:#1a4a2e;display:flex;align-items:center;gap:9px;margin-bottom:10px;letter-spacing:-0.02em;}
+        .pf-tagline{font-size:0.875rem;color:#2e6644;line-height:1.65;margin-bottom:20px;max-width:260px;}
+        .pf-social{display:flex;gap:8px;margin-bottom:4px;}
+        .pf-social a{width:32px;height:32px;border-radius:7px;background:rgba(44,95,71,0.12);color:#1a4a2e;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:0.8rem;transition:background 150ms,color 150ms;}
+        .pf-social a:hover{background:#2c5f47;color:white;}
+        .pf-heading{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:#2e6644;margin-bottom:14px;}
+        .pf-links{list-style:none;padding:0;margin:0;}
+        .pf-links li{margin-bottom:8px;}
+        .pf-links a{color:#1a4a2e;text-decoration:none;font-size:0.875rem;transition:opacity 150ms;opacity:0.75;}
+        .pf-links a:hover{opacity:1;}
+        .pf-newsletter input{background:rgba(44,95,71,0.08);border:1px solid rgba(44,95,71,0.2);color:#161b19;border-radius:8px;padding:9px 13px;font-size:0.875rem;width:100%;margin-bottom:9px;outline:none;font-family:'Inter',sans-serif;transition:border-color 150ms;}
+        .pf-newsletter input::placeholder{color:#4f5a55;}
+        .pf-newsletter input:focus{border-color:#2c5f47;}
+        .pf-newsletter button{width:100%;background:#2c5f47;color:white;border:none;border-radius:8px;padding:9px 14px;font-size:0.875rem;font-weight:600;cursor:pointer;transition:background 150ms;font-family:'Inter',sans-serif;}
+        .pf-newsletter button:hover{background:#234d39;}
+        .pf-bottom{border-top:1px solid rgba(44,95,71,0.2);padding:18px 0;margin-top:40px;text-align:center;color:#2e6644;font-size:0.8125rem;}
+        @media(max-width:768px){.pf-grid{grid-template-columns:1fr 1fr!important;}.pf-grid>div:first-child{grid-column:span 2;}}
+        @media(max-width:480px){.pf-grid{grid-template-columns:1fr!important;}.pf-grid>div:first-child{grid-column:span 1;}}
+    </style>
+    <div style="max-width:1280px;margin:0 auto;padding:0 24px;">
+        <div class="pf-grid" style="display:grid;grid-template-columns:2fr 1fr 1fr 2fr;gap:40px;">
+            <!-- Brand -->
+            <div>
+                <div class="pf-brand">
+                    <img src="{% static 'imgs/TrafficJam.svg' %}" alt="PARMS" height="22">
+                    PARMS
+                </div>
+                <p class="pf-tagline">Smart parking management for modern cities. Find and book effortlessly.</p>
+                <div class="pf-social">
+                    <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <!-- Platform -->
+            <div>
+                <div class="pf-heading">Platform</div>
+                <ul class="pf-links">
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li><a href="{% url 'map' %}">Live Map</a></li>
+                    <li><a href="{% url 'slots' %}">Find Space</a></li>
+                    <li><a href="{% url 'contact' %}">Contact</a></li>
+                </ul>
+            </div>
+            <!-- Account -->
+            <div>
+                <div class="pf-heading">Account</div>
+                <ul class="pf-links">
+                    {% if user.is_authenticated %}
+                    <li><a href="{% url 'userin' %}">Dashboard</a></li>
+                    <li><a href="{% url 'ticket' %}">My Ticket</a></li>
+                    <li><a href="{% url 'profile' %}">Profile</a></li>
+                    <li><a href="{% url 'logout' %}">Sign out</a></li>
+                    {% else %}
+                    <li><a href="{% url 'login' %}">Sign in</a></li>
+                    <li><a href="{% url 'signup' %}">Sign up</a></li>
+                    <li><a href="{% url 'about' %}">About</a></li>
+                    <li><a href="{% url 'contact' %}">Contact</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <!-- Newsletter -->
+            <div>
+                <div class="pf-heading">Stay Updated</div>
+                <p style="font-size:0.875rem;color:#2e6644;margin-bottom:12px;line-height:1.6;">Get parking tips and new features. No spam.</p>
+                <div class="pf-newsletter">
+                    <input type="email" placeholder="your@email.com">
+                    <button type="button">Subscribe</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="pf-bottom">
+        &copy; {{ current_year }} PARMS &mdash; Parking &amp; Resource Management System
+    </div>
+</footer>
