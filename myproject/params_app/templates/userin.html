@@ -992,5 +992,26 @@
         setTimeout(pollNotifs, 30000);
     })();
     </script>
+    <!-- ===== FOOTER ===== -->
+    <footer style="background:#c5e8d5;border-top:1px solid #a8d4bc;margin-top:40px;">
+        <div style="max-width:1280px;margin:0 auto;padding:28px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <img src="{% static 'imgs/TrafficJam.svg' %}" alt="PARMS" width="26">
+                <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1rem;font-weight:800;color:#1a4a2e;letter-spacing:-0.02em;">PARMS</span>
+                <span style="font-size:0.78rem;color:#2e6644;margin-left:4px;">Parking & Resource Management System</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+                <a href="{% url 'userin' %}" style="font-size:0.82rem;color:#1a4a2e;text-decoration:none;font-weight:500;">Dashboard</a>
+                <a href="{% url 'map' %}"    style="font-size:0.82rem;color:#1a4a2e;text-decoration:none;font-weight:500;">Map</a>
+                <a href="{% url 'slots' %}"  style="font-size:0.82rem;color:#1a4a2e;text-decoration:none;font-weight:500;">Find Space</a>
+                <a href="{% url 'ticket' %}" style="font-size:0.82rem;color:#1a4a2e;text-decoration:none;font-weight:500;">My Ticket</a>
+                <a href="{% url 'profile' %}" style="font-size:0.82rem;color:#1a4a2e;text-decoration:none;font-weight:500;">Profile</a>
+            </div>
+            <div style="font-size:0.76rem;color:#2e6644;">
+                &copy; {% now "Y" %} PARMS. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
 </body>
 </html>
