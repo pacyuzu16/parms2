@@ -506,6 +506,14 @@ def book_space(request):
         lot.available_spaces = lot.spaces.filter(is_occupied=False).count()
         lot.save(update_fields=['available_spaces'])
 
+    UserNotification.objects.create(
+        user=request.user,
+        title='Booking confirmed',
+        message=f'Space #{space.space_id} ({space.space_type}) at {lot.location} is reserved. Ticket #{ticket.ticket_id}.',
+        notif_type='system',
+        lot=lot,
+    )
+
     messages.success(request, f'Space #{space.space_id} booked! Ticket #{ticket.ticket_id}')
     return redirect('ticket')
 
@@ -970,6 +978,14 @@ def admin_ticket_edit(request, ticket_id):
                 lot = t.parking_space.parking_lot
                 lot.available_spaces = lot.spaces.filter(is_occupied=False).count()
                 lot.save()
+            if t.user:
+                UserNotification.objects.create(
+                    user=t.user,
+                    title='Parking session ended',
+                    message=f'Your session at {t.parking_space.parking_lot.location} has been closed. Fee: ${t.fee}.',
+                    notif_type='session_ended',
+                    lot=t.parking_space.parking_lot,
+                )
             messages.success(request, 'Ticket closed and space freed.')
         elif action == 'delete':
             t.delete()
@@ -1273,11 +1289,19 @@ def api_detect_exit(request):
 
     open_ticket = ParkingTicket.objects.filter(
         parking_space=space, exit_time__isnull=True
-    ).first()
+    ).select_related('user').first()
     if open_ticket:
         open_ticket.exit_time = timezone.now()
         open_ticket.fee = round(open_ticket.duration_hours() * float(lot.hourly_rate), 2)
         open_ticket.save()
+        if open_ticket.user:
+            UserNotification.objects.create(
+                user=open_ticket.user,
+                title='Parking session ended',
+                message=f'Your session at {lot.location} has been closed. Fee: ${open_ticket.fee}.',
+                notif_type='session_ended',
+                lot=lot,
+            )
 
     space.is_occupied = False
     space.save()
