@@ -758,84 +758,90 @@ def generate_ticket(request):
         ParkingTicket.objects
         .filter(user=request.user)
         .select_related('vehicle', 'parking_space__parking_lot')
-        .order_by('exit_time', '-entry_time')   # NULL exit_time sorts first
+        .order_by('exit_time', '-entry_time')
         .first()
     )
 
     from reportlab.pdfgen import canvas as rl_canvas
     from reportlab.lib.pagesizes import A4
-    from reportlab.lib.units import mm
     from reportlab.lib.utils import ImageReader
 
-    # ── Colours (R,G,B normalised 0-1) ──────────────────────────────────────
-    GREEN      = (0.17, 0.37, 0.28)   # #2c5f47
-    GREEN_DARK = (0.14, 0.30, 0.22)   # #234d39
-    MINT       = (0.77, 0.91, 0.84)   # #c5e8d5
-    WHITE      = (1, 1, 1)
-    INK        = (0.086, 0.106, 0.098) # #161b19
-    MUTED      = (0.31, 0.35, 0.33)   # #4f5a55
-    BORDER     = (0.87, 0.89, 0.88)   # #dde3e0
+    # ── Colours ─────────────────────────────────────────────────────────────
+    GREEN  = (0.17, 0.37, 0.28)
+    MINT   = (0.77, 0.91, 0.84)
+    WHITE  = (1, 1, 1)
+    INK    = (0.086, 0.106, 0.098)
+    MUTED  = (0.31, 0.35, 0.33)
+    LIGHT  = (0.96, 0.99, 0.97)
+    BORDER = (0.87, 0.89, 0.88)
 
-    W, H = A4   # 595 x 842 pt
+    W, H = A4  # 595 × 842 pt
+    PAD = 40   # horizontal padding
 
     buf = BytesIO()
     c = rl_canvas.Canvas(buf, pagesize=A4)
 
-    # ── Helper ───────────────────────────────────────────────────────────────
-    def rgb(col): c.setFillColorRGB(*col)
+    def rgb(col):  c.setFillColorRGB(*col)
     def srgb(col): c.setStrokeColorRGB(*col)
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # HEADER BAND  (green)
-    # ══════════════════════════════════════════════════════════════════════════
+    def truncate(text, font, size, max_w):
+        s = str(text)
+        while c.stringWidth(s, font, size) > max_w and len(s) > 2:
+            s = s[:-1]
+        return s if s == str(text) else s + '…'
+
+    # ══════════════════════════════════════════════════════════════════════
+    # 1. HEADER  y = 752–842  (90 pt)
+    # ══════════════════════════════════════════════════════════════════════
     rgb(GREEN)
     c.rect(0, H - 90, W, 90, fill=1, stroke=0)
 
-    # Logo text
-    c.setFont("Helvetica-Bold", 22)
+    c.setFont("Helvetica-Bold", 24)
     rgb(WHITE)
-    c.drawString(40, H - 38, "PARMS")
+    c.drawString(PAD, H - 36, "PARMS")
 
-    # Subtitle
-    c.setFont("Helvetica", 10)
-    c.setFillColorRGB(0.77, 0.91, 0.84)   # mint as subtitle colour
-    c.drawString(40, H - 55, "Parking & Resource Management System")
+    c.setFont("Helvetica", 9)
+    c.setFillColorRGB(*MINT)
+    c.drawString(PAD, H - 52, "Smart Parking Management System")
 
-    # "PARKING TICKET" right-aligned
-    c.setFont("Helvetica-Bold", 14)
+    c.setFont("Helvetica-Bold", 13)
     rgb(WHITE)
-    c.drawRightString(W - 40, H - 38, "PARKING TICKET")
+    c.drawRightString(W - PAD, H - 36, "PARKING TICKET")
 
     # Status badge
-    is_active = t and not t.exit_time
-    badge_label = "CONFIRMED" if is_active else ("COMPLETED" if t else "NO ACTIVE SESSION")
-    badge_col   = (0.13, 0.77, 0.37) if is_active else ((0.23, 0.51, 0.85) if t else (0.7, 0.2, 0.2))
-    c.setFillColorRGB(*badge_col)
-    c.roundRect(W - 130, H - 72, 90, 20, 4, fill=1, stroke=0)
-    c.setFont("Helvetica-Bold", 8)
+    is_active   = t and not t.exit_time
+    badge_txt   = "ACTIVE" if is_active else ("COMPLETED" if t else "NO SESSION")
+    badge_color = (0.10, 0.65, 0.32) if is_active else ((0.20, 0.46, 0.80) if t else (0.65, 0.18, 0.18))
+    c.setFillColorRGB(*badge_color)
+    bw = 80
+    c.roundRect(W - PAD - bw, H - 70, bw, 18, 4, fill=1, stroke=0)
+    c.setFont("Helvetica-Bold", 7)
     rgb(WHITE)
-    c.drawCentredString(W - 85, H - 65, badge_label)
+    c.drawCentredString(W - PAD - bw / 2, H - 64, badge_txt)
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # TICKET ID  BAR
-    # ══════════════════════════════════════════════════════════════════════════
+    # ══════════════════════════════════════════════════════════════════════
+    # 2. TICKET-ID BAR  y = 722–752  (30 pt)
+    # ══════════════════════════════════════════════════════════════════════
     rgb(MINT)
-    c.rect(0, H - 120, W, 30, fill=1, stroke=0)
+    c.rect(0, H - 122, W, 30, fill=1, stroke=0)
     c.setFont("Helvetica-Bold", 11)
-    c.setFillColorRGB(*GREEN)
-    tid = f"Ticket #{t.ticket_id}" if t else "No Ticket"
-    c.drawCentredString(W / 2, H - 109, tid)
+    rgb(GREEN)
+    tid = "Ticket  #" + str(t.ticket_id) if t else "No Active Ticket"
+    c.drawCentredString(W / 2, H - 112, tid)
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # QR CODE  (left block)
-    # ══════════════════════════════════════════════════════════════════════════
-    qr_x, qr_y, qr_size = 40, H - 310, 160
-
-    # QR card background
+    # ══════════════════════════════════════════════════════════════════════
+    # 3. MAIN CARD  y = 390–710  (320 pt tall)
+    # ══════════════════════════════════════════════════════════════════════
+    card_x, card_y, card_w, card_h = PAD, 388, W - 2 * PAD, 320
     srgb(BORDER); rgb(WHITE)
-    c.roundRect(qr_x - 10, qr_y - 20, qr_size + 20, qr_size + 40, 8, fill=1, stroke=1)
+    c.setLineWidth(0.8)
+    c.roundRect(card_x, card_y, card_w, card_h, 8, fill=1, stroke=1)
 
-    # Generate QR
+    # ── QR block (left side of card) ──
+    qr_size = 150
+    qr_x    = card_x + 18
+    qr_y    = card_y + (card_h - qr_size) // 2 + 10   # vertically centred +10 for label
+
     ticket_url = request.build_absolute_uri(reverse('ticket'))
     qr_img = qrcode.make(ticket_url)
     qr_buf = BytesIO()
@@ -843,109 +849,118 @@ def generate_ticket(request):
     qr_buf.seek(0)
     c.drawImage(ImageReader(qr_buf), qr_x, qr_y, qr_size, qr_size, preserveAspectRatio=True)
 
-    # "Scan at entrance" label
-    c.setFont("Helvetica", 8)
+    # Label below QR
+    c.setFont("Helvetica", 7.5)
     rgb(MUTED)
-    c.drawCentredString(qr_x + qr_size / 2, qr_y - 14, "Scan this QR code at the entrance")
+    c.drawCentredString(qr_x + qr_size / 2, qr_y - 12, "Scan at the entrance")
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # DETAILS  GRID  (right of QR)
-    # ══════════════════════════════════════════════════════════════════════════
-    dx = qr_x + qr_size + 30   # left edge of detail column
-    dw = W - dx - 40            # width of detail column
-    dy_start = H - 140          # top of first row
+    # Vertical divider
+    div_x = card_x + qr_size + 40
+    srgb(BORDER)
+    c.setLineWidth(0.5)
+    c.line(div_x, card_y + 16, div_x, card_y + card_h - 16)
 
-    rows = []
+    # ── Details grid (right side of card) ──
     if t:
-        lot = t.parking_space.parking_lot if t.parking_space else None
+        lot  = t.parking_space.parking_lot if t.parking_space else None
         rows = [
-            ("Customer",    request.user.get_full_name() or request.user.username),
-            ("Email",       request.user.email or "—"),
-            ("Vehicle",     t.vehicle.plate_number),
-            ("Type",        t.vehicle.vehicle_type),
-            ("Location",    lot.location if lot else "—"),
-            ("Space",       f"#{t.parking_space.space_id}  ({t.parking_space.space_type})" if t.parking_space else "—"),
-            ("Entry date",  t.entry_time.strftime("%d %b %Y")),
-            ("Entry time",  t.entry_time.strftime("%H:%M")),
-            ("Exit time",   t.exit_time.strftime("%H:%M") if t.exit_time else "Still active"),
-            ("Fee",         f"${t.fee}" if t.fee else "Calculated on exit"),
+            ("CUSTOMER",    request.user.get_full_name() or request.user.username),
+            ("EMAIL",       request.user.email or "—"),
+            ("VEHICLE",     t.vehicle.plate_number),
+            ("TYPE",        t.vehicle.vehicle_type),
+            ("LOCATION",    lot.location if lot else "—"),
+            ("SPACE",       "#" + str(t.parking_space.space_id) + "  " + t.parking_space.space_type if t.parking_space else "—"),
+            ("ENTRY",       t.entry_time.strftime("%d %b %Y  %H:%M")),
+            ("EXIT",        t.exit_time.strftime("%d %b %Y  %H:%M") if t.exit_time else "Still active"),
+            ("FEE",         "$" + str(t.fee) if t.fee else "Calculated on exit"),
         ]
     else:
-        rows = [("Status", "No active parking session found.")]
+        rows = [("STATUS", "No parking session found")]
 
-    row_h = 28
+    grid_x  = div_x + 14
+    grid_w  = card_x + card_w - grid_x - 14
+    row_h   = card_h / (len(rows) + 0.5)
+    row_top = card_y + card_h - 10
+
     for i, (label, value) in enumerate(rows):
-        y = dy_start - i * row_h
-        # Alternate row shade
+        ry = row_top - (i + 1) * row_h
+        # Alternate shade
         if i % 2 == 0:
-            rgb(MINT)
-            c.setFillColorRGB(0.96, 0.99, 0.97)
-            c.rect(dx - 6, y - 8, dw + 12, row_h, fill=1, stroke=0)
-
+            rgb(LIGHT)
+            c.rect(grid_x - 4, ry, grid_w + 4, row_h - 2, fill=1, stroke=0)
         # Label
-        c.setFont("Helvetica-Bold", 8)
+        c.setFont("Helvetica-Bold", 7)
         rgb(MUTED)
-        c.drawString(dx, y + 8, label.upper())
-
+        c.drawString(grid_x, ry + row_h - 10, label)
         # Value
-        c.setFont("Helvetica-Bold" if label in ("Vehicle", "Fee") else "Helvetica", 10)
+        bold = label in ("VEHICLE", "FEE", "LOCATION")
+        font = "Helvetica-Bold" if bold else "Helvetica"
+        c.setFont(font, 9.5)
         rgb(INK)
-        # Truncate long values
-        val_str = str(value)
-        while c.stringWidth(val_str, "Helvetica-Bold" if label in ("Vehicle","Fee") else "Helvetica", 10) > dw - 4 and len(val_str) > 4:
-            val_str = val_str[:-1]
-        if val_str != str(value): val_str += "…"
-        c.drawString(dx, y - 3, val_str)
+        c.drawString(grid_x, ry + 4, truncate(value, font, 9.5, grid_w))
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # DIVIDER  DASHES  (tear line feel)
-    # ══════════════════════════════════════════════════════════════════════════
-    dash_y = H - 330
-    srgb(BORDER)
-    c.setDash(4, 4)
-    c.setLineWidth(0.8)
-    c.line(40, dash_y, W - 40, dash_y)
-    c.setDash()   # reset
-
-    # Scissors icon hint
-    c.setFont("Helvetica", 7)
+    # ══════════════════════════════════════════════════════════════════════
+    # 4. TEAR LINE  y = 378
+    # ══════════════════════════════════════════════════════════════════════
+    dash_y = 378
+    c.setFont("Helvetica", 9)
     rgb(MUTED)
-    c.drawString(40, dash_y + 3, "✂")
+    c.drawString(PAD, dash_y + 2, "✂")
+    srgb(BORDER)
+    c.setLineWidth(0.7)
+    c.setDash(5, 5)
+    c.line(PAD + 14, dash_y + 5, W - PAD, dash_y + 5)
+    c.setDash()
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # TERMS / INSTRUCTIONS  (below dashes)
-    # ══════════════════════════════════════════════════════════════════════════
-    info_y = dash_y - 20
+    # ══════════════════════════════════════════════════════════════════════
+    # 5. INSTRUCTIONS  y = 100–368
+    # ══════════════════════════════════════════════════════════════════════
     c.setFont("Helvetica-Bold", 9)
     rgb(INK)
-    c.drawString(40, info_y, "Instructions")
+    c.drawString(PAD, 355, "Instructions")
 
-    instructions = [
-        "1. Show this QR code at the parking entrance barrier.",
-        "2. Keep this ticket until your session ends.",
-        "3. Fees are calculated based on actual time parked.",
-        "4. For support, visit parms.rw or contact your parking attendant.",
+    lines = [
+        "1.  Show this QR code at the parking entrance barrier.",
+        "2.  Keep this ticket until your session has ended.",
+        "3.  Fees are calculated based on actual time parked.",
+        "4.  Lost ticket? Log in at parms.rw to view your active session.",
+        "5.  For support, contact your parking attendant on site.",
     ]
-    c.setFont("Helvetica", 8)
+    c.setFont("Helvetica", 8.5)
     rgb(MUTED)
-    for j, line in enumerate(instructions):
-        c.drawString(40, info_y - 16 - j * 14, line)
+    for j, line in enumerate(lines):
+        c.drawString(PAD, 337 - j * 18, line)
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # FOOTER BAND
-    # ══════════════════════════════════════════════════════════════════════════
+    # Fine print
+    c.setFont("Helvetica", 7)
+    rgb(BORDER)
+    c.drawString(PAD, 106, "This ticket is valid only for the session and space shown above. Do not share your QR code.")
+
+    # ══════════════════════════════════════════════════════════════════════
+    # 6. FOOTER  y = 0–50
+    # ══════════════════════════════════════════════════════════════════════
     rgb(GREEN)
-    c.rect(0, 0, W, 40, fill=1, stroke=0)
-    c.setFont("Helvetica", 8)
-    c.setFillColorRGB(0.77, 0.91, 0.84)
-    generated_at = datetime.datetime.now().strftime("%d %b %Y %H:%M")
-    c.drawString(40, 15, f"Generated: {generated_at}")
-    c.drawRightString(W - 40, 15, "PARMS — Smart Parking Management  |  parms.rw")
+    c.rect(0, 0, W, 50, fill=1, stroke=0)
 
-    # ── Done ─────────────────────────────────────────────────────────────────
+    c.setFont("Helvetica-Bold", 9)
+    rgb(WHITE)
+    c.drawString(PAD, 32, "PARMS")
+    c.setFont("Helvetica", 8)
+    c.setFillColorRGB(*MINT)
+    c.drawString(PAD, 18, "Smart Parking Management System")
+
+    generated_at = datetime.datetime.now().strftime("%d %b %Y  %H:%M")
+    c.setFont("Helvetica", 8)
+    c.setFillColorRGB(*MINT)
+    c.drawRightString(W - PAD, 32, "Generated: " + generated_at)
+    c.setFont("Helvetica", 7.5)
+    c.setFillColorRGB(0.60, 0.80, 0.70)
+    c.drawRightString(W - PAD, 18, "parms.rw")
+
+    # ── Finalise ─────────────────────────────────────────────────────────
     c.save()
     buf.seek(0)
-    fname = f"parms_ticket_{t.ticket_id}.pdf" if t else "parms_ticket.pdf"
+    fname = "parms_ticket_" + str(t.ticket_id) + ".pdf" if t else "parms_ticket.pdf"
     return FileResponse(buf, as_attachment=True, filename=fname)
 
 
