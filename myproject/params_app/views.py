@@ -506,6 +506,17 @@ def book_space(request):
         lot.available_spaces = lot.spaces.filter(is_occupied=False).count()
         lot.save(update_fields=['available_spaces'])
 
+        # Create booking notification
+        UserNotification.objects.create(
+            user=request.user,
+            title=f'Parking booked — Space #{space.space_id}',
+            message=f'Your spot at {lot.location} is confirmed. '
+                    f'Space #{space.space_id} ({space.space_type}). '
+                    f'Ticket #{ticket.ticket_id}.',
+            notif_type='booking',
+            lot=lot,
+        )
+
     messages.success(request, f'Space #{space.space_id} booked! Ticket #{ticket.ticket_id}')
     return redirect('ticket')
 
@@ -966,10 +977,21 @@ def admin_ticket_edit(request, ticket_id):
             if t.parking_space:
                 t.parking_space.is_occupied = False
                 t.parking_space.save()
+            lot = None
             if t.parking_space and t.parking_space.parking_lot:
                 lot = t.parking_space.parking_lot
                 lot.available_spaces = lot.spaces.filter(is_occupied=False).count()
                 lot.save()
+            # Notify the driver their session ended
+            if t.user:
+                fee_str = f' Fee: ${t.fee}.' if t.fee else ''
+                UserNotification.objects.create(
+                    user=t.user,
+                    title=f'Session ended — {t.vehicle.plate_number}',
+                    message=f'Your parking session at {lot.location if lot else "the lot"} has been completed.{fee_str}',
+                    notif_type='session_ended',
+                    lot=lot,
+                )
             messages.success(request, 'Ticket closed and space freed.')
         elif action == 'delete':
             t.delete()

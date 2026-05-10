@@ -171,6 +171,7 @@ class UserNotification(models.Model):
         ("nearly_full",     "Nearly Full"),
         ("expiry_warning",  "Expiry Warning"),
         ("session_ended",   "Session Ended"),
+        ("booking",         "Booking Confirmed"),
         ("system",          "System"),
     ]
 
