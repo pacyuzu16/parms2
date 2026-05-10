@@ -118,20 +118,25 @@ class UserProfile(models.Model):
         return f"Profile of {self.user.username}"
 
     def photo_url(self):
-        """Return the photo URL only if the file actually exists on disk.
-        Returns None when running on Render after a redeploy wipes the
-        ephemeral filesystem — callers/templates fall back to the initial avatar."""
+        """Return the photo URL, handling both local filesystem and cloud storage.
+
+        - Cloudinary (production): .path raises NotImplementedError, so we skip
+          the existence check and trust the URL — Cloudinary URLs are permanent.
+        - Local filesystem (dev): check the file actually exists so a stale DB
+          path after a manual deletion doesn't return a broken URL.
+        """
         if not self.photo:
             return None
         try:
-            # .path raises NotImplementedError on cloud storages (S3 etc.)
-            # In that case trust the URL and let the browser onerror handle it.
             import os
             if not os.path.exists(self.photo.path):
-                return None
+                return None          # file was deleted locally
         except (NotImplementedError, ValueError):
-            pass
-        return self.photo.url
+            pass                     # cloud storage — URL is always valid
+        try:
+            return self.photo.url
+        except Exception:
+            return None
 
 
 # -- Contact Message -----------------------------------------------------------

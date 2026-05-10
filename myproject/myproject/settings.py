@@ -33,6 +33,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'params_app',
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 
@@ -148,8 +150,27 @@ else:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # ── Media files (user uploads) ────────────────────────────────────────────────
-MEDIA_URL  = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# On Render the filesystem is ephemeral — uploads vanish on every deploy/restart.
+# When CLOUDINARY_URL is set (Render env var), route all ImageField uploads to
+# Cloudinary so photos survive redeploys.  Locally the env var is absent, so
+# Django falls back to the normal MEDIA_ROOT filesystem (no Cloudinary account needed).
+CLOUDINARY_URL = config('CLOUDINARY_URL', default='')
+
+if CLOUDINARY_URL:
+    import cloudinary
+    _parts = CLOUDINARY_URL.replace('cloudinary://', '').split('@')
+    _creds, _cloud = _parts[0].split(':'), _parts[1]
+    cloudinary.config(
+        cloud_name=_cloud,
+        api_key=_creds[0],
+        api_secret=_creds[1],
+        secure=True,
+    )
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    MEDIA_URL = '/media/'   # kept for URL compatibility
+else:
+    MEDIA_URL  = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # ── Security (production only) ────────────────────────────────────────────────
