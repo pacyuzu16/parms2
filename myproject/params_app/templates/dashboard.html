@@ -352,7 +352,7 @@
             <li><a href="#" data-tab="reports">
                 <i class="fas fa-chart-bar"></i><span>Reports</span>
             </a></li>
-            <li><a href="#" data-tab="overview">
+            <li><a href="#" data-tab="ml">
                 <i class="fas fa-brain"></i><span>ML Insights</span>
             </a></li>
         </ul>
@@ -418,7 +418,8 @@
         <!-- ══════════════════ PANEL: OVERVIEW ══════════════════ -->
         <div class="panel" id="panel-overview">
 
-            <div class="stat-grid">
+            <!-- 4-column stat grid: Total Users, Total Tickets, Active Now, Available Spaces -->
+            <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);">
                 <div class="stat-card">
                     <div class="stat-icon si-blue"><i class="fas fa-users"></i></div>
                     <div class="stat-info">
@@ -428,107 +429,27 @@
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon si-green"><i class="fas fa-parking"></i></div>
-                    <div class="stat-info">
-                        <div class="stat-val">{{ total_parking_lots }}</div>
-                        <div class="stat-lbl">Parking Lots</div>
-                        <div class="stat-sub" style="color:var(--green);">{{ available_spaces }} spaces available</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon si-purple"><i class="fas fa-car"></i></div>
-                    <div class="stat-info">
-                        <div class="stat-val">{{ total_vehicles }}</div>
-                        <div class="stat-lbl">Registered Vehicles</div>
-                        <div class="stat-sub" style="color:var(--purple);">All types</div>
-                    </div>
-                </div>
-                <div class="stat-card">
                     <div class="stat-icon si-teal"><i class="fas fa-ticket-alt"></i></div>
                     <div class="stat-info">
                         <div class="stat-val">{{ total_tickets }}</div>
                         <div class="stat-lbl">Total Tickets</div>
-                        <div class="stat-sub" style="color:var(--teal);">{{ active_tickets }} active now</div>
+                        <div class="stat-sub" style="color:var(--teal);">All time</div>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon si-amber"><i class="fas fa-dollar-sign"></i></div>
+                    <div class="stat-icon si-amber"><i class="fas fa-car"></i></div>
                     <div class="stat-info">
-                        <div class="stat-val">${{ total_revenue|floatformat:0 }}</div>
-                        <div class="stat-lbl">Total Revenue</div>
-                        <div class="stat-sub" style="color:var(--amber);">${{ monthly_revenue|floatformat:0 }} this month</div>
+                        <div class="stat-val">{{ active_tickets }}</div>
+                        <div class="stat-lbl">Active Now</div>
+                        <div class="stat-sub" style="color:var(--amber);">Live sessions</div>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon si-red"><i class="fas fa-envelope"></i></div>
+                    <div class="stat-icon si-green"><i class="fas fa-parking"></i></div>
                     <div class="stat-info">
-                        <div class="stat-val">{{ total_messages }}</div>
-                        <div class="stat-lbl">Messages</div>
-                        <div class="stat-sub" style="color:var(--red);">Needs response</div>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- ML Insights Row -->
-            <div class="three-col" style="margin-bottom:20px;">
-
-                <!-- Peak Hours -->
-                <div class="card">
-                    <div class="card-hdr">
-                        <h4><i class="fas fa-chart-line" style="color:var(--purple);"></i> Peak Hour</h4>
-                        <span class="badge b-purple">AI Insight</span>
-                    </div>
-                    <div class="card-body">
-                        {% if ml.has_data %}
-                        <div style="font-size:1.8rem;font-weight:800;color:var(--text);letter-spacing:-0.03em;line-height:1;">{{ ml.peak_label }}</div>
-                        <div style="font-size:0.8rem;color:var(--muted);margin-top:5px;">Busiest period (last 30 days)</div>
-                        {% else %}
-                        <div style="color:var(--muted);font-size:0.86rem;">No historical data yet - insights appear after first bookings.</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Occupancy Prediction -->
-                <div class="card">
-                    <div class="card-hdr">
-                        <h4><i class="fas fa-brain" style="color:var(--teal);"></i> Next Hour Forecast</h4>
-                        <span class="badge b-blue">Predicting next hour</span>
-                    </div>
-                    <div class="card-body">
-                        <div style="display:flex;align-items:flex-end;gap:16px;margin-bottom:10px;">
-                            <div>
-                                <div style="font-size:0.75rem;color:var(--muted);margin-bottom:2px;">Now</div>
-                                <div style="font-size:1.6rem;font-weight:800;color:var(--text);">{{ ml.current_rate }}%</div>
-                            </div>
-                            <i class="fas fa-arrow-{% if ml.pred_direction == 'up' %}up" style="color:var(--red){% else %}down" style="color:var(--green){% endif %};font-size:1.1rem;margin-bottom:8px;"></i>
-                            <div>
-                                <div style="font-size:0.75rem;color:var(--muted);margin-bottom:2px;">Predicted</div>
-                                <div style="font-size:1.6rem;font-weight:800;color:{% if ml.pred_direction == 'up' %}var(--red){% else %}var(--green){% endif %};">{{ ml.predicted_rate }}%</div>
-                            </div>
-                        </div>
-                        <div class="progress-bar"><div class="progress-fill" style="width:{{ ml.predicted_rate }}%;background:{% if ml.predicted_rate > 75 %}var(--red){% elif ml.predicted_rate > 45 %}var(--amber){% else %}var(--green){% endif %};"></div></div>
-                    </div>
-                </div>
-
-                <!-- Anomaly Detection -->
-                <div class="card">
-                    <div class="card-hdr">
-                        <h4><i class="fas fa-shield-alt" style="color:var(--amber);"></i> Anomaly Detection</h4>
-                    </div>
-                    <div class="card-body">
-                        {% if ml.anomaly %}
-                        <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:8px;background:{% if ml.anomaly.type == 'high' %}#fef9c3{% else %}#eff6ff{% endif %};">
-                            <i class="fas fa-{% if ml.anomaly.type == 'high' %}exclamation-triangle{% else %}info-circle{% endif %}" style="color:{% if ml.anomaly.type == 'high' %}var(--amber){% else %}var(--blue){% endif %};margin-top:2px;flex-shrink:0;"></i>
-                            <p style="font-size:0.84rem;color:var(--text);margin:0;line-height:1.5;">{{ ml.anomaly.msg }}</p>
-                        </div>
-                        {% else %}
-                        <div style="display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:8px;background:#f0fdf4;">
-                            <i class="fas fa-check-circle" style="color:var(--green);"></i>
-                            <p style="font-size:0.84rem;color:#166534;margin:0;">Occupancy is within normal range for this hour.</p>
-                        </div>
-                        {% endif %}
-                        <div style="margin-top:12px;font-size:0.78rem;color:var(--muted);">Based on 30-day historical patterns</div>
+                        <div class="stat-val">{{ available_spaces }}</div>
+                        <div class="stat-lbl">Available Spaces</div>
+                        <div class="stat-sub" style="color:var(--green);">Across all lots</div>
                     </div>
                 </div>
             </div>
@@ -562,30 +483,6 @@
                     {% endif %}
                 </div>
             </div>
-
-            {% if ml.has_data %}
-            <div class="card" style="margin-bottom:20px;">
-                <div class="card-hdr">
-                    <h4><i class="fas fa-chart-bar" style="color:var(--blue);"></i> 24-Hour Traffic Pattern <span style="font-size:0.78rem;font-weight:400;color:var(--muted);">(last 30 days)</span></h4>
-                </div>
-                <div class="card-body">
-                    <div style="display:flex;align-items:flex-end;gap:3px;height:70px;padding-bottom:4px;">
-                    {% for hour_label, pct in ml.hour_bars %}
-                    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
-                        <div style=width:100%;border-radius:3px 3px 0 0;background:{% if hour_label == ml.peak_hour|stringformat:'02d' %}var(--purple){% else %}var(--green){% endif %};opacity:{% if pct == 0 %}0.15{% else %}1{% endif %};height:{{ pct }}%;min-height:3px; title={{ hour_label }}:00 - {{ pct }}%></div>
-                    </div>
-                    {% endfor %}
-                    </div>
-                    <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:0.68rem;color:var(--muted);">
-                        <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:00</span>
-                    </div>
-                    <div style="margin-top:8px;font-size:0.76rem;color:var(--muted);">
-                        <span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--purple);display:inline-block;"></span> Peak hour</span>
-                        <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--green);display:inline-block;"></span> Normal hours</span>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
 
             <div class="two-col">
                 <!-- Recent tickets -->
@@ -639,42 +536,6 @@
                         <div class="empty-state"><i class="fas fa-inbox"></i><p>No messages yet</p></div>
                         {% endfor %}
                     </div>
-                </div>
-            </div>
-
-            <!-- Space utilisation -->
-            <div class="card">
-                <div class="card-hdr"><h4><i class="fas fa-chart-pie" style="color:var(--green);"></i> Parking Space Utilisation</h4></div>
-                <div class="card-body">
-                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;">
-                        <div style="text-align:center;">
-                            <div style="font-size:2rem;font-weight:800;color:var(--text);">{{ total_spaces }}</div>
-                            <div style="font-size:0.82rem;color:var(--muted);">Total Spaces</div>
-                        </div>
-                        <div style="text-align:center;">
-                            <div style="font-size:2rem;font-weight:800;color:var(--red);">{{ occupied_spaces }}</div>
-                            <div style="font-size:0.82rem;color:var(--muted);">Occupied</div>
-                        </div>
-                        <div style="text-align:center;">
-                            <div style="font-size:2rem;font-weight:800;color:var(--green);">{{ available_spaces }}</div>
-                            <div style="font-size:0.82rem;color:var(--muted);">Available</div>
-                        </div>
-                        <div style="text-align:center;">
-                            <div style="font-size:2rem;font-weight:800;color:var(--amber);">{{ active_tickets }}</div>
-                            <div style="font-size:0.82rem;color:var(--muted);">Active Sessions</div>
-                        </div>
-                    </div>
-                    {% if total_spaces > 0 %}
-                    <div style="margin-top:18px;">
-                        <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:6px;">
-                            <span style="color:var(--muted);">Occupancy rate</span>
-                            <span style="font-weight:600;">{% widthratio occupied_spaces total_spaces 100 %}%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width:{% widthratio occupied_spaces total_spaces 100 %}%; background:{% if occupied_spaces|floatformat:0 > available_spaces|floatformat:0 %}var(--red){% else %}var(--green){% endif %};"></div>
-                        </div>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
@@ -1088,6 +949,204 @@
             </div>
         </div>
 
+        <!-- ══════════════════ PANEL: ML INSIGHTS ══════════════════ -->
+        <div class="panel" id="panel-ml">
+            <div class="sec-hdr">
+                <h3><i class="fas fa-brain" style="color:var(--purple);margin-right:8px;"></i>ML Insights</h3>
+                <span style="font-size:0.82rem;color:var(--muted);">Powered by Random Forest · CI Research Project 2024</span>
+            </div>
+
+            <!-- Live Predictions + Weekly Pattern -->
+            <div class="two-col" style="margin-bottom:20px;">
+
+                <!-- Hourly predictions chart -->
+                <div class="card">
+                    <div class="card-hdr">
+                        <h4><i class="fas fa-chart-bar" style="color:var(--blue);"></i> Live Predictions — 24h Occupancy</h4>
+                        <button class="btn btn-sm btn-outline" onclick="loadMlInsights()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    </div>
+                    <div class="card-body" id="ml-hourly-container">
+                        <div style="color:var(--muted);font-size:0.86rem;text-align:center;padding:20px;">
+                            <i class="fas fa-spinner fa-spin"></i> Loading predictions…
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weekly pattern -->
+                <div class="card">
+                    <div class="card-hdr">
+                        <h4><i class="fas fa-calendar-week" style="color:var(--teal);"></i> Weekly Pattern</h4>
+                        <span id="ml-confidence-badge" class="badge b-gray">—</span>
+                    </div>
+                    <div class="card-body" id="ml-weekly-container">
+                        <div style="color:var(--muted);font-size:0.86rem;text-align:center;padding:20px;">
+                            <i class="fas fa-spinner fa-spin"></i> Loading…
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model In Use -->
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-hdr">
+                    <h4><i class="fas fa-cogs" style="color:var(--green);"></i> Model in Use</h4>
+                    <span class="badge b-green">Active</span>
+                </div>
+                <div class="card-body">
+                    <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
+                        <div style="flex:1;min-width:220px;">
+                            <div style="font-size:1.2rem;font-weight:800;color:var(--green);margin-bottom:4px;">Random Forest</div>
+                            <div style="font-size:0.84rem;color:var(--muted);line-height:1.6;">
+                                Selected from CI project evaluation as the best-performing model for parking occupancy prediction with <strong>99.3% accuracy</strong>.
+                                The model is trained on live PARMS ticket data each time the ML Insights page loads — no pre-training or caching required.
+                            </div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 16px;min-width:180px;">
+                                <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Accuracy</div>
+                                <div style="font-size:1.6rem;font-weight:800;color:var(--green);">99.3%</div>
+                            </div>
+                            <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 16px;">
+                                <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Features</div>
+                                <div style="font-size:0.82rem;font-weight:600;color:var(--blue);">Hour · Day · Month</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CI Research Results -->
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-hdr">
+                    <h4><i class="fas fa-flask" style="color:var(--purple);"></i> CI Research Results — Parking Occupancy Models</h4>
+                    <span class="badge b-purple">CI Project 2024</span>
+                </div>
+                <div class="tbl-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>Accuracy</th>
+                                <th>Precision</th>
+                                <th>Recall</th>
+                                <th>F1 Score</th>
+                                <th>Train Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background:#f0fdf4;">
+                                <td><strong>Random Forest</strong></td>
+                                <td><strong style="color:var(--green);">99.3%</strong></td>
+                                <td>99.1%</td>
+                                <td>99.3%</td>
+                                <td>99.2%</td>
+                                <td style="color:var(--muted);font-size:0.82rem;">0.8s</td>
+                                <td><span class="badge b-green">Selected</span></td>
+                            </tr>
+                            <tr>
+                                <td>Deep Neural Network (DNN)</td>
+                                <td>98.7%</td>
+                                <td>98.5%</td>
+                                <td>98.7%</td>
+                                <td>98.6%</td>
+                                <td style="color:var(--muted);font-size:0.82rem;">12.4s</td>
+                                <td><span class="badge b-gray">Evaluated</span></td>
+                            </tr>
+                            <tr>
+                                <td>ViT-MLP Hybrid</td>
+                                <td>98.7%</td>
+                                <td>98.6%</td>
+                                <td>98.7%</td>
+                                <td>98.6%</td>
+                                <td style="color:var(--muted);font-size:0.82rem;">28.1s</td>
+                                <td><span class="badge b-gray">Evaluated</span></td>
+                            </tr>
+                            <tr>
+                                <td>Gradient Boosting</td>
+                                <td>96.0%</td>
+                                <td>95.8%</td>
+                                <td>96.0%</td>
+                                <td>95.9%</td>
+                                <td style="color:var(--muted);font-size:0.82rem;">3.2s</td>
+                                <td><span class="badge b-gray">Evaluated</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CI Research Results: License Plate -->
+            <div class="card">
+                <div class="card-hdr">
+                    <h4><i class="fas fa-id-card" style="color:var(--teal);"></i> CI Research Results — License Plate Recognition Models</h4>
+                    <span class="badge b-blue">CI Project 2024</span>
+                </div>
+                <div class="tbl-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>Accuracy</th>
+                                <th>Precision</th>
+                                <th>Recall</th>
+                                <th>F1 Score</th>
+                                <th>Train Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background:#ecfeff;">
+                                <td><strong>SVM</strong></td>
+                                <td><strong style="color:var(--teal);">98.6%</strong></td>
+                                <td>98.5%</td>
+                                <td>98.6%</td>
+                                <td>98.5%</td>
+                                <td style="color:var(--muted);font-size:0.82rem;">14.7s</td>
+                                <td><span class="badge b-blue">Best LP</span></td>
+                            </tr>
+                            <tr>
+                                <td>Random Forest</td>
+                                <td>95.9%</td>
+                                <td>95.7%</td>
+                                <td>95.9%</td>
+                                <td>95.8%</td>
+                                <td style="color:var(--muted);font-size:0.82rem;">0.6s</td>
+                                <td><span class="badge b-gray">Evaluated</span></td>
+                            </tr>
+                            <tr>
+                                <td>KNN</td>
+                                <td>94.6%</td>
+                                <td>94.4%</td>
+                                <td>94.6%</td>
+                                <td>94.5%</td>
+                                <td style="color:var(--muted);font-size:0.82rem;">0.1s</td>
+                                <td><span class="badge b-gray">Evaluated</span></td>
+                            </tr>
+                            <tr>
+                                <td>Gradient Boosting</td>
+                                <td>93.2%</td>
+                                <td>93.0%</td>
+                                <td>93.2%</td>
+                                <td>93.1%</td>
+                                <td style="color:var(--muted);font-size:0.82rem;">2.9s</td>
+                                <td><span class="badge b-gray">Evaluated</span></td>
+                            </tr>
+                            <tr>
+                                <td>MLP</td>
+                                <td>90.5%</td>
+                                <td>90.3%</td>
+                                <td>90.5%</td>
+                                <td>90.4%</td>
+                                <td style="color:var(--muted);font-size:0.82rem;">5.1s</td>
+                                <td><span class="badge b-gray">Evaluated</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <!-- ══════════════════ PANEL: SETTINGS ══════════════════ -->
         <div class="panel" id="panel-settings">
             <div class="sec-hdr"><h3>Account Settings</h3></div>
@@ -1381,7 +1440,7 @@
 
 <!-- ═══════════════════════════ JS ═══════════════════════════ -->
 <script>
-const TABS = { overview:'Dashboard', users:'Users', vehicles:'Vehicles', parking:'Parking Lots', tickets:'Tickets', messages:'Messages', reports:'Reports', settings:'Settings' };
+const TABS = { overview:'Dashboard', users:'Users', vehicles:'Vehicles', parking:'Parking Lots', tickets:'Tickets', messages:'Messages', reports:'Reports', ml:'ML Insights', settings:'Settings' };
 
 /* ── Tab switching ── */
 function switchTab(name, push) {
@@ -1515,6 +1574,83 @@ document.getElementById('globalSearch').addEventListener('input', function() {
 /* ── Clock ── */
 function tick() { var el = document.getElementById('sb-clock'); if (el) el.textContent = new Date().toLocaleTimeString('en-GB', {hour12:false}); }
 tick(); setInterval(tick, 1000);
+
+/* ── ML Insights ── */
+function loadMlInsights() {
+    var hourlyEl  = document.getElementById('ml-hourly-container');
+    var weeklyEl  = document.getElementById('ml-weekly-container');
+    var badgeEl   = document.getElementById('ml-confidence-badge');
+    if (!hourlyEl) return;
+
+    hourlyEl.innerHTML = '<div style="color:var(--muted);font-size:0.86rem;text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Loading predictions…</div>';
+    weeklyEl.innerHTML = '<div style="color:var(--muted);font-size:0.86rem;text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Loading…</div>';
+
+    fetch('/api/ml-insights/', { credentials: 'same-origin' })
+        .then(function(r) { return r.json(); })
+        .then(function(resp) {
+            if (!resp.success) { throw new Error('API error'); }
+            var d = resp.data;
+
+            /* confidence badge */
+            if (badgeEl) {
+                badgeEl.textContent = d.confidence + ' Confidence';
+                badgeEl.className = 'badge ' + (d.confidence === 'High' ? 'b-green' : 'b-amber');
+            }
+
+            /* hourly CSS bar chart */
+            var maxPct = Math.max.apply(null, d.hourly_predictions) || 1;
+            var bars   = '';
+            d.hourly_predictions.forEach(function(pct, h) {
+                var barH  = Math.max(4, Math.round(pct / maxPct * 80));
+                var color = (h === d.peak_hour) ? 'var(--purple)' : (h === d.current_hour ? 'var(--blue)' : 'var(--green)');
+                var lbl   = (h % 6 === 0) ? ('<span style="font-size:0.62rem;color:var(--muted);margin-top:3px;">' + (h < 10 ? '0' : '') + h + ':00</span>') : '<span style="font-size:0.62rem;">&nbsp;</span>';
+                bars += '<div title="' + (h < 10 ? '0' : '') + h + ':00 — ' + pct + '%" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">'
+                      + '<div style="width:100%;border-radius:3px 3px 0 0;background:' + color + ';height:' + barH + 'px;min-height:3px;transition:height 0.4s;"></div>'
+                      + lbl
+                      + '</div>';
+            });
+
+            var summary = '<div style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap;">'
+                + '<span style="font-size:0.78rem;color:var(--muted);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--purple);margin-right:4px;"></span>Peak ' + d.peak_hour_label + '</span>'
+                + '<span style="font-size:0.78rem;color:var(--muted);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--blue);margin-right:4px;"></span>Current hour</span>'
+                + '<span style="font-size:0.78rem;color:var(--muted);"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--green);margin-right:4px;"></span>Normal</span>'
+                + '<span style="margin-left:auto;font-size:0.78rem;color:var(--muted);">Next hour (' + d.next_hour_label + '): <strong>' + d.next_hour_prediction + '%</strong></span>'
+                + '</div>';
+
+            hourlyEl.innerHTML = '<div style="display:flex;align-items:flex-end;gap:2px;height:90px;">' + bars + '</div>' + summary;
+
+            /* weekly pattern */
+            var wRows = '';
+            d.weekly_pattern.forEach(function(w) {
+                var bg    = w.is_today ? '#f0fdf4' : '';
+                var color = w.predicted_pct >= 70 ? 'var(--red)' : (w.predicted_pct >= 45 ? 'var(--amber)' : 'var(--green)');
+                var barW  = Math.round(w.predicted_pct);
+                wRows += '<div style="display:flex;align-items:center;gap:10px;padding:6px 0;' + (w.is_today ? 'background:#f0fdf4;border-radius:6px;padding:6px 8px;' : '') + '">'
+                       + '<span style="font-size:0.82rem;font-weight:' + (w.is_today ? '700' : '500') + ';color:var(--text);min-width:88px;">' + w.day + (w.is_today ? ' <span class=\"badge b-green\" style=\"font-size:0.62rem;\">Today</span>' : '') + '</span>'
+                       + '<div style="flex:1;background:#e2e8f0;border-radius:4px;height:8px;">'
+                       + '<div style="width:' + barW + '%;height:100%;border-radius:4px;background:' + color + ';transition:width 0.5s;"></div>'
+                       + '</div>'
+                       + '<span style="font-size:0.78rem;font-weight:600;color:' + color + ';min-width:36px;text-align:right;">' + w.predicted_pct + '%</span>'
+                       + '</div>';
+            });
+            weeklyEl.innerHTML = wRows;
+        })
+        .catch(function(err) {
+            hourlyEl.innerHTML = '<div style="color:var(--red);font-size:0.86rem;padding:12px;">Failed to load ML predictions. <button class="btn btn-sm btn-outline" onclick="loadMlInsights()">Retry</button></div>';
+        });
+}
+
+/* Load ML data when ML tab is opened */
+document.querySelectorAll('.sb-nav a[data-tab="ml"]').forEach(function(el) {
+    el.addEventListener('click', function() {
+        setTimeout(loadMlInsights, 100);
+    });
+});
+/* Also auto-load if we land on ml tab directly */
+(function() {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('tab') === 'ml') { setTimeout(loadMlInsights, 200); }
+})();
 </script>
 </body>
 </html>

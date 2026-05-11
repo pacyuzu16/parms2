@@ -30,3 +30,6 @@ reportlab==4.2.5
 # Cloud media storage (profile photos on Render)
 cloudinary==1.41.0
 django-cloudinary-storage==0.3.0
+
+# Machine learning (CI project - Random Forest occupancy prediction)
+scikit-learn==1.4.2

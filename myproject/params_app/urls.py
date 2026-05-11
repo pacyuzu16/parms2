@@ -42,6 +42,7 @@ urlpatterns = [
     path("api/notifications/mark-all-read/",  views.api_mark_all_read,          name="api_mark_all_read"),
     path("api/lot/<int:lot_id>/",             views.api_lot_detail,             name="api_lot_detail"),
     path("api/map-data/",                     views.api_map_data,               name="api_map_data"),
+    path("api/ml-insights/",                  views.api_ml_insights,            name="api_ml_insights"),
 
     # -- Legacy redirects --
     path("users/",      views.user_list, name="users"),

@@ -1666,6 +1666,15 @@ def api_map_data(request):
     return JsonResponse({'success': True, 'lots': data, 'count': len(data)})
 
 
+# -- Admin: ML Insights API ---------------------------------------------------
+
+@_admin_required
+def api_ml_insights(request):
+    from .ml_engine import get_ml_insights
+    data = get_ml_insights()
+    return JsonResponse({'success': True, 'data': data})
+
+
 # -- Admin: Detection Event management ----------------------------------------
 
 @_admin_required
