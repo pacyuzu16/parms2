@@ -52,6 +52,11 @@ def _ocr(preprocessed_gray):
     """Run OCR on a preprocessed plate image. Returns (text, confidence)."""
     try:
         import pytesseract
+        import os
+        # Windows: point to the Tesseract executable if it exists
+        _win_tess = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+        if os.path.exists(_win_tess):
+            pytesseract.pytesseract.tesseract_cmd = _win_tess
         cfg = '--psm 7 --oem 3 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789- '
         text = pytesseract.image_to_string(preprocessed_gray, config=cfg).strip()
         # Clean: keep only alphanumeric + space + dash
