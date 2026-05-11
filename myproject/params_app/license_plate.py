@@ -13,8 +13,12 @@ Pipeline:
 import base64
 from io import BytesIO
 
-import cv2
-import numpy as np
+try:
+    import cv2
+    import numpy as np
+    _CV2_AVAILABLE = True
+except ImportError:
+    _CV2_AVAILABLE = False
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -77,6 +81,9 @@ def detect_plate(image_bytes):
         method         str  — which algorithm found plates
         error          str  — error message if success is False
     """
+    if not _CV2_AVAILABLE:
+        return {'success': False, 'error': 'OpenCV is not installed on this server. Contact your administrator.'}
+
     try:
         nparr = np.frombuffer(image_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)

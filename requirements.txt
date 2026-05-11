@@ -35,5 +35,5 @@ django-cloudinary-storage==0.3.0
 scikit-learn==1.4.2
 
 # License plate detection (Haar Cascade + contour detection)
+# headless = no GUI dependencies, works on Render's Linux containers
 opencv-python-headless==4.9.0.80
-pytesseract==0.3.10
