@@ -37,3 +37,7 @@ scikit-learn==1.4.2
 # License plate detection (Haar Cascade + contour detection)
 # headless = no GUI dependencies, works on Render's Linux containers
 opencv-python-headless==4.9.0.80
+
+# OCR — pytesseract is the Render-safe fallback (needs system apt: tesseract-ocr)
+# For much better accuracy locally, also run: pip install easyocr
+# (easyocr pulls PyTorch ~1.5 GB — too heavy for Render free tier, so excluded here)

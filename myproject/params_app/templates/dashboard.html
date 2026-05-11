@@ -1735,7 +1735,7 @@ function lpDetect(blob) {
     var badge = document.getElementById('lp-status-badge');
     badge.style.background='#f1f5f9';badge.style.color='var(--muted)';badge.textContent='Scanning…';
     document.getElementById('lp-result-panel').innerHTML =
-        '<div style="text-align:center;padding:32px;color:var(--muted);"><i class="fas fa-spinner fa-spin" style="font-size:1.8rem;"></i><p style="margin-top:10px;font-size:0.88rem;">Running Haar Cascade…</p></div>';
+        '<div style="text-align:center;padding:32px;color:var(--muted);"><i class="fas fa-spinner fa-spin" style="font-size:1.8rem;"></i><p style="margin-top:10px;font-size:0.88rem;">Detecting plate &amp; reading text…</p></div>';
 
     var csrf = document.querySelector('[name=csrfmiddlewaretoken]');
     fetch('/api/detect-plate/', {
@@ -1754,18 +1754,23 @@ function lpDetect(blob) {
             if (res.plates && res.plates.length > 0) {
                 res.plates.forEach(function(p, i) {
                     html += '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px;margin-bottom:10px;">';
-                    html += '<div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Plate ' + (i+1) + ' · ' + p.method + '</div>';
+                    var detLabel = 'Plate ' + (i+1) + ' · ' + (p.method||'Detected');
+                    html += '<div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">' + detLabel + '</div>';
                     if (p.crop_b64) html += '<img src="data:image/jpeg;base64,' + p.crop_b64 + '" style="max-height:60px;border-radius:4px;margin-bottom:8px;border:1px solid var(--border);" alt="Plate crop">';
                     if (p.text) {
-                        html += '<div style="font-family:monospace;font-size:1.4rem;font-weight:800;color:var(--green);letter-spacing:0.08em;">' + p.text + '</div>';
-                        html += '<div style="font-size:0.75rem;color:var(--muted);margin-top:3px;">Confidence: ' + (p.confidence||'—') + '</div>';
+                        html += '<div style="font-family:monospace;font-size:1.5rem;font-weight:800;color:var(--green);letter-spacing:0.1em;background:#dcfce7;display:inline-block;padding:4px 14px;border-radius:6px;">' + p.text + '</div>';
+                        var confRow = '<span style="margin-left:10px;font-size:0.75rem;color:var(--muted);">Confidence: ' + (p.confidence||'—') + '</span>';
+                        var engRow  = p.ocr_engine ? '<span style="margin-left:8px;font-size:0.72rem;font-weight:700;padding:2px 7px;border-radius:20px;background:#e0f2fe;color:#0369a1;">' + p.ocr_engine + '</span>' : '';
+                        html += '<div style="margin-top:6px;">' + confRow + engRow + '</div>';
                     } else {
-                        html += '<div style="font-size:0.84rem;color:var(--muted);">Plate region detected — OCR not available on this server.<br>Install tesseract-ocr for full text extraction.</div>';
+                        html += '<div style="font-size:0.84rem;color:var(--muted);background:#fef9c3;border-radius:6px;padding:10px;">Plate region detected — no text could be read.<br><span style="font-size:0.78rem;">Try a clearer, well-lit photo.</span></div>';
                     }
                     html += '</div>';
                 });
             }
-            html += '<div style="font-size:0.75rem;color:var(--muted);margin-top:4px;"><i class="fas fa-info-circle"></i> Method: ' + (res.method||'Haar Cascade') + ' · ' + (res.plates ? res.plates.length : 0) + ' plate(s) found</div>';
+            var detMethod = res.method || 'Haar Cascade';
+            var ocrEng    = res.ocr_engine ? ' · OCR: ' + res.ocr_engine : '';
+            html += '<div style="font-size:0.75rem;color:var(--muted);margin-top:4px;"><i class="fas fa-info-circle"></i> Detection: ' + detMethod + ocrEng + ' · ' + (res.plates ? res.plates.length : 0) + ' plate(s)</div>';
             html += '</div>';
             document.getElementById('lp-result-panel').innerHTML = html;
         } else {
