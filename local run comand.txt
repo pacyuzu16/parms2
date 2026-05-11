@@ -1,0 +1,3 @@
+cd "C:\Users\Administrator\Documents\Claude\Projects\PARMS\PAMS-REPO\myproject"
+venv\Scripts\activate
+python manage.py runserver
