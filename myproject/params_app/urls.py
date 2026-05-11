@@ -43,6 +43,7 @@ urlpatterns = [
     path("api/lot/<int:lot_id>/",             views.api_lot_detail,             name="api_lot_detail"),
     path("api/map-data/",                     views.api_map_data,               name="api_map_data"),
     path("api/ml-insights/",                  views.api_ml_insights,            name="api_ml_insights"),
+    path("api/detect-plate/",                 views.admin_detect_plate,         name="admin_detect_plate"),
 
     # -- Legacy redirects --
     path("users/",      views.user_list, name="users"),

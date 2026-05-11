@@ -1675,6 +1675,30 @@ def api_ml_insights(request):
     return JsonResponse({'success': True, 'data': data})
 
 
+# -- Admin: License Plate Detection -------------------------------------------
+
+@_admin_required
+def admin_detect_plate(request):
+    """POST /api/detect-plate/ — run Haar Cascade LP detection on uploaded image."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
+
+    img_file = request.FILES.get('image')
+    if not img_file:
+        return JsonResponse({'success': False, 'error': 'No image file received.'}, status=400)
+
+    # 10 MB guard
+    if img_file.size > 10 * 1024 * 1024:
+        return JsonResponse({'success': False, 'error': 'Image too large (max 10 MB).'}, status=400)
+
+    try:
+        from .license_plate import detect_plate
+        result = detect_plate(img_file.read())
+        return JsonResponse(result)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'Detection error: {e}'}, status=500)
+
+
 # -- Admin: Detection Event management ----------------------------------------
 
 @_admin_required
