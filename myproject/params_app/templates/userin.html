@@ -574,22 +574,54 @@
                 <span>PARMS<span class="header-logo-dot"></span></span>
             </a>
 
+            {% load i18n %}
             <nav class="header-nav">
                 <a href="{% url 'userin' %}">
-                    <i class="fas fa-th-large"></i> Dashboard
+                    <i class="fas fa-th-large"></i> {% trans "Dashboard" %}
                 </a>
                 <a href="{% url 'map' %}">
-                    <i class="fas fa-map"></i> Map
+                    <i class="fas fa-map"></i> {% trans "Map" %}
                 </a>
                 <a href="{% url 'slots' %}">
-                    <i class="fas fa-parking"></i> Find Space
+                    <i class="fas fa-parking"></i> {% trans "Find Space" %}
                 </a>
                 <a href="{% url 'ticket' %}">
-                    <i class="fas fa-ticket-alt"></i> My Ticket
+                    <i class="fas fa-ticket-alt"></i> {% trans "My Ticket" %}
                 </a>
             </nav>
 
             <div class="header-actions">
+
+                <!-- Language switcher -->
+                {% load i18n %}
+                <div style="position:relative;" id="lang-wrap">
+                    <button onclick="toggleLangMenu()" id="lang-btn"
+                        style="display:flex;align-items:center;gap:5px;padding:5px 10px;border:1.5px solid var(--border);border-radius:7px;background:white;font-size:0.78rem;font-weight:600;color:var(--text);cursor:pointer;transition:border-color 0.15s;"
+                        onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <i class="fas fa-globe" style="color:var(--green);font-size:0.8rem;"></i>
+                        <span id="lang-label">{% get_current_language as LANG %}{% if LANG == 'fr' %}FR{% elif LANG == 'rw' %}RW{% else %}EN{% endif %}</span>
+                        <i class="fas fa-chevron-down" style="font-size:0.6rem;opacity:0.5;"></i>
+                    </button>
+                    <div id="lang-menu" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:white;border:1px solid var(--border);border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,0.10);overflow:hidden;min-width:130px;z-index:500;">
+                        <form action="{% url 'set_language' %}" method="post" id="lang-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <input type="hidden" name="language" id="lang-input" value="en">
+                        </form>
+                        <button onclick="setLang('en')" style="width:100%;padding:9px 14px;border:none;background:none;text-align:left;font-size:0.83rem;cursor:pointer;display:flex;align-items:center;gap:8px;{% if LANG == 'en' %}font-weight:700;color:var(--green);{% endif %}"
+                            onmouseover="this.style.background='#f7f8f7'" onmouseout="this.style.background='none'">
+                            🇬🇧 English
+                        </button>
+                        <button onclick="setLang('fr')" style="width:100%;padding:9px 14px;border:none;background:none;text-align:left;font-size:0.83rem;cursor:pointer;display:flex;align-items:center;gap:8px;{% if LANG == 'fr' %}font-weight:700;color:var(--green);{% endif %}"
+                            onmouseover="this.style.background='#f7f8f7'" onmouseout="this.style.background='none'">
+                            🇫🇷 Français
+                        </button>
+                        <button onclick="setLang('rw')" style="width:100%;padding:9px 14px;border:none;background:none;text-align:left;font-size:0.83rem;cursor:pointer;display:flex;align-items:center;gap:8px;{% if LANG == 'rw' %}font-weight:700;color:var(--green);{% endif %}"
+                            onmouseover="this.style.background='#f7f8f7'" onmouseout="this.style.background='none'">
+                            🇷🇼 Kinyarwanda
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Notification bell -->
                 <a href="{% url 'notifications' %}" class="notif-btn" title="Notifications" style="position:relative;text-decoration:none;">
@@ -631,18 +663,18 @@
                             </div>
                         </div>
                         <a href="{% url 'profile' %}" class="ud-item">
-                            <i class="fas fa-user"></i> Profile
+                            <i class="fas fa-user"></i> {% trans "Profile" %}
                         </a>
                         <a href="{% url 'notifications' %}" class="ud-item">
-                            <i class="fas fa-bell"></i> Notifications
+                            <i class="fas fa-bell"></i> {% trans "Notifications" %}
                             <span class="ud-notif-badge" id="ud-notif-badge"></span>
                         </a>
                         <a href="{% url 'ticket' %}" class="ud-item">
-                            <i class="fas fa-ticket-alt"></i> My Ticket
+                            <i class="fas fa-ticket-alt"></i> {% trans "My Ticket" %}
                         </a>
                         <div class="ud-divider"></div>
                         <a href="#" class="ud-item ud-logout" onclick="showLogout(event)">
-                            <i class="fas fa-sign-out-alt"></i> Sign out
+                            <i class="fas fa-sign-out-alt"></i> {% trans "Sign out" %}
                         </a>
                     </div>
                 </div>
@@ -657,8 +689,8 @@
         <!-- Welcome Banner -->
         <div class="welcome-banner">
             <div class="wb-text">
-                <h2>Welcome back, {{ request.user.first_name|default:request.user.username }}!</h2>
-                <p>Find a parking space, view your tickets, or check billing history below.</p>
+                <h2>{% trans "Welcome back" %}, {{ request.user.first_name|default:request.user.username }}!</h2>
+                <p>{% trans "Find a parking space, view your tickets, or check billing history below." %}</p>
             </div>
             <div class="wb-stats">
 
@@ -669,7 +701,7 @@
                         <span style="width:8px;height:8px;background:#4ade80;border-radius:50%;display:inline-block;box-shadow:0 0 6px #4ade80;animation:pulse 1.8s infinite;"></span>
                         <span style="font-size:1.25rem;font-weight:800;color:white;line-height:1;">{{ active_tickets_count }}</span>
                     </div>
-                    <span style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.8);">Active Session{{ active_tickets_count|pluralize }}</span>
+                    <span style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.8);">{% trans "Active Session" %}</span>
                     {% with t=active_tickets.first %}
                     {% if t %}<span style="font-size:0.68rem;color:rgba(255,255,255,0.6);margin-top:1px;">{{ t.vehicle.plate_number }} · {{ t.entry_time|timesince }} ago</span>{% endif %}
                     {% endwith %}
@@ -680,24 +712,24 @@
                         <span style="width:8px;height:8px;background:rgba(255,255,255,0.35);border-radius:50%;display:inline-block;"></span>
                         <span style="font-size:1.25rem;font-weight:800;color:rgba(255,255,255,0.6);line-height:1;">—</span>
                     </div>
-                    <span style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.7);">No Active Session</span>
-                    <span style="font-size:0.68rem;color:rgba(255,255,255,0.5);margin-top:1px;">Tap to find a space →</span>
+                    <span style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.7);">{% trans "No Active Session" %}</span>
+                    <span style="font-size:0.68rem;color:rgba(255,255,255,0.5);margin-top:1px;">{% trans "Tap to find a space →" %}</span>
                 </a>
                 {% endif %}
 
                 <!-- Ticket history card -->
                 <a href="{% url 'ticket' %}" class="wb-stat" style="text-decoration:none;background:rgba(255,255,255,0.10);border:1.5px solid rgba(255,255,255,0.18);border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;min-width:120px;">
                     <span style="font-size:1.25rem;font-weight:800;color:white;line-height:1;">{{ total_tickets }}</span>
-                    <span style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.8);">Total Ticket{{ total_tickets|pluralize }}</span>
-                    <span style="font-size:0.68rem;color:rgba(255,255,255,0.5);margin-top:1px;">View history →</span>
+                    <span style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.8);">{% trans "Total Tickets" %}</span>
+                    <span style="font-size:0.68rem;color:rgba(255,255,255,0.5);margin-top:1px;">{% trans "View history →" %}</span>
                 </a>
 
                 <!-- Vehicles card -->
                 <a href="{% url 'profile' %}" class="wb-stat" style="text-decoration:none;background:rgba(255,255,255,0.10);border:1.5px solid rgba(255,255,255,0.18);border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;min-width:120px;">
                     <span style="font-size:1.25rem;font-weight:800;color:white;line-height:1;">{{ total_vehicles }}</span>
-                    <span style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.8);">Vehicle{{ total_vehicles|pluralize }}</span>
+                    <span style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.8);">{% trans "Vehicles" %}</span>
                     <span style="font-size:0.68rem;color:rgba(255,255,255,0.5);margin-top:1px;">
-                        {% if user_vehicles %}{{ user_vehicles.first.plate_number }}{% else %}Add a vehicle →{% endif %}
+                        {% if user_vehicles %}{{ user_vehicles.first.plate_number }}{% else %}{% trans "Add a vehicle →" %}{% endif %}
                     </span>
                 </a>
 
@@ -1029,6 +1061,22 @@
             .catch(function() {});
         setTimeout(pollNotifs, 30000);
     })();
+
+    /* ── Language switcher ── */
+    function toggleLangMenu() {
+        var m = document.getElementById('lang-menu');
+        m.style.display = m.style.display === 'none' ? 'block' : 'none';
+    }
+    function setLang(code) {
+        document.getElementById('lang-input').value = code;
+        document.getElementById('lang-form').submit();
+    }
+    document.addEventListener('click', function(e) {
+        var wrap = document.getElementById('lang-wrap');
+        if (wrap && !wrap.contains(e.target)) {
+            document.getElementById('lang-menu').style.display = 'none';
+        }
+    });
     </script>
     {% include '_footer.html' %}
 

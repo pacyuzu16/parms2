@@ -1,0 +1,186 @@
+# PARMS — French translations
+# Language: fr
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: fr\n"
+
+# Navigation
+msgid "Dashboard"
+msgstr "Tableau de bord"
+
+msgid "Map"
+msgstr "Carte"
+
+msgid "Find Space"
+msgstr "Trouver un espace"
+
+msgid "My Ticket"
+msgstr "Mon ticket"
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "Notifications"
+msgstr "Notifications"
+
+msgid "Sign out"
+msgstr "Déconnexion"
+
+msgid "Settings"
+msgstr "Paramètres"
+
+# Welcome banner
+msgid "Welcome back"
+msgstr "Bon retour"
+
+msgid "Find a parking space, view your tickets, or check billing history below."
+msgstr "Trouvez un espace, consultez vos tickets ou vérifiez votre historique de facturation."
+
+msgid "Active Session"
+msgstr "Session active"
+
+msgid "No Active Session"
+msgstr "Aucune session active"
+
+msgid "Tap to find a space →"
+msgstr "Appuyez pour trouver un espace →"
+
+msgid "Total Tickets"
+msgstr "Total tickets"
+
+msgid "View history →"
+msgstr "Voir l'historique →"
+
+msgid "Vehicles"
+msgstr "Véhicules"
+
+msgid "Add a vehicle →"
+msgstr "Ajouter un véhicule →"
+
+# Parking status
+msgid "Available"
+msgstr "Disponible"
+
+msgid "Full"
+msgstr "Complet"
+
+msgid "Limited"
+msgstr "Limité"
+
+msgid "Best Choice"
+msgstr "Meilleur choix"
+
+msgid "Good Option"
+msgstr "Bonne option"
+
+msgid "Filling Up"
+msgstr "Se remplit"
+
+# Slots / booking
+msgid "Book"
+msgstr "Réserver"
+
+msgid "Confirm Booking"
+msgstr "Confirmer la réservation"
+
+msgid "Space"
+msgstr "Espace"
+
+msgid "Occupied"
+msgstr "Occupé"
+
+msgid "Free"
+msgstr "Libre"
+
+# Exit / payment
+msgid "Exit Parking"
+msgstr "Quitter le parking"
+
+msgid "Payment"
+msgstr "Paiement"
+
+msgid "Cash"
+msgstr "Espèces"
+
+msgid "Card"
+msgstr "Carte"
+
+msgid "Total Fee"
+msgstr "Montant total"
+
+msgid "Duration"
+msgstr "Durée"
+
+msgid "Entry Time"
+msgstr "Heure d'entrée"
+
+msgid "Exit Time"
+msgstr "Heure de sortie"
+
+# Success messages
+msgid "Payment Successful!"
+msgstr "Paiement réussi !"
+
+msgid "Have a safe journey!"
+msgstr "Bonne route !"
+
+msgid "Thank you for using PARMS Smart Parking System."
+msgstr "Merci d'avoir utilisé le système PARMS."
+
+# Ticket
+msgid "Your Parking Ticket"
+msgstr "Votre ticket de parking"
+
+msgid "Parking Location"
+msgstr "Lieu de stationnement"
+
+msgid "Vehicle Plate"
+msgstr "Plaque d'immatriculation"
+
+msgid "Calculated on exit"
+msgstr "Calculé à la sortie"
+
+msgid "Active"
+msgstr "Actif"
+
+msgid "Done"
+msgstr "Terminé"
+
+# Auth
+msgid "Create your account"
+msgstr "Créer votre compte"
+
+msgid "Already have an account?"
+msgstr "Vous avez déjà un compte ?"
+
+msgid "Sign in"
+msgstr "Se connecter"
+
+msgid "Sign in to PARMS"
+msgstr "Se connecter à PARMS"
+
+msgid "Continue with Google"
+msgstr "Continuer avec Google"
+
+msgid "Email address"
+msgstr "Adresse e-mail"
+
+msgid "Password"
+msgstr "Mot de passe"
+
+msgid "Create account"
+msgstr "Créer un compte"
+
+msgid "Username"
+msgstr "Nom d'utilisateur"
+
+msgid "Confirm password"
+msgstr "Confirmer le mot de passe"
+
+msgid "License Plate Number"
+msgstr "Numéro de plaque"
+
+msgid "Vehicle Type"
+msgstr "Type de véhicule"

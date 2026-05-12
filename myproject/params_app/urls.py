@@ -72,4 +72,5 @@ urlpatterns = [
     path("manage/users/",                             views.admin_users_management,   name="admin_users_management"),
     path("manage/users/<int:user_id>/edit/",          views.admin_user_edit,          name="admin_user_edit"),
     path("manage/reports/",                           views.admin_reports,            name="admin_reports"),
+    path("manage/export/<str:report_type>/",          views.admin_export_csv,         name="admin_export_csv"),
 ]

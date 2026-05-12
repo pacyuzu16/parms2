@@ -639,6 +639,13 @@ def exit_parking(request):
             if lot and lot.available_spaces == 1:
                 _notify_space_available(lot)
 
+            # Email receipt
+            try:
+                from .email_utils import send_session_email
+                send_session_email(t, payment_method)
+            except Exception:
+                pass
+
         return render(request, 'exit_success.html', {
             'ticket': t,
             'lot': lot if t.parking_space else None,
@@ -1412,6 +1419,89 @@ def admin_reports(request):
     return redirect('/dashboard/?tab=reports')
 
 
+@_admin_required
+def admin_export_csv(request, report_type):
+    """GET /manage/export/<type>/ — download a CSV of tickets, vehicles, users, or payments."""
+    import csv
+    from django.http import HttpResponse
+
+    now_str = timezone.now().strftime('%Y-%m-%d_%H%M')
+    response = HttpResponse(content_type='text/csv')
+
+    if report_type == 'tickets':
+        response['Content-Disposition'] = f'attachment; filename="parms_tickets_{now_str}.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Ticket ID', 'Plate', 'Owner', 'Location', 'Space',
+                         'Entry Time', 'Exit Time', 'Duration (hrs)', 'Fee ($)', 'Status'])
+        qs = (ParkingTicket.objects
+              .select_related('vehicle', 'parking_space__parking_lot', 'user')
+              .order_by('-entry_time')[:5000])
+        for t in qs:
+            lot  = t.parking_space.parking_lot.location if t.parking_space else '—'
+            space = f'#{t.parking_space.space_id}' if t.parking_space else '—'
+            owner = t.user.get_full_name() or t.user.username if t.user else t.vehicle.owner_name
+            entry = timezone.localtime(t.entry_time).strftime('%Y-%m-%d %H:%M')
+            exit_ = timezone.localtime(t.exit_time).strftime('%Y-%m-%d %H:%M') if t.exit_time else 'Active'
+            status = 'Completed' if t.exit_time else 'Active'
+            writer.writerow([t.ticket_id, t.vehicle.plate_number, owner, lot, space,
+                             entry, exit_, round(t.duration_hours(), 2), t.fee or 0, status])
+
+    elif report_type == 'vehicles':
+        response['Content-Disposition'] = f'attachment; filename="parms_vehicles_{now_str}.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['ID', 'Plate Number', 'Type', 'Owner', 'Linked User', 'Total Sessions'])
+        for v in Vehicle.objects.select_related('user').annotate(sessions=Count('tickets')).order_by('-vehicle_id'):
+            linked = v.user.email if v.user else '—'
+            writer.writerow([v.vehicle_id, v.plate_number, v.vehicle_type,
+                             v.owner_name, linked, v.sessions])
+
+    elif report_type == 'users':
+        response['Content-Disposition'] = f'attachment; filename="parms_users_{now_str}.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['ID', 'Username', 'Email', 'Full Name', 'Role',
+                         'Date Joined', 'Last Login', 'Total Tickets'])
+        for u in (User.objects
+                  .annotate(ticket_count=Count('tickets'))
+                  .order_by('-date_joined')):
+            role = 'Admin' if u.is_staff else 'User'
+            joined = u.date_joined.strftime('%Y-%m-%d')
+            last   = u.last_login.strftime('%Y-%m-%d %H:%M') if u.last_login else '—'
+            writer.writerow([u.id, u.username, u.email,
+                             u.get_full_name(), role, joined, last, u.ticket_count])
+
+    elif report_type == 'payments':
+        response['Content-Disposition'] = f'attachment; filename="parms_payments_{now_str}.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Payment ID', 'Ticket ID', 'Plate', 'Amount ($)',
+                         'Method', 'Date', 'Location'])
+        for p in (Payment.objects
+                  .select_related('ticket__vehicle', 'ticket__parking_space__parking_lot')
+                  .order_by('-date')[:5000]):
+            lot  = (p.ticket.parking_space.parking_lot.location
+                    if p.ticket.parking_space else '—')
+            date = timezone.localtime(p.date).strftime('%Y-%m-%d %H:%M')
+            writer.writerow([p.payment_id, p.ticket.ticket_id,
+                             p.ticket.vehicle.plate_number, p.amount,
+                             p.payment_method, date, lot])
+
+    elif report_type == 'occupancy':
+        response['Content-Disposition'] = f'attachment; filename="parms_occupancy_{now_str}.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Lot ID', 'Location', 'Total Spaces', 'Occupied',
+                         'Available', 'Occupancy %', 'Status'])
+        for lot in ParkingLot.objects.prefetch_related('spaces').order_by('lot_id'):
+            total = lot.spaces.count()
+            occ   = lot.spaces.filter(is_occupied=True).count()
+            avail = total - occ
+            rate  = round(occ / total * 100) if total else 0
+            writer.writerow([lot.lot_id, lot.location, total, occ,
+                             avail, f'{rate}%', lot.status()])
+    else:
+        return redirect('/dashboard/?tab=reports')
+
+    return response
+
+
 # -- Map View ------------------------------------------------------------------
 
 @login_required
@@ -2031,6 +2121,13 @@ def api_admin_close_session(request):
 
         if lot and lot.available_spaces == 1:
             _notify_space_available(lot)
+
+        # Email receipt
+        try:
+            from .email_utils import send_session_email
+            send_session_email(t, payment_method)
+        except Exception:
+            pass
 
     return JsonResponse({
         'success':        True,

@@ -6,7 +6,8 @@ from params_app import views as app_views
 
 urlpatterns = [
     path("admin/",    admin.site.urls),
-    path("accounts/", include("allauth.urls")),   # Google OAuth endpoints
+    path("accounts/", include("allauth.urls")),    # Google OAuth endpoints
+    path("i18n/",     include("django.conf.urls.i18n")),  # set_language POST endpoint
     path("",          include("params_app.urls")),
 ] + static(settings.MEDIA_URL, document_root=getattr(settings, 'MEDIA_ROOT', ''))
 

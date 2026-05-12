@@ -1,0 +1,186 @@
+# PARMS — Kinyarwanda translations
+# Language: rw
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: rw\n"
+
+# Navigation
+msgid "Dashboard"
+msgstr "Ikibaho"
+
+msgid "Map"
+msgstr "Ikarita"
+
+msgid "Find Space"
+msgstr "Shaka ahantu"
+
+msgid "My Ticket"
+msgstr "Indagisho yanjye"
+
+msgid "Profile"
+msgstr "Umwirondoro"
+
+msgid "Notifications"
+msgstr "Amatangazo"
+
+msgid "Sign out"
+msgstr "Sohoka"
+
+msgid "Settings"
+msgstr "Igenamiterere"
+
+# Welcome banner
+msgid "Welcome back"
+msgstr "Murakaza neza"
+
+msgid "Find a parking space, view your tickets, or check billing history below."
+msgstr "Shaka ahantu ho guhagarara imodoka, reba indagisho zawe cyangwa amateka y'ubwishyu."
+
+msgid "Active Session"
+msgstr "Igikorwa gishoboka"
+
+msgid "No Active Session"
+msgstr "Nta gikorwa gishoboka"
+
+msgid "Tap to find a space →"
+msgstr "Kanda ushake ahantu →"
+
+msgid "Total Tickets"
+msgstr "Indagisho zose"
+
+msgid "View history →"
+msgstr "Reba amateka →"
+
+msgid "Vehicles"
+msgstr "Imodoka"
+
+msgid "Add a vehicle →"
+msgstr "Ongeraho imodoka →"
+
+# Parking status
+msgid "Available"
+msgstr "Irafunguke"
+
+msgid "Full"
+msgstr "Yuzuye"
+
+msgid "Limited"
+msgstr "Bike bisigaye"
+
+msgid "Best Choice"
+msgstr "Ihitamo ryiza"
+
+msgid "Good Option"
+msgstr "Ihitamo ryiza kandi"
+
+msgid "Filling Up"
+msgstr "Yuzura vuba"
+
+# Slots / booking
+msgid "Book"
+msgstr "Bika"
+
+msgid "Confirm Booking"
+msgstr "Emeza kubika"
+
+msgid "Space"
+msgstr "Ahantu"
+
+msgid "Occupied"
+msgstr "Hariho imodoka"
+
+msgid "Free"
+msgstr "Nta modoka"
+
+# Exit / payment
+msgid "Exit Parking"
+msgstr "Sohora imodoka"
+
+msgid "Payment"
+msgstr "Kwishyura"
+
+msgid "Cash"
+msgstr "Amafaranga"
+
+msgid "Card"
+msgstr "Ikarita"
+
+msgid "Total Fee"
+msgstr "Igiciro cyose"
+
+msgid "Duration"
+msgstr "Igihe"
+
+msgid "Entry Time"
+msgstr "Igihe cyo kwinjira"
+
+msgid "Exit Time"
+msgstr "Igihe cyo gusohoka"
+
+# Success messages
+msgid "Payment Successful!"
+msgstr "Kwishyura byagenze neza!"
+
+msgid "Have a safe journey!"
+msgstr "Urugendo ruto rwiza!"
+
+msgid "Thank you for using PARMS Smart Parking System."
+msgstr "Murakoze gukoresha sisitemu ya PARMS."
+
+# Ticket
+msgid "Your Parking Ticket"
+msgstr "Indagisho yawe"
+
+msgid "Parking Location"
+msgstr "Aho hagarariwe"
+
+msgid "Vehicle Plate"
+msgstr "Plaque y'imodoka"
+
+msgid "Calculated on exit"
+msgstr "Ibarwa iyo usohotse"
+
+msgid "Active"
+msgstr "Ifite imodoka"
+
+msgid "Done"
+msgstr "Byarangiye"
+
+# Auth
+msgid "Create your account"
+msgstr "Fungura konti yawe"
+
+msgid "Already have an account?"
+msgstr "Usanzwe ufite konti?"
+
+msgid "Sign in"
+msgstr "Injira"
+
+msgid "Sign in to PARMS"
+msgstr "Injira muri PARMS"
+
+msgid "Continue with Google"
+msgstr "Komeza na Google"
+
+msgid "Email address"
+msgstr "Imeyili"
+
+msgid "Password"
+msgstr "Ijambo ryibanga"
+
+msgid "Create account"
+msgstr "Fungura konti"
+
+msgid "Username"
+msgstr "Izina ry'ukoresha"
+
+msgid "Confirm password"
+msgstr "Emeza ijambo ryibanga"
+
+msgid "License Plate Number"
+msgstr "Nimero y'imodoka"
+
+msgid "Vehicle Type"
+msgstr "Ubwoko bw'imodoka"
