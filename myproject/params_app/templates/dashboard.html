@@ -66,30 +66,81 @@
         .sidebar.collapsed .sb-nav a span { display: none; }
         .sidebar.collapsed .sb-badge { display: none; }
         .sidebar.collapsed .sb-logo span { display: none; }
-        .sidebar.collapsed .sb-bottom div { display: none; }
         .sidebar.collapsed .sb-nav a { justify-content: center; padding: 10px; }
         .sidebar.collapsed .sb-nav a i { width: auto; }
         .sidebar.collapsed .sb-logo { justify-content: center; padding: 18px 10px; }
+        .sidebar.collapsed .sb-toggle-label { display: none; }
+        .sidebar.collapsed .sb-profile-info,
+        .sidebar.collapsed .sb-profile-chevron { display: none; }
+        .sidebar.collapsed .sb-profile-wrap { padding: 10px 8px; }
+        .sidebar.collapsed .sb-profile { justify-content: center; padding: 8px; }
+        .sidebar.collapsed .sb-profile-popup { left: 68px; bottom: 8px; width: 200px; }
         .layout.sb-collapsed { margin-left: 64px; }
-        .collapse-btn {
-            position: absolute; bottom: 60px; right: -14px;
-            width: 28px; height: 28px;
-            background: var(--white); border: 1.5px solid var(--border);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; font-size: 0.7rem; color: var(--muted);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            transition: all 0.2s; z-index: 1001;
-        }
-        .collapse-btn:hover { background: var(--green); color: white; border-color: var(--green); }
 
+        /* ── Sidebar logo row ─────────────────────────────────────────────────── */
         .sb-logo {
             display: flex; align-items: center; gap: 10px;
-            padding: 20px 18px 16px;
+            padding: 14px 12px 14px 16px;
             border-bottom: 1px solid rgba(44,95,71,0.18);
-            text-decoration: none;
-            flex-shrink: 0;
+            text-decoration: none; flex-shrink: 0; position: relative;
         }
-        .sb-logo span { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.2rem; font-weight: 800; color: var(--sb-white); letter-spacing: -0.02em; }
+        .sb-logo span { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--sb-white); letter-spacing: -0.02em; flex: 1; }
+
+        /* ── Collapse toggle (Claude-style, inside sidebar header) ────────────── */
+        .sb-toggle {
+            width: 28px; height: 28px; flex-shrink: 0;
+            background: none; border: none; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: rgba(26,74,46,0.55);
+            transition: background 0.15s, color 0.15s;
+            margin-left: auto;
+        }
+        .sb-toggle:hover { background: rgba(44,95,71,0.14); color: var(--sb-white); }
+        .sb-toggle svg { width: 16px; height: 16px; }
+
+        /* ── Profile section (bottom) ─────────────────────────────────────────── */
+        .sb-bottom { margin-top: auto; border-top: 1px solid rgba(44,95,71,0.18); }
+        .sb-profile-wrap { padding: 10px; position: relative; }
+        .sb-profile {
+            display: flex; align-items: center; gap: 9px;
+            padding: 8px; border-radius: 8px; cursor: pointer;
+            transition: background 0.15s; position: relative;
+        }
+        .sb-profile:hover { background: rgba(44,95,71,0.10); }
+        .sb-avatar {
+            width: 32px; height: 32px; border-radius: 7px; flex-shrink: 0;
+            background: #1a4a2e; border: 1.5px solid rgba(197,232,213,0.35);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.82rem; color: #c5e8d5;
+        }
+        .sb-profile-info { min-width: 0; flex: 1; }
+        .sb-profile-name { font-size: 0.82rem; font-weight: 600; color: #1a4a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sb-profile-email { font-size: 0.67rem; color: #3d7a5a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+        .sb-profile-chevron { flex-shrink: 0; color: rgba(44,95,71,0.5); font-size: 0.65rem; transition: transform 0.2s; }
+        .sb-profile-chevron.open { transform: rotate(180deg); }
+
+        /* Profile popup menu */
+        .sb-profile-popup {
+            display: none; position: absolute; bottom: calc(100% + 6px); left: 0; right: 0;
+            background: white; border: 1px solid #dde3e0; border-radius: 10px;
+            box-shadow: 0 -6px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+            overflow: hidden; z-index: 200;
+        }
+        .sb-profile-popup.open { display: block; }
+        .sb-pm-header { padding: 10px 14px 8px; border-bottom: 1px solid #f1f5f9; }
+        .sb-pm-name { font-size: 0.82rem; font-weight: 700; color: #161b19; }
+        .sb-pm-email { font-size: 0.72rem; color: #4f5a55; margin-top: 1px; }
+        .sb-pm-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 14px; font-size: 0.84rem; color: #161b19;
+            text-decoration: none; cursor: pointer; border: none; background: none;
+            width: 100%; text-align: left; transition: background 0.12s;
+        }
+        .sb-pm-item:hover { background: #f7f8f7; }
+        .sb-pm-item i { width: 15px; text-align: center; color: #4f5a55; font-size: 0.82rem; }
+        .sb-pm-logout { color: #b91c1c; }
+        .sb-pm-logout i { color: #b91c1c; }
+        .sb-pm-divider { height: 1px; background: #f1f5f9; margin: 2px 0; }
 
         .sb-section { padding: 16px 10px 4px; }
         .sb-label {
@@ -144,8 +195,6 @@
         .search-input { padding: 7px 12px 7px 30px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 0.85rem; width: 200px; background: var(--bg); outline: none; transition: border-color var(--trans); color: var(--text); }
         .search-input:focus { border-color: var(--green); background: white; }
         .tb-btn { display: flex; align-items: center; gap: 7px; padding: 7px 14px; border-radius: 7px; border: none; font-size: 0.84rem; font-weight: 600; cursor: pointer; transition: all var(--trans); }
-        .tb-logout { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-        .tb-logout:hover { background: #b91c1c; color: white; border-color: #b91c1c; }
 
         /* ── Main ────────────────────────────────────────────────────────────── */
         .main { padding: 24px; flex: 1; }
@@ -340,11 +389,20 @@
 
 <!-- ═══════════════════════════ SIDEBAR ═══════════════════════════ -->
 <aside class="sidebar" id="sidebar">
-    <a class="sb-logo" href="/">
-        <img src="{% static 'imgs/Traffic Jam.png' %}" height="30" alt="PARMS"
-             style="opacity:0.9;">
+
+    <!-- Logo + Claude-style collapse toggle -->
+    <div class="sb-logo">
+        <img src="{% static 'imgs/Traffic Jam.png' %}" height="28" alt="PARMS" style="opacity:0.9;flex-shrink:0;">
         <span>PARMS</span>
-    </a>
+        <button class="sb-toggle" id="collapseBtn" onclick="toggleSidebar()" title="Collapse sidebar">
+            <!-- Panel-with-arrow SVG, same concept as Claude AI -->
+            <svg id="collapseIcon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+                <rect x="2" y="2" width="16" height="16" rx="2.5"/>
+                <line x1="7" y1="2" x2="7" y2="18"/>
+                <polyline id="collapseArrow" points="11,7 8.5,10 11,13"/>
+            </svg>
+        </button>
+    </div>
 
     <div class="sb-section">
         <p class="sb-label">Overview</p>
@@ -390,26 +448,37 @@
         </ul>
     </div>
 
-    <div class="sb-section">
-        <p class="sb-label">Account</p>
-        <ul class="sb-nav">
-            <li><a href="#" data-tab="settings">
-                <i class="fas fa-cog"></i><span>Settings</span>
-            </a></li>
-            <li><a href="#" onclick="confirmLogout(event)" style="color:#b91c1c;">
-                <i class="fas fa-sign-out-alt"></i><span>Logout</span>
-            </a></li>
-        </ul>
-    </div>
-
+    <!-- Profile section — bottom, Claude-style -->
     <div class="sb-bottom">
-        <div id="sb-clock"></div>
+        <div class="sb-profile-wrap">
+            <!-- Profile popup menu (appears above the avatar) -->
+            <div class="sb-profile-popup" id="sbProfilePopup">
+                <div class="sb-pm-header">
+                    <div class="sb-pm-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+                    <div class="sb-pm-email">{{ request.user.email }}</div>
+                </div>
+                <div class="sb-pm-divider"></div>
+                <a href="#" class="sb-pm-item" onclick="showTab('settings');closeSbProfile();return false;">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+                <div class="sb-pm-divider"></div>
+                <button class="sb-pm-item sb-pm-logout" onclick="confirmLogout(event)">
+                    <i class="fas fa-sign-out-alt"></i> Sign out
+                </button>
+            </div>
+
+            <!-- Clickable profile row -->
+            <div class="sb-profile" id="sbProfileTrigger" onclick="toggleSbProfile()">
+                <div class="sb-avatar">{{ request.user.username|first|upper }}</div>
+                <div class="sb-profile-info">
+                    <div class="sb-profile-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+                    <div class="sb-profile-email">{{ request.user.email|truncatechars:26 }}</div>
+                </div>
+                <i class="fas fa-chevron-up sb-profile-chevron" id="sbProfileChevron"></i>
+            </div>
+        </div>
     </div>
 
-    <!-- Collapse toggle button -->
-    <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebar()" title="Collapse sidebar">
-        <i class="fas fa-chevron-left" id="collapseIcon"></i>
-    </button>
 </aside>
 
 <!-- ═══════════════════════════ LAYOUT ═══════════════════════════ -->
@@ -429,9 +498,6 @@
                 <i class="fas fa-search"></i>
                 <input class="search-input" type="text" id="globalSearch" placeholder="Search…" oninput="globalSearch(this.value)">
             </div>
-            <button class="tb-btn tb-logout" onclick="confirmLogout(event)">
-                <i class="fas fa-sign-out-alt"></i><span>Logout</span>
-            </button>
         </div>
     </header>
 
@@ -1520,21 +1586,55 @@ document.querySelectorAll('.sb-nav a[data-tab], .btn[data-tab]').forEach(functio
 })();
 
 /* ── Sidebar collapse (desktop) ── */
-var _sbCollapsed = localStorage.getItem('sb_collapsed') === '1';
+/* ── Sidebar collapse — collapsed by default ── */
+var _sbCollapsed = localStorage.getItem('sb_collapsed') !== '0';  // default: collapsed
 (function initCollapse() {
     if (_sbCollapsed) {
         document.getElementById('sidebar').classList.add('collapsed');
         document.querySelector('.layout').classList.add('sb-collapsed');
-        document.getElementById('collapseIcon').className = 'fas fa-chevron-right';
+        _sbArrowFlip(true);
     }
 })();
+function _sbArrowFlip(collapsed) {
+    var arrow = document.getElementById('collapseArrow');
+    if (!arrow) return;
+    // Points left when expanded (close), points right when collapsed (open)
+    arrow.setAttribute('points', collapsed ? '9,7 11.5,10 9,13' : '11,7 8.5,10 11,13');
+}
 function toggleSidebar() {
     _sbCollapsed = !_sbCollapsed;
     localStorage.setItem('sb_collapsed', _sbCollapsed ? '1' : '0');
     document.getElementById('sidebar').classList.toggle('collapsed', _sbCollapsed);
     document.querySelector('.layout').classList.toggle('sb-collapsed', _sbCollapsed);
-    document.getElementById('collapseIcon').className = _sbCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
+    _sbArrowFlip(_sbCollapsed);
+    closeSbProfile();
 }
+
+/* ── Profile popup menu ── */
+function toggleSbProfile() {
+    var popup   = document.getElementById('sbProfilePopup');
+    var chevron = document.getElementById('sbProfileChevron');
+    var isOpen  = popup.classList.contains('open');
+    if (isOpen) {
+        popup.classList.remove('open');
+        chevron.classList.remove('open');
+    } else {
+        popup.classList.add('open');
+        chevron.classList.add('open');
+    }
+}
+function closeSbProfile() {
+    document.getElementById('sbProfilePopup').classList.remove('open');
+    document.getElementById('sbProfileChevron').classList.remove('open');
+}
+// Close profile menu when clicking outside
+document.addEventListener('click', function(e) {
+    var trigger = document.getElementById('sbProfileTrigger');
+    var popup   = document.getElementById('sbProfilePopup');
+    if (trigger && !trigger.contains(e.target) && popup && !popup.contains(e.target)) {
+        closeSbProfile();
+    }
+});
 
 /* ── Sidebar (mobile) ── */
 function openSb()  { document.getElementById('sidebar').classList.add('open');   document.getElementById('sbOverlay').classList.add('show'); }
