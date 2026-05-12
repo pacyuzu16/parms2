@@ -661,16 +661,54 @@
                 <p>Find a parking space, view your tickets, or check billing history below.</p>
             </div>
             <div class="wb-stats">
-                <div class="wb-stat">
-                    <div class="val">{{ request.user.parkingticket_set.count|default:"—" }}</div>
-                    <div class="lbl">My Tickets</div>
-                </div>
-                <div class="wb-stat">
-                    <div class="val">{{ request.user.vehicle_set.count|default:"—" }}</div>
-                    <div class="lbl">My Vehicles</div>
-                </div>
+
+                <!-- Active session card -->
+                {% if active_tickets_count %}
+                <a href="{% url 'ticket' %}" class="wb-stat" style="text-decoration:none;background:rgba(44,95,71,0.18);border:1.5px solid rgba(44,95,71,0.35);border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;min-width:150px;">
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <span style="width:8px;height:8px;background:#4ade80;border-radius:50%;display:inline-block;box-shadow:0 0 6px #4ade80;animation:pulse 1.8s infinite;"></span>
+                        <span style="font-size:1.25rem;font-weight:800;color:white;line-height:1;">{{ active_tickets_count }}</span>
+                    </div>
+                    <span style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.8);">Active Session{{ active_tickets_count|pluralize }}</span>
+                    {% with t=active_tickets.first %}
+                    {% if t %}<span style="font-size:0.68rem;color:rgba(255,255,255,0.6);margin-top:1px;">{{ t.vehicle.plate_number }} · {{ t.entry_time|timesince }} ago</span>{% endif %}
+                    {% endwith %}
+                </a>
+                {% else %}
+                <a href="{% url 'slots' %}" class="wb-stat" style="text-decoration:none;background:rgba(255,255,255,0.10);border:1.5px solid rgba(255,255,255,0.18);border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;min-width:150px;">
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <span style="width:8px;height:8px;background:rgba(255,255,255,0.35);border-radius:50%;display:inline-block;"></span>
+                        <span style="font-size:1.25rem;font-weight:800;color:rgba(255,255,255,0.6);line-height:1;">—</span>
+                    </div>
+                    <span style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.7);">No Active Session</span>
+                    <span style="font-size:0.68rem;color:rgba(255,255,255,0.5);margin-top:1px;">Tap to find a space →</span>
+                </a>
+                {% endif %}
+
+                <!-- Ticket history card -->
+                <a href="{% url 'ticket' %}" class="wb-stat" style="text-decoration:none;background:rgba(255,255,255,0.10);border:1.5px solid rgba(255,255,255,0.18);border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;min-width:120px;">
+                    <span style="font-size:1.25rem;font-weight:800;color:white;line-height:1;">{{ total_tickets }}</span>
+                    <span style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.8);">Total Ticket{{ total_tickets|pluralize }}</span>
+                    <span style="font-size:0.68rem;color:rgba(255,255,255,0.5);margin-top:1px;">View history →</span>
+                </a>
+
+                <!-- Vehicles card -->
+                <a href="{% url 'profile' %}" class="wb-stat" style="text-decoration:none;background:rgba(255,255,255,0.10);border:1.5px solid rgba(255,255,255,0.18);border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;min-width:120px;">
+                    <span style="font-size:1.25rem;font-weight:800;color:white;line-height:1;">{{ total_vehicles }}</span>
+                    <span style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.8);">Vehicle{{ total_vehicles|pluralize }}</span>
+                    <span style="font-size:0.68rem;color:rgba(255,255,255,0.5);margin-top:1px;">
+                        {% if user_vehicles %}{{ user_vehicles.first.plate_number }}{% else %}Add a vehicle →{% endif %}
+                    </span>
+                </a>
+
             </div>
         </div>
+        <style>
+        @keyframes pulse {
+            0%,100% { box-shadow: 0 0 4px #4ade80; }
+            50%      { box-shadow: 0 0 10px #4ade80, 0 0 20px rgba(74,222,128,0.4); }
+        }
+        </style>
 
                 {% block content %}
 
