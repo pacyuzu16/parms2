@@ -128,7 +128,7 @@ LOGIN_URL = '/login/'
 
 # ── Internationalisation ──────────────────────────────────────────────────────
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Kigali'   # UTC+2 — all template dates display in Kigali local time
 USE_I18N = True
 USE_TZ = True
 

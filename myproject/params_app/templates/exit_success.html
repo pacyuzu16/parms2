@@ -1,0 +1,98 @@
+{% extends 'userin.html' %}
+{% load static %}
+
+{% block content %}
+<div style="min-height:60vh;display:flex;align-items:center;justify-content:center;padding:40px 16px;">
+<div style="max-width:500px;width:100%;text-align:center;">
+
+    <!-- ── Animated checkmark circle ── -->
+    <div style="width:96px;height:96px;background:#dcfce7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 28px;animation:popIn 0.5s cubic-bezier(.34,1.56,.64,1) both;">
+        <i class="fas fa-check-circle" style="font-size:3rem;color:#16a34a;"></i>
+    </div>
+
+    <!-- ── Main message ── -->
+    <h1 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.75rem;font-weight:800;color:#1a4a2e;letter-spacing:-0.03em;margin-bottom:10px;">
+        Payment Successful!
+    </h1>
+    <p style="font-size:1rem;color:#2e6644;line-height:1.7;margin-bottom:0;">
+        Thank you for using <strong>PARMS Smart Parking System</strong>.<br>
+        Your payment was completed successfully.<br>
+        <strong>Have a safe journey! 🚗</strong>
+    </p>
+
+    <!-- ── Receipt card ── -->
+    <div style="margin:28px 0;background:white;border:1px solid #bbf7d0;border-radius:14px;padding:22px 24px;text-align:left;box-shadow:0 4px 16px rgba(44,95,71,0.08);">
+        <div style="font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#2c5f47;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
+            <i class="fas fa-receipt"></i> Session Receipt
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+                <div style="font-size:0.72rem;color:var(--muted);margin-bottom:3px;">Plate</div>
+                <div style="font-family:monospace;font-weight:800;font-size:1rem;color:var(--text);">{{ ticket.vehicle.plate_number }}</div>
+            </div>
+            <div>
+                <div style="font-size:0.72rem;color:var(--muted);margin-bottom:3px;">Ticket #</div>
+                <div style="font-weight:700;color:var(--text);">#{{ ticket.ticket_id }}</div>
+            </div>
+            {% if lot %}
+            <div>
+                <div style="font-size:0.72rem;color:var(--muted);margin-bottom:3px;">Location</div>
+                <div style="font-size:0.84rem;font-weight:600;color:var(--text);">{{ lot.location }}</div>
+            </div>
+            <div>
+                <div style="font-size:0.72rem;color:var(--muted);margin-bottom:3px;">Space</div>
+                <div style="font-size:0.84rem;font-weight:600;color:var(--text);">#{{ ticket.parking_space.space_id }}</div>
+            </div>
+            {% endif %}
+            <div>
+                <div style="font-size:0.72rem;color:var(--muted);margin-bottom:3px;">Entry</div>
+                <div style="font-size:0.82rem;color:var(--text);">{{ ticket.entry_time|date:"d M Y, H:i" }}</div>
+            </div>
+            <div>
+                <div style="font-size:0.72rem;color:var(--muted);margin-bottom:3px;">Exit</div>
+                <div style="font-size:0.82rem;color:var(--text);">{{ ticket.exit_time|date:"d M Y, H:i" }}</div>
+            </div>
+            <div>
+                <div style="font-size:0.72rem;color:var(--muted);margin-bottom:3px;">Duration</div>
+                <div style="font-size:0.84rem;font-weight:600;color:var(--text);">{{ ticket.duration_hours }} hours</div>
+            </div>
+            <div>
+                <div style="font-size:0.72rem;color:var(--muted);margin-bottom:3px;">Payment</div>
+                <div style="font-size:0.84rem;font-weight:600;color:var(--text);">{{ payment_method }}</div>
+            </div>
+        </div>
+        <!-- Fee highlight -->
+        <div style="margin-top:16px;padding-top:16px;border-top:1.5px dashed #86efac;display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:0.88rem;font-weight:600;color:var(--muted);">Total Paid</span>
+            <span style="font-size:1.8rem;font-weight:900;color:#2c5f47;font-family:monospace;">${{ ticket.fee }}</span>
+        </div>
+    </div>
+
+    <!-- ── Action buttons ── -->
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <a href="{% url 'ticket' %}"
+           style="display:inline-flex;align-items:center;gap:8px;padding:11px 22px;background:#2c5f47;color:white;border-radius:10px;font-weight:700;font-size:0.9rem;text-decoration:none;transition:background 0.2s;"
+           onmouseover="this.style.background='#234d39'" onmouseout="this.style.background='#2c5f47'">
+            <i class="fas fa-history"></i> View Ticket History
+        </a>
+        <a href="{% url 'userin' %}"
+           style="display:inline-flex;align-items:center;gap:8px;padding:11px 22px;background:white;color:#2c5f47;border:1.5px solid #2c5f47;border-radius:10px;font-weight:700;font-size:0.9rem;text-decoration:none;transition:all 0.2s;"
+           onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='white'">
+            <i class="fas fa-home"></i> Back to Home
+        </a>
+    </div>
+
+    <p style="font-size:0.76rem;color:var(--muted);margin-top:24px;">
+        <i class="fas fa-star" style="color:#fbbf24;"></i>
+        Thank you for choosing PARMS — Smart Parking Management System
+    </p>
+</div>
+</div>
+
+<style>
+@keyframes popIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+</style>
+{% endblock %}

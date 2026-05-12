@@ -587,6 +587,9 @@
                 <a href="{% url 'ticket' %}">
                     <i class="fas fa-ticket-alt"></i> My Ticket
                 </a>
+                <a href="{% url 'exit_parking' %}" style="color:#b04040;">
+                    <i class="fas fa-sign-out-alt"></i> Exit Parking
+                </a>
             </nav>
 
             <div class="header-actions">
@@ -639,6 +642,9 @@
                         </a>
                         <a href="{% url 'ticket' %}" class="ud-item">
                             <i class="fas fa-ticket-alt"></i> My Ticket
+                        </a>
+                        <a href="{% url 'exit_parking' %}" class="ud-item" style="color:#b04040;">
+                            <i class="fas fa-sign-out-alt"></i> Exit Parking
                         </a>
                         <div class="ud-divider"></div>
                         <a href="#" class="ud-item ud-logout" onclick="showLogout(event)">

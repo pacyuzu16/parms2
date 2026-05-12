@@ -284,13 +284,13 @@
 
         <div class="auth-brand-content">
             <h2>Your parking journey starts here</h2>
-            <p>Join thousands of drivers who book, manage, and pay for parking without the stress.</p>
+            <p>Register your vehicle once — enter and exit automatically using license plate recognition.</p>
             <ul class="auth-feature-list">
+                <li><i class="fas fa-check"></i> Plate-based automatic entry &amp; exit</li>
                 <li><i class="fas fa-check"></i> Real-time space availability</li>
                 <li><i class="fas fa-check"></i> Instant booking confirmation</li>
-                <li><i class="fas fa-check"></i> Multiple payment methods</li>
-                <li><i class="fas fa-check"></i> Full parking history & receipts</li>
-                <li><i class="fas fa-check"></i> 24/7 platform support</li>
+                <li><i class="fas fa-check"></i> Automatic fee calculation on exit</li>
+                <li><i class="fas fa-check"></i> Full parking history &amp; receipts</li>
             </ul>
         </div>
 
@@ -345,6 +345,28 @@
                     <input type="password" class="field-input" id="confirmPassword" name="confirm_password"
                            placeholder="Re-enter your password" autocomplete="new-password" required>
                     <p class="pw-hint" id="matchHint" style="min-height:16px;"></p>
+                </div>
+
+                <!-- Vehicle section -->
+                <div style="margin:18px 0 6px;padding:14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
+                    <div style="font-size:0.78rem;font-weight:700;color:#166534;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                        <i class="fas fa-car"></i> Your Vehicle (required for parking)
+                    </div>
+                    <div class="field-group" style="margin-bottom:10px;">
+                        <label class="field-label" for="plate_number">License Plate Number</label>
+                        <input type="text" class="field-input" id="plate_number" name="plate_number"
+                               placeholder="e.g. RAC 123A" autocomplete="off" required
+                               style="text-transform:uppercase;font-family:monospace;font-weight:600;letter-spacing:0.05em;">
+                        <p class="pw-hint">Used to identify your vehicle at entry &amp; exit gates</p>
+                    </div>
+                    <div class="field-group" style="margin-bottom:0;">
+                        <label class="field-label" for="vehicle_type">Vehicle Type</label>
+                        <select class="field-input" id="vehicle_type" name="vehicle_type">
+                            <option value="Car">Car</option>
+                            <option value="Motorcycle">Motorcycle</option>
+                            <option value="Truck">Truck</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="terms-row">
@@ -404,6 +426,16 @@
         const ok = pwInput.value === cfInput.value;
         matchHint.textContent = ok ? 'Passwords match' : 'Passwords do not match';
         matchHint.style.color = ok ? '#2c5f47' : '#d9534f';
+    }
+
+    // Auto-uppercase plate number
+    const plateInput = document.getElementById('plate_number');
+    if (plateInput) {
+        plateInput.addEventListener('input', function () {
+            const pos = this.selectionStart;
+            this.value = this.value.toUpperCase();
+            this.setSelectionRange(pos, pos);
+        });
     }
 
     form.addEventListener('submit', function (e) {

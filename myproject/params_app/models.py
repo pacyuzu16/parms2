@@ -45,6 +45,11 @@ class Vehicle(models.Model):
         ("Car", "Car"), ("Motorcycle", "Motorcycle"), ("Truck", "Truck")
     ])
     owner_name   = models.CharField(max_length=255)
+    # Direct link to auth user — enables plate-based login and quick lookup
+    user         = models.ForeignKey(
+        AuthUser, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='vehicles'
+    )
 
     def __str__(self):
         return f"{self.plate_number} ({self.vehicle_type})"
@@ -58,7 +63,8 @@ class ParkingSpace(models.Model):
         ("Large", "Large"),
         ("Electric Vehicle", "Electric Vehicle"),
     ])
-    is_occupied = models.BooleanField(default=False)
+    is_occupied      = models.BooleanField(default=False)
+    occupied_by_plate = models.CharField(max_length=20, blank=True, default='')
     parking_lot = models.ForeignKey(ParkingLot, on_delete=models.CASCADE, related_name="spaces")
 
     def __str__(self):

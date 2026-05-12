@@ -1,0 +1,421 @@
+{% extends 'userin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-grid">
+
+<!-- ── Left: exit panel ── -->
+<div>
+
+{% if active_ticket %}
+<!-- Already have active session — show quick-exit card -->
+<div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:20px 22px;margin-bottom:18px;display:flex;align-items:center;gap:14px;">
+    <div style="width:46px;height:46px;background:#dcfce7;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="fas fa-parking" style="color:#16a34a;font-size:1.2rem;"></i>
+    </div>
+    <div>
+        <div style="font-weight:700;font-size:0.95rem;color:#166534;">Active Session Detected</div>
+        <div style="font-size:0.82rem;color:#166534;margin-top:2px;">
+            Plate <strong>{{ active_ticket.vehicle.plate_number }}</strong> ·
+            {{ active_ticket.parking_space.parking_lot.location }} ·
+            Space #{{ active_ticket.parking_space.space_id }}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Step 1: Detect plate -->
+<div style="background:white;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:16px;">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <h5 style="font-size:0.95rem;font-weight:700;margin:0;display:flex;align-items:center;gap:8px;">
+            <i class="fas fa-sign-out-alt" style="color:#2c5f47;"></i> Step 1 — Identify Your Vehicle
+        </h5>
+        <span id="step1-badge" style="font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:20px;background:#f1f5f9;color:var(--muted);">Waiting</span>
+    </div>
+    <div style="padding:20px;">
+
+        <!-- Input tabs -->
+        <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:18px;">
+            <button onclick="switchTab('upload')" id="tab-upload"
+                style="flex:1;padding:9px;border:none;background:#2c5f47;color:white;font-size:0.84rem;font-weight:600;cursor:pointer;">
+                <i class="fas fa-upload"></i> Upload Photo
+            </button>
+            <button onclick="switchTab('camera')" id="tab-camera"
+                style="flex:1;padding:9px;border:none;background:#f8fafc;color:var(--muted);font-size:0.84rem;font-weight:600;cursor:pointer;border-left:1px solid var(--border);">
+                <i class="fas fa-camera"></i> Camera
+            </button>
+            <button onclick="switchTab('manual')" id="tab-manual"
+                style="flex:1;padding:9px;border:none;background:#f8fafc;color:var(--muted);font-size:0.84rem;font-weight:600;cursor:pointer;border-left:1px solid var(--border);">
+                <i class="fas fa-keyboard"></i> Type Plate
+            </button>
+        </div>
+
+        <!-- Upload tab -->
+        <div id="panel-upload">
+            <label for="plate-file" style="display:block;border:2px dashed #86efac;border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:border-color 0.2s;"
+                   onmouseover="this.style.borderColor='#2c5f47'" onmouseout="this.style.borderColor='#86efac'">
+                <i class="fas fa-image" style="font-size:2rem;color:#86efac;display:block;margin-bottom:8px;"></i>
+                <div style="font-weight:600;color:var(--text);font-size:0.88rem;">Click to upload vehicle photo</div>
+                <div style="font-size:0.76rem;color:var(--muted);margin-top:4px;">JPG, PNG up to 10 MB</div>
+                <input type="file" id="plate-file" accept="image/*" style="display:none;" onchange="onFileSelected(this)">
+            </label>
+            <div id="upload-preview" style="display:none;margin-top:12px;text-align:center;">
+                <img id="preview-img" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border);" alt="Preview">
+            </div>
+            <button onclick="detectFromUpload()" id="btn-detect-upload"
+                style="display:none;width:100%;margin-top:12px;padding:11px;background:#2c5f47;border:none;border-radius:8px;color:white;font-weight:700;cursor:pointer;font-size:0.9rem;">
+                <i class="fas fa-search"></i> Read Plate &amp; Find Session
+            </button>
+        </div>
+
+        <!-- Camera tab -->
+        <div id="panel-camera" style="display:none;text-align:center;">
+            <video id="exit-video" autoplay playsinline
+                style="width:100%;max-height:220px;border-radius:8px;background:#000;display:none;"></video>
+            <canvas id="exit-canvas" style="display:none;"></canvas>
+            <div id="cam-placeholder" style="padding:28px;background:#f8fafc;border-radius:8px;border:1px solid var(--border);">
+                <i class="fas fa-camera" style="font-size:2rem;color:var(--muted);opacity:0.4;display:block;margin-bottom:8px;"></i>
+                <p style="font-size:0.84rem;color:var(--muted);margin:0;">Camera not started</p>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px;justify-content:center;">
+                <button onclick="startCamera()" id="btn-cam-start"
+                    style="padding:9px 18px;background:#2c5f47;border:none;border-radius:8px;color:white;font-weight:600;cursor:pointer;font-size:0.84rem;">
+                    <i class="fas fa-video"></i> Start Camera
+                </button>
+                <button onclick="captureAndDetect()" id="btn-cam-capture" style="display:none;padding:9px 18px;background:#b45309;border:none;border-radius:8px;color:white;font-weight:600;cursor:pointer;font-size:0.84rem;">
+                    <i class="fas fa-camera"></i> Capture &amp; Detect
+                </button>
+                <button onclick="stopCamera()" id="btn-cam-stop" style="display:none;padding:9px 18px;background:#f1f5f9;border:1px solid var(--border);border-radius:8px;color:var(--text);font-weight:600;cursor:pointer;font-size:0.84rem;">
+                    Stop
+                </button>
+            </div>
+        </div>
+
+        <!-- Manual tab -->
+        <div id="panel-manual" style="display:none;">
+            <div style="margin-bottom:12px;">
+                <label style="display:block;font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:6px;">Enter your plate number</label>
+                <input type="text" id="manual-plate" placeholder="e.g. RAC 123A"
+                    style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:monospace;font-size:1.1rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;outline:none;transition:border-color 0.2s;"
+                    onfocus="this.style.borderColor='#2c5f47'" onblur="this.style.borderColor='var(--border)'"
+                    oninput="this.value=this.value.toUpperCase()">
+            </div>
+            <button onclick="lookupManual()" style="width:100%;padding:11px;background:#2c5f47;border:none;border-radius:8px;color:white;font-weight:700;cursor:pointer;font-size:0.9rem;">
+                <i class="fas fa-search"></i> Find My Session
+            </button>
+        </div>
+
+        <!-- Scanning spinner -->
+        <div id="scanning-msg" style="display:none;text-align:center;padding:20px;">
+            <i class="fas fa-spinner fa-spin" style="font-size:1.6rem;color:#2c5f47;"></i>
+            <p style="margin-top:8px;font-size:0.84rem;color:var(--muted);">Searching for your session…</p>
+        </div>
+
+        <!-- Error message -->
+        <div id="lookup-error" style="display:none;margin-top:12px;padding:12px 14px;background:#fef0ee;border:1px solid #f2b8b2;border-radius:8px;font-size:0.84rem;color:#7a1f18;">
+            <i class="fas fa-exclamation-circle"></i> <span id="lookup-error-msg"></span>
+        </div>
+    </div>
+</div>
+
+<!-- Step 2: Review & Pay -->
+<div id="step2-card" style="display:none;background:white;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <h5 style="font-size:0.95rem;font-weight:700;margin:0;display:flex;align-items:center;gap:8px;">
+            <i class="fas fa-credit-card" style="color:#3b6fd4;"></i> Step 2 — Review &amp; Pay
+        </h5>
+        <span style="font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:20px;background:#dbeafe;color:#1e40af;">Payment</span>
+    </div>
+    <div style="padding:20px;">
+        <!-- Session summary -->
+        <div style="background:#f8fafc;border-radius:10px;padding:16px;margin-bottom:16px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div>
+                    <div style="font-size:0.72rem;color:var(--muted);margin-bottom:3px;">Plate Number</div>
+                    <div id="sum-plate" style="font-family:monospace;font-size:1rem;font-weight:800;color:var(--text);letter-spacing:0.06em;"></div>
+                </div>
+                <div>
+                    <div style="font-size:0.72rem;color:var(--muted);margin-bottom:3px;">Location</div>
+                    <div id="sum-loc" style="font-size:0.88rem;font-weight:600;color:var(--text);"></div>
+                </div>
+                <div>
+                    <div style="font-size:0.72rem;color:var(--muted);margin-bottom:3px;">Entry Time</div>
+                    <div id="sum-entry" style="font-size:0.84rem;color:var(--text);"></div>
+                </div>
+                <div>
+                    <div style="font-size:0.72rem;color:var(--muted);margin-bottom:3px;">Duration</div>
+                    <div id="sum-dur" style="font-size:0.84rem;color:var(--text);"></div>
+                </div>
+            </div>
+            <div style="margin-top:14px;padding-top:14px;border-top:1px dashed var(--border);display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:0.84rem;color:var(--muted);">Total Fee</span>
+                <span id="sum-fee" style="font-size:1.5rem;font-weight:800;color:#2c5f47;font-family:monospace;"></span>
+            </div>
+        </div>
+
+        <!-- Payment form -->
+        <form method="POST" action="{% url 'exit_parking' %}" id="exit-form">
+            {% csrf_token %}
+            <input type="hidden" name="ticket_id" id="hidden-ticket-id">
+            <div style="margin-bottom:14px;">
+                <label style="display:block;font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:8px;">Payment Method</label>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;" id="pay-methods">
+                    {% for method in "Cash,MTN MoMo,Card"|split:"," %}
+                    <label style="cursor:pointer;">
+                        <input type="radio" name="payment_method" value="{{ method }}" {% if forloop.first %}checked{% endif %} style="display:none;" class="pay-radio">
+                        <div class="pay-pill" style="padding:9px 6px;border:1.5px solid var(--border);border-radius:8px;text-align:center;font-size:0.8rem;font-weight:600;color:var(--text);transition:all 0.15s;">
+                            {% if method == "Cash" %}<i class="fas fa-money-bill-wave" style="display:block;font-size:1.1rem;margin-bottom:4px;color:#2c5f47;"></i>{% endif %}
+                            {% if method == "MTN MoMo" %}<i class="fas fa-mobile-alt" style="display:block;font-size:1.1rem;margin-bottom:4px;color:#f59e0b;"></i>{% endif %}
+                            {% if method == "Card" %}<i class="fas fa-credit-card" style="display:block;font-size:1.1rem;margin-bottom:4px;color:#3b6fd4;"></i>{% endif %}
+                            {{ method }}
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <button type="submit" id="btn-pay"
+                style="width:100%;padding:13px;background:#2c5f47;border:none;border-radius:10px;color:white;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background 0.2s;"
+                onmouseover="this.style.background='#234d39'" onmouseout="this.style.background='#2c5f47'">
+                <i class="fas fa-check-circle"></i> Confirm Payment &amp; Exit
+            </button>
+            <p style="font-size:0.74rem;color:var(--muted);text-align:center;margin-top:8px;">
+                <i class="fas fa-lock"></i> Your space will be released immediately after confirmation.
+            </p>
+        </form>
+    </div>
+</div>
+
+</div>
+
+<!-- ── Right: tips + status ── -->
+<div>
+    <div class="activities-panel">
+        <div class="ap-header">
+            <h5><i class="fas fa-info-circle" style="color:#2c5f47;"></i> How It Works</h5>
+        </div>
+        <div class="ap-body" style="padding:16px;">
+            <div style="display:flex;flex-direction:column;gap:14px;">
+                <div style="display:flex;gap:12px;align-items:flex-start;">
+                    <div style="width:32px;height:32px;background:#f0fdf4;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:800;font-size:0.8rem;color:#2c5f47;border:1.5px solid #86efac;">1</div>
+                    <div>
+                        <div style="font-size:0.84rem;font-weight:600;">Upload or capture your vehicle photo</div>
+                        <div style="font-size:0.76rem;color:var(--muted);margin-top:2px;">The AI reads your plate automatically. Or type it manually.</div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:12px;align-items:flex-start;">
+                    <div style="width:32px;height:32px;background:#f0fdf4;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:800;font-size:0.8rem;color:#2c5f47;border:1.5px solid #86efac;">2</div>
+                    <div>
+                        <div style="font-size:0.84rem;font-weight:600;">Review your session details</div>
+                        <div style="font-size:0.76rem;color:var(--muted);margin-top:2px;">Entry time, duration, and fee are calculated automatically.</div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:12px;align-items:flex-start;">
+                    <div style="width:32px;height:32px;background:#f0fdf4;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:800;font-size:0.8rem;color:#2c5f47;border:1.5px solid #86efac;">3</div>
+                    <div>
+                        <div style="font-size:0.84rem;font-weight:600;">Confirm payment</div>
+                        <div style="font-size:0.76rem;color:var(--muted);margin-top:2px;">Space is freed instantly. You're all set!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if active_ticket %}
+    <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:18px;margin-top:14px;">
+        <div style="font-size:0.82rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:7px;">
+            <i class="fas fa-parking" style="color:#2c5f47;"></i> Your Active Session
+        </div>
+        <div style="font-size:0.8rem;color:var(--muted);line-height:1.8;">
+            <div><strong>Plate:</strong> {{ active_ticket.vehicle.plate_number }}</div>
+            <div><strong>Space:</strong> #{{ active_ticket.parking_space.space_id }} ({{ active_ticket.parking_space.space_type }})</div>
+            <div><strong>Location:</strong> {{ active_ticket.parking_space.parking_lot.location }}</div>
+            <div><strong>Entry:</strong> {{ active_ticket.entry_time|date:"d M Y, H:i" }}</div>
+            <div><strong>Duration:</strong> {{ active_ticket.entry_time|timesince }}</div>
+            <div><strong>Rate:</strong> ${{ active_ticket.parking_space.parking_lot.hourly_rate }}/hr</div>
+        </div>
+        <button onclick="quickExit('{{ active_ticket.vehicle.plate_number }}')"
+            style="width:100%;margin-top:14px;padding:10px;background:#2c5f47;border:none;border-radius:8px;color:white;font-weight:700;cursor:pointer;font-size:0.88rem;">
+            <i class="fas fa-bolt"></i> Quick Exit (use current session)
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+</div><!-- /.content-grid -->
+
+<script>
+var _camStream = null;
+var _uploadFile = null;
+var _csrfToken = '{{ csrf_token }}';
+
+/* ── Tab switching ── */
+function switchTab(name) {
+    ['upload','camera','manual'].forEach(function(t) {
+        document.getElementById('panel-'+t).style.display = t===name ? 'block' : 'none';
+        var btn = document.getElementById('tab-'+t);
+        if (t === name) {
+            btn.style.background = '#2c5f47'; btn.style.color = 'white';
+        } else {
+            btn.style.background = '#f8fafc'; btn.style.color = 'var(--muted)';
+        }
+    });
+    if (name !== 'camera') stopCamera();
+}
+
+/* ── Upload ── */
+function onFileSelected(input) {
+    if (!input.files || !input.files[0]) return;
+    _uploadFile = input.files[0];
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('preview-img').src = e.target.result;
+        document.getElementById('upload-preview').style.display = 'block';
+        document.getElementById('btn-detect-upload').style.display = 'block';
+    };
+    reader.readAsDataURL(_uploadFile);
+}
+function detectFromUpload() {
+    if (!_uploadFile) return;
+    var fd = new FormData();
+    fd.append('image', _uploadFile);
+    doLookup(fd);
+}
+
+/* ── Camera ── */
+function startCamera() {
+    navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(function(stream) {
+        _camStream = stream;
+        var v = document.getElementById('exit-video');
+        v.srcObject = stream; v.style.display = 'block';
+        document.getElementById('cam-placeholder').style.display = 'none';
+        document.getElementById('btn-cam-start').style.display = 'none';
+        document.getElementById('btn-cam-capture').style.display = 'inline-flex';
+        document.getElementById('btn-cam-stop').style.display = 'inline-flex';
+    }).catch(function() {
+        showError('Camera not available. Please use upload or type your plate manually.');
+    });
+}
+function stopCamera() {
+    if (_camStream) { _camStream.getTracks().forEach(function(t){t.stop();}); _camStream = null; }
+    var v = document.getElementById('exit-video');
+    v.srcObject = null; v.style.display = 'none';
+    document.getElementById('cam-placeholder').style.display = 'block';
+    document.getElementById('btn-cam-start').style.display = 'inline-flex';
+    document.getElementById('btn-cam-capture').style.display = 'none';
+    document.getElementById('btn-cam-stop').style.display = 'none';
+}
+function captureAndDetect() {
+    var video = document.getElementById('exit-video');
+    var canvas = document.getElementById('exit-canvas');
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    canvas.toBlob(function(blob) {
+        var fd = new FormData();
+        fd.append('image', blob, 'capture.jpg');
+        doLookup(fd);
+    }, 'image/jpeg', 0.92);
+}
+
+/* ── Manual lookup ── */
+function lookupManual() {
+    var plate = document.getElementById('manual-plate').value.trim();
+    if (!plate) { showError('Please enter a plate number.'); return; }
+    var fd = new FormData();
+    fd.append('plate_number', plate);
+    doLookup(fd);
+}
+
+/* ── Quick exit for known active session ── */
+function quickExit(plate) {
+    document.getElementById('manual-plate').value = plate;
+    switchTab('manual');
+    lookupManual();
+}
+
+/* ── Core lookup function ── */
+function doLookup(fd) {
+    hideError();
+    document.getElementById('scanning-msg').style.display = 'block';
+    document.getElementById('step2-card').style.display = 'none';
+    document.getElementById('step1-badge').textContent = 'Searching…';
+    document.getElementById('step1-badge').style.background = '#f1f5f9';
+
+    fetch('/api/lookup-plate/', {
+        method: 'POST',
+        headers: {'X-CSRFToken': _csrfToken},
+        body: fd
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(res) {
+        document.getElementById('scanning-msg').style.display = 'none';
+        if (res.success) {
+            showSessionSummary(res);
+        } else {
+            showError(res.error || 'Session not found.');
+            document.getElementById('step1-badge').textContent = 'Not found';
+            document.getElementById('step1-badge').style.background = '#fef2f2';
+            document.getElementById('step1-badge').style.color = '#b91c1c';
+        }
+    })
+    .catch(function(err) {
+        document.getElementById('scanning-msg').style.display = 'none';
+        showError('Network error: ' + err.message);
+    });
+}
+
+function showSessionSummary(data) {
+    document.getElementById('sum-plate').textContent = data.plate;
+    document.getElementById('sum-loc').textContent   = data.location;
+    document.getElementById('sum-entry').textContent = data.entry_time;
+    document.getElementById('sum-dur').textContent   = data.duration_h + ' hours';
+    document.getElementById('sum-fee').textContent   = '$' + data.fee;
+    document.getElementById('hidden-ticket-id').value = data.ticket_id;
+    document.getElementById('step2-card').style.display = 'block';
+    document.getElementById('step1-badge').textContent = '✓ Found';
+    document.getElementById('step1-badge').style.background = '#dcfce7';
+    document.getElementById('step1-badge').style.color = '#166534';
+    document.getElementById('step2-card').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function showError(msg) {
+    document.getElementById('lookup-error-msg').textContent = msg;
+    document.getElementById('lookup-error').style.display = 'block';
+}
+function hideError() {
+    document.getElementById('lookup-error').style.display = 'none';
+}
+
+/* ── Payment method pill selection ── */
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.pay-radio').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            document.querySelectorAll('.pay-pill').forEach(function(p){
+                p.style.borderColor = 'var(--border)';
+                p.style.background  = 'white';
+                p.style.color = 'var(--text)';
+            });
+            var pill = this.closest('label').querySelector('.pay-pill');
+            pill.style.borderColor = '#2c5f47';
+            pill.style.background  = '#f0fdf4';
+            pill.style.color = '#166534';
+        });
+    });
+    // Mark first as active on load
+    var first = document.querySelector('.pay-radio:checked');
+    if (first) {
+        var fp = first.closest('label').querySelector('.pay-pill');
+        if (fp) { fp.style.borderColor='#2c5f47'; fp.style.background='#f0fdf4'; fp.style.color='#166534'; }
+    }
+
+    // Confirm button feedback
+    var exitForm = document.getElementById('exit-form');
+    if (exitForm) {
+        exitForm.addEventListener('submit', function() {
+            var btn = document.getElementById('btn-pay');
+            btn.textContent = 'Processing…';
+            btn.disabled = true;
+        });
+    }
+});
+</script>
+{% endblock %}

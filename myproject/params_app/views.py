@@ -132,9 +132,14 @@ def signup(request):
         email            = request.POST.get('email', '').strip()
         password         = request.POST.get('password', '')
         confirm_password = request.POST.get('confirm_password', '')
+        plate_number     = request.POST.get('plate_number', '').strip().upper()
+        vehicle_type     = request.POST.get('vehicle_type', 'Car')
 
         if password != confirm_password:
             messages.error(request, "Passwords do not match.")
+            return redirect('signup')
+        if len(password) < 8:
+            messages.error(request, "Password must be at least 8 characters.")
             return redirect('signup')
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username already taken.")
@@ -142,8 +147,22 @@ def signup(request):
         if User.objects.filter(email=email).exists():
             messages.error(request, "Email is already registered.")
             return redirect('signup')
+        if not plate_number:
+            messages.error(request, "A vehicle license plate number is required.")
+            return redirect('signup')
+        if Vehicle.objects.filter(plate_number=plate_number).exists():
+            messages.error(request, f"Plate {plate_number} is already registered to another account.")
+            return redirect('signup')
 
-        User.objects.create_user(username=username, email=email, password=password)
+        with transaction.atomic():
+            user = User.objects.create_user(username=username, email=email, password=password)
+            Vehicle.objects.create(
+                plate_number=plate_number,
+                vehicle_type=vehicle_type,
+                owner_name=username,
+                user=user,
+            )
+
         messages.success(request, "Account created! You can now log in.")
         return redirect('login')
 
@@ -481,16 +500,17 @@ def book_space(request):
             messages.error(request, 'That space is not available. Please choose another.')
             return redirect('slots')
 
-        # Get or create a vehicle for this user
-        owner = request.user.get_full_name() or request.user.username
-        vehicle = Vehicle.objects.filter(owner_name__iexact=owner).first()
+        # Prefer vehicle linked directly via FK, fall back to owner_name matching
+        vehicle = (
+            Vehicle.objects.filter(user=request.user).first()
+            or Vehicle.objects.filter(owner_name__iexact=request.user.get_full_name() or request.user.username).first()
+        )
         if not vehicle:
-            # Create a placeholder vehicle so the user can still get a ticket.
-            # They can update their plate from the profile page.
             vehicle = Vehicle.objects.create(
                 plate_number='PENDING-' + str(request.user.pk),
                 vehicle_type='Car',
-                owner_name=owner,
+                owner_name=request.user.get_full_name() or request.user.username,
+                user=request.user,
             )
 
         # Create the ticket and mark the space occupied
@@ -500,7 +520,8 @@ def book_space(request):
             user=request.user,
         )
         space.is_occupied = True
-        space.save(update_fields=['is_occupied'])
+        space.occupied_by_plate = vehicle.plate_number
+        space.save(update_fields=['is_occupied', 'occupied_by_plate'])
 
         lot = space.parking_lot
         lot.available_spaces = lot.spaces.filter(is_occupied=False).count()
@@ -542,6 +563,169 @@ def ticket(request):
         'active_tickets': active_tickets,
     }
     return render(request, 'ticket.html', context)
+
+
+@login_required
+def exit_parking(request):
+    """
+    GET  → Show the exit page (upload/capture plate or type manually).
+    POST → Process exit confirmation: close ticket, free space, record payment.
+    """
+    if request.method == 'POST':
+        ticket_id      = request.POST.get('ticket_id', '').strip()
+        payment_method = request.POST.get('payment_method', 'Cash')
+
+        try:
+            t = ParkingTicket.objects.select_related(
+                'vehicle', 'parking_space__parking_lot'
+            ).get(ticket_id=ticket_id, exit_time__isnull=True)
+        except ParkingTicket.DoesNotExist:
+            messages.error(request, "Session not found or already closed.")
+            return redirect('exit_parking')
+
+        with transaction.atomic():
+            t.exit_time = timezone.now()
+            rate = t.parking_space.parking_lot.hourly_rate if t.parking_space else 0
+            t.fee = Decimal(str(round(t.duration_hours() * float(rate), 2)))
+            t.save()
+
+            if t.parking_space:
+                t.parking_space.is_occupied = False
+                t.parking_space.occupied_by_plate = ''
+                t.parking_space.save(update_fields=['is_occupied', 'occupied_by_plate'])
+
+                lot = t.parking_space.parking_lot
+                lot.available_spaces = lot.spaces.filter(is_occupied=False).count()
+                lot.save(update_fields=['available_spaces'])
+            else:
+                lot = None
+
+            # Record payment
+            Payment.objects.create(
+                amount=t.fee or Decimal('0'),
+                payment_method=payment_method,
+                ticket=t,
+            )
+
+            # Notify user
+            if t.user:
+                fee_str = f'${t.fee}' if t.fee else '$0.00'
+                UserNotification.objects.create(
+                    user=t.user,
+                    title=f'Session ended — {t.vehicle.plate_number}',
+                    message=(f'Your parking session at '
+                             f'{lot.location if lot else "the lot"} is complete. '
+                             f'Duration: {t.duration_hours():.1f}h · Fee: {fee_str}. '
+                             f'Payment: {payment_method}. Thank you!'),
+                    notif_type='session_ended',
+                    lot=lot,
+                )
+
+            if lot and lot.available_spaces == 1:
+                _notify_space_available(lot)
+
+        return render(request, 'exit_success.html', {
+            'ticket': t,
+            'lot': lot if t.parking_space else None,
+            'payment_method': payment_method,
+        })
+
+    # GET — check if user already has an active session
+    active = (
+        ParkingTicket.objects
+        .filter(user=request.user, exit_time__isnull=True)
+        .select_related('vehicle', 'parking_space__parking_lot')
+        .order_by('-entry_time')
+        .first()
+    )
+    return render(request, 'exit.html', {'active_ticket': active})
+
+
+@login_required
+def api_lookup_plate(request):
+    """
+    POST /api/lookup-plate/
+    Accepts either:
+      - multipart: image file  → runs LPR, reads plate from image
+      - JSON/POST:  plate_number → direct text lookup
+    Returns active session details + calculated fee.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
+
+    plate = request.POST.get('plate_number', '').strip().upper()
+
+    # If an image was uploaded, run LPR to extract the plate
+    if not plate and request.FILES.get('image'):
+        img_file = request.FILES['image']
+        if img_file.size > 10 * 1024 * 1024:
+            return JsonResponse({'success': False, 'error': 'Image too large (max 10 MB).'})
+        try:
+            from .license_plate import detect_plate
+            result = detect_plate(img_file.read())
+            if result.get('success') and result.get('plates'):
+                plate = result['plates'][0].get('text', '') or ''
+                plate = plate.strip().upper()
+            if not plate:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Could not read plate from image. Try typing it manually.',
+                    'lpr_result': result,
+                })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': f'LPR error: {e}'})
+
+    if not plate:
+        return JsonResponse({'success': False, 'error': 'Provide a plate number or image.'})
+
+    # Find vehicle with this plate
+    try:
+        vehicle = Vehicle.objects.get(plate_number__iexact=plate)
+    except Vehicle.DoesNotExist:
+        return JsonResponse({'success': False, 'error': f'No vehicle registered with plate {plate}.'})
+
+    # Find the active parking ticket for this vehicle
+    active_ticket = (
+        ParkingTicket.objects
+        .filter(vehicle=vehicle, exit_time__isnull=True)
+        .select_related('vehicle', 'parking_space__parking_lot', 'user')
+        .order_by('-entry_time')
+        .first()
+    )
+
+    if not active_ticket:
+        return JsonResponse({
+            'success': False,
+            'error': f'No active parking session found for plate {plate}.',
+        })
+
+    # Check this ticket belongs to the requesting user (security)
+    if active_ticket.user and active_ticket.user != request.user:
+        return JsonResponse({
+            'success': False,
+            'error': 'This parking session belongs to a different account.',
+        })
+
+    lot = active_ticket.parking_space.parking_lot if active_ticket.parking_space else None
+    fee = active_ticket.calculated_fee()
+    duration = active_ticket.duration_hours()
+
+    # Format entry time in local timezone
+    from django.utils import timezone as tz
+    entry_local = tz.localtime(active_ticket.entry_time)
+
+    return JsonResponse({
+        'success':      True,
+        'ticket_id':    active_ticket.ticket_id,
+        'plate':        vehicle.plate_number,
+        'vehicle_type': vehicle.vehicle_type,
+        'location':     lot.location if lot else '—',
+        'space_id':     active_ticket.parking_space.space_id if active_ticket.parking_space else None,
+        'entry_time':   entry_local.strftime('%d %b %Y %H:%M'),
+        'duration_h':   round(duration, 2),
+        'fee':          str(fee),
+        'hourly_rate':  str(lot.hourly_rate) if lot else '0',
+    })
 
 
 @login_required
@@ -1139,7 +1323,8 @@ def admin_ticket_edit(request, ticket_id):
             t.save()
             if t.parking_space:
                 t.parking_space.is_occupied = False
-                t.parking_space.save()
+                t.parking_space.occupied_by_plate = ''
+                t.parking_space.save(update_fields=['is_occupied', 'occupied_by_plate'])
             lot = None
             if t.parking_space and t.parking_space.parking_lot:
                 lot = t.parking_space.parking_lot

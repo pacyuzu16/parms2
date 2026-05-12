@@ -27,11 +27,13 @@ urlpatterns = [
     path("slots/",         views.slots,         name="slots"),
     path("book/",          views.book_space,    name="book_space"),
     path("ticket/",        views.ticket,        name="ticket"),
+    path("exit/",          views.exit_parking,  name="exit_parking"),
     path("destination/",   views.destination,   name="destination"),
     path("map/",           views.map_view,      name="map"),
 
     # -- JSON / REST APIs --
     path("api/dashboard-data/",               views.dashboard_data,            name="dashboard_data"),
+    path("api/lookup-plate/",                 views.api_lookup_plate,          name="api_lookup_plate"),
     path("api/recommendations/",              views.api_recommendations,        name="api_recommendations"),
     path("api/predictions/",                  views.api_predictions,            name="api_predictions"),
     path("api/predictions/<int:lot_id>/",     views.api_predictions,            name="api_predictions_lot"),
