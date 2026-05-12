@@ -8,9 +8,10 @@ urlpatterns = [
     path("about/",    views.about,        name="about"),
 
     # -- Auth --
-    path("login/",    views.login,   name="login"),
-    path("signup/",   views.signup,  name="signup"),
-    path("logout/",   views.logout,  name="logout"),
+    path("login/",          views.login,          name="login"),
+    path("signup/",         views.signup,          name="signup"),
+    path("logout/",         views.logout,          name="logout"),
+    path("google-welcome/", views.google_welcome,  name="google_welcome"),
 
     # -- Admin dashboard (SPA) --
     path("dashboard/",        views.dashboard,       name="dashboard"),

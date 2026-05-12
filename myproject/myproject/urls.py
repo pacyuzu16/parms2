@@ -5,9 +5,10 @@ from django.conf.urls.static import static
 from params_app import views as app_views
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    path("", include("params_app.urls")),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path("admin/",    admin.site.urls),
+    path("accounts/", include("allauth.urls")),   # Google OAuth endpoints
+    path("",          include("params_app.urls")),
+] + static(settings.MEDIA_URL, document_root=getattr(settings, 'MEDIA_ROOT', ''))
 
 # Custom error handlers
 handler404 = "params_app.views.error_404"

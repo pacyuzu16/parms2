@@ -19,7 +19,7 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config(
     'ALLOWED_HOSTS',
-    default='localhost,127.0.0.1',
+    default='localhost,127.0.0.1,172.20.10.4',
     cast=Csv(),
 )
 
@@ -32,10 +32,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',          # required by allauth
     'params_app',
     'cloudinary',
     'cloudinary_storage',
+    # ── Google OAuth (django-allauth) ──────────────────────────
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
+
+SITE_ID = 1
 
 
 # ── Middleware ─────────────────────────────────────────────────────────────────
@@ -50,6 +58,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',   # required by allauth ≥ 0.56
 ]
 
 
@@ -122,8 +131,33 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
-AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 LOGIN_URL = '/login/'
+
+# ── django-allauth ─────────────────────────────────────────────────────────────
+ACCOUNT_LOGIN_METHODS         = {'email'}                         # allauth ≥ 0.60
+ACCOUNT_SIGNUP_FIELDS         = ['email*', 'password1*', 'password2*']
+ACCOUNT_EMAIL_VERIFICATION    = 'none'    # skip email confirm (set 'mandatory' in prod)
+LOGIN_REDIRECT_URL            = '/google-welcome/'   # custom post-OAuth handler
+ACCOUNT_LOGOUT_REDIRECT_URL   = '/'
+SOCIALACCOUNT_AUTO_SIGNUP     = True     # create account automatically on first Google login
+SOCIALACCOUNT_LOGIN_ON_GET    = True     # skip the allauth "confirm" page
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+        'OAUTH_PKCE_ENABLED': True,
+        'APP': {
+            'client_id':     config('GOOGLE_CLIENT_ID',     default=''),
+            'secret':        config('GOOGLE_CLIENT_SECRET', default=''),
+            'key':           '',
+        },
+    }
+}
 
 
 # ── Internationalisation ──────────────────────────────────────────────────────

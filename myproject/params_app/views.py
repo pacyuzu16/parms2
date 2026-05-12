@@ -199,6 +199,21 @@ def logout(request):
     return redirect('home')
 
 
+@login_required
+def google_welcome(request):
+    """
+    Landing page after Google OAuth sign-in.
+    - First-time users (no vehicle registered) → show plate-registration prompt.
+    - Returning users who already have a vehicle → go straight to the dashboard.
+    """
+    has_vehicle = Vehicle.objects.filter(user=request.user).exists()
+    if has_vehicle:
+        # Already set up — send to the normal landing page
+        return redirect('dashboard' if request.user.is_staff else 'map')
+    # New Google user — they need to register a vehicle before parking
+    return render(request, 'google_welcome.html')
+
+
 # -- API -----------------------------------------------------------------------
 
 def dashboard_data(request):

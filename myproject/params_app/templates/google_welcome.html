@@ -1,0 +1,78 @@
+{% extends 'userin.html' %}
+{% load static %}
+
+{% block content %}
+<div style="min-height:60vh;display:flex;align-items:center;justify-content:center;padding:40px 16px;">
+<div style="max-width:480px;width:100%;">
+
+    <!-- Welcome card -->
+    <div style="background:white;border:1px solid var(--border);border-radius:16px;box-shadow:0 8px 32px rgba(44,95,71,0.10);overflow:hidden;">
+
+        <!-- Green header -->
+        <div style="background:#2c5f47;padding:28px 28px 22px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+                <!-- Google icon -->
+                <div style="width:44px;height:44px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="22" height="22" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                </div>
+                <div>
+                    <div style="font-size:0.72rem;color:#c5e8d5;font-weight:600;letter-spacing:0.06em;margin-bottom:2px;">SIGNED IN WITH GOOGLE</div>
+                    <div style="font-size:1.05rem;font-weight:800;color:white;">Welcome, {{ request.user.first_name|default:request.user.username }}!</div>
+                </div>
+            </div>
+            <div style="font-size:0.84rem;color:#a8d4bc;">{{ request.user.email }}</div>
+        </div>
+
+        <!-- Body -->
+        <div style="padding:24px 28px;">
+            <div style="display:flex;align-items:flex-start;gap:12px;background:#fef9c3;border:1px solid #fde68a;border-radius:10px;padding:14px;margin-bottom:22px;">
+                <i class="fas fa-car" style="color:#b45309;margin-top:2px;flex-shrink:0;"></i>
+                <div>
+                    <div style="font-weight:700;font-size:0.88rem;color:#92400e;margin-bottom:3px;">One more step — register your vehicle</div>
+                    <div style="font-size:0.82rem;color:#b45309;line-height:1.5;">
+                        PARMS uses your licence plate to identify your vehicle at the gate. Add your plate number to start parking.
+                    </div>
+                </div>
+            </div>
+
+            <form method="POST" action="{% url 'profile' %}" id="plateForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_vehicle">
+
+                <div style="margin-bottom:14px;">
+                    <label style="display:block;font-size:0.82rem;font-weight:600;color:#161b19;margin-bottom:6px;">
+                        Licence Plate Number <span style="color:#b04040;">*</span>
+                    </label>
+                    <input type="text" name="plate_number" required
+                           placeholder="e.g. RAC 123A"
+                           style="width:100%;padding:11px 14px;border:1.5px solid #dde3e0;border-radius:8px;font-family:monospace;font-size:1.1rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;outline:none;transition:border-color 0.2s;box-sizing:border-box;"
+                           onfocus="this.style.borderColor='#2c5f47'" onblur="this.style.borderColor='#dde3e0'"
+                           oninput="this.value=this.value.toUpperCase()">
+                </div>
+
+                <div style="margin-bottom:20px;">
+                    <label style="display:block;font-size:0.82rem;font-weight:600;color:#161b19;margin-bottom:6px;">Vehicle Type</label>
+                    <select name="vehicle_type"
+                            style="width:100%;padding:10px 14px;border:1.5px solid #dde3e0;border-radius:8px;font-size:0.9rem;outline:none;background:white;box-sizing:border-box;">
+                        <option value="Car">Car</option>
+                        <option value="Motorcycle">Motorcycle</option>
+                        <option value="Truck">Truck</option>
+                    </select>
+                </div>
+
+                <button type="submit"
+                        style="width:100%;padding:13px;background:#2c5f47;border:none;border-radius:10px;color:white;font-size:1rem;font-weight:700;cursor:pointer;transition:background 0.2s;"
+                        onmouseover="this.style.background='#1a4a2e'" onmouseout="this.style.background='#2c5f47'">
+                    <i class="fas fa-check-circle"></i> Save Vehicle &amp; Continue
+                </button>
+            </form>
+
+            <a href="{% url 'map' %}" style="display:block;text-align:center;margin-top:14px;font-size:0.82rem;color:#4f5a55;text-decoration:none;">
+                Skip for now — I'll add my vehicle later in Profile
+            </a>
+        </div>
+    </div>
+
+</div>
+</div>
+{% endblock %}
