@@ -84,7 +84,7 @@
             border-bottom: 1px solid rgba(44,95,71,0.18);
             text-decoration: none; flex-shrink: 0; position: relative;
         }
-        .sb-logo span { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--sb-white); letter-spacing: -0.02em; flex: 1; }
+        .sb-logo span { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.1rem; font-weight: 800; color: #000000; letter-spacing: -0.02em; flex: 1; }
 
         /* ── Collapse toggle (Claude-style, inside sidebar header) ────────────── */
         .sb-toggle {
@@ -392,7 +392,7 @@
 
     <!-- Logo + Claude-style collapse toggle -->
     <div class="sb-logo">
-        <img src="{% static 'imgs/Traffic Jam.png' %}" height="28" alt="PARMS" style="opacity:0.9;flex-shrink:0;">
+        <img src="{% static 'imgs/Traffic Jam.png' %}" height="28" alt="PARMS" style="flex-shrink:0;filter:brightness(0) saturate(0);">
         <span>PARMS</span>
         <button class="sb-toggle" id="collapseBtn" onclick="toggleSidebar()" title="Collapse sidebar">
             <!-- Panel-with-arrow SVG, same concept as Claude AI -->
@@ -1173,21 +1173,6 @@
                         </div>
                     </div>
 
-                    <!-- Manual plate override (shown after detection) -->
-                    <div id="lp-manual-override" style="display:none;padding:0 16px 12px;">
-                        <div style="display:flex;gap:8px;align-items:center;">
-                            <input id="lp-override-input" type="text" placeholder="Correct plate if needed…"
-                                   style="flex:1;padding:7px 11px;border:1.5px solid var(--border);border-radius:7px;font-family:monospace;font-size:0.95rem;font-weight:700;text-transform:uppercase;outline:none;"
-                                   onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'"
-                                   oninput="this.value=this.value.toUpperCase()">
-                            <button onclick="lpLookupSession(document.getElementById('lp-override-input').value)"
-                                    style="padding:7px 14px;background:var(--green);border:none;border-radius:7px;color:white;font-weight:700;cursor:pointer;font-size:0.84rem;white-space:nowrap;">
-                                <i class="fas fa-search"></i> Look Up
-                            </button>
-                        </div>
-                        <p style="font-size:0.74rem;color:var(--muted);margin:5px 0 0;">Edit the plate above if OCR made a mistake, then click Look Up.</p>
-                    </div>
-
                     <!-- Session details + payment (shown after successful lookup) -->
                     <div id="lp-session-panel" style="display:none;border-top:1px solid var(--border);">
                         <div style="padding:14px 16px 10px;background:#f0fdf4;border-bottom:1px solid #bbf7d0;">
@@ -1858,7 +1843,6 @@ function lpResetResult() {
     document.getElementById('lp-result-panel').style.display = 'flex';
     document.getElementById('lp-result-panel').innerHTML =
         '<div style="text-align:center;color:var(--muted);"><div style="width:72px;height:72px;background:var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:2rem;"><i class="fas fa-arrow-left" style="opacity:0.25;"></i></div><p style="font-size:0.9rem;font-weight:600;margin-bottom:4px;">No result yet</p><p style="font-size:0.82rem;">Upload or capture a photo to detect a plate.</p></div>';
-    document.getElementById('lp-manual-override').style.display = 'none';
     document.getElementById('lp-session-panel').style.display   = 'none';
     _lpActiveTicketId = null;
 }
@@ -1875,7 +1859,6 @@ function lpDetect(blob) {
     document.getElementById('lp-result-panel').style.display = 'flex';
     document.getElementById('lp-result-panel').innerHTML =
         '<div style="text-align:center;color:var(--muted);"><i class="fas fa-spinner fa-spin" style="font-size:1.8rem;"></i><p style="margin-top:10px;font-size:0.88rem;">Reading licence plate…</p></div>';
-    document.getElementById('lp-manual-override').style.display = 'none';
     document.getElementById('lp-session-panel').style.display   = 'none';
 
     var csrf = document.querySelector('[name=csrfmiddlewaretoken]');
@@ -1912,17 +1895,12 @@ function lpDetect(blob) {
             document.getElementById('lp-result-panel').style.display = 'block';
             document.getElementById('lp-result-panel').innerHTML = html;
 
-            /* ── Show manual override bar ── */
             var firstText = res.plates[0].text || '';
-            document.getElementById('lp-override-input').value = firstText;
-            document.getElementById('lp-manual-override').style.display = 'block';
-
             if (firstText) {
                 badge.style.background='#dcfce7'; badge.style.color='#166534'; badge.textContent='✓ Plate Read';
-                /* ── Auto-trigger session lookup ── */
                 lpLookupSession(firstText);
             } else {
-                badge.style.background='#fef9c3'; badge.style.color='#854d0e'; badge.textContent='Plate unclear — type manually';
+                badge.style.background='#fef9c3'; badge.style.color='#854d0e'; badge.textContent='Plate unclear — retake photo';
             }
         } else {
             badge.style.background='#fef2f2'; badge.style.color='#b91c1c'; badge.textContent='Not detected';
@@ -1931,10 +1909,8 @@ function lpDetect(blob) {
                 '<div style="text-align:center;color:var(--muted);padding:20px;">'
               + '<i class="fas fa-exclamation-circle" style="font-size:1.8rem;opacity:0.4;display:block;margin-bottom:8px;"></i>'
               + '<p style="font-size:0.88rem;">' + (res.error || 'No plate detected.') + '</p>'
-              + '<p style="font-size:0.78rem;margin-top:6px;">Try a closer, well-lit photo — or type the plate manually below.</p>'
+              + '<p style="font-size:0.78rem;margin-top:6px;">Try a closer, well-lit photo with the plate clearly visible.</p>'
               + '</div>';
-            document.getElementById('lp-override-input').value = '';
-            document.getElementById('lp-manual-override').style.display = 'block';
         }
     })
     .catch(function(err) {
