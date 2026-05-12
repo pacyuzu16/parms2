@@ -1860,6 +1860,174 @@ def api_ml_insights(request):
     return JsonResponse({'success': True, 'data': data})
 
 
+# -- Admin: plate lookup (no user restriction — admin sees all sessions) ------
+
+@_admin_required
+def api_admin_lookup_plate(request):
+    """
+    POST /api/admin-lookup-plate/
+    Accept plate_number text OR an image file.
+    Returns full session + owner info for any active ticket matching that plate.
+    Unlike the user-facing api_lookup_plate, this is not restricted to the
+    requesting user's own vehicles.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
+
+    plate = request.POST.get('plate_number', '').strip().upper()
+
+    # LPR from image if no text supplied
+    if not plate and request.FILES.get('image'):
+        img_file = request.FILES['image']
+        if img_file.size > 10 * 1024 * 1024:
+            return JsonResponse({'success': False, 'error': 'Image too large (max 10 MB).'})
+        try:
+            from .license_plate import detect_plate
+            lpr = detect_plate(img_file.read())
+            if lpr.get('success') and lpr.get('plates'):
+                plate = (lpr['plates'][0].get('text') or '').strip().upper()
+            if not plate:
+                return JsonResponse({'success': False, 'error': 'Could not read plate from image.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': f'LPR error: {e}'})
+
+    if not plate:
+        return JsonResponse({'success': False, 'error': 'Provide a plate number or image.'})
+
+    # --- Find vehicle. Try exact match first, then case-insensitive fuzzy ---
+    vehicle = (
+        Vehicle.objects.filter(plate_number__iexact=plate).first()
+    )
+    if not vehicle:
+        # Try partial match so minor OCR errors (space/dash) still resolve
+        clean = plate.replace(' ', '').replace('-', '')
+        vehicle = Vehicle.objects.filter(
+            plate_number__iregex=r'^' + ''.join(f'{c}[-\\s]?' for c in clean) + '$'
+        ).first()
+
+    if not vehicle:
+        return JsonResponse({
+            'success': False,
+            'error': f'No vehicle registered with plate "{plate}". '
+                     f'Check the plate or register the vehicle first.',
+        })
+
+    active_ticket = (
+        ParkingTicket.objects
+        .filter(vehicle=vehicle, exit_time__isnull=True)
+        .select_related('vehicle', 'parking_space__parking_lot', 'user')
+        .order_by('-entry_time')
+        .first()
+    )
+
+    if not active_ticket:
+        return JsonResponse({
+            'success': False,
+            'error': f'Plate {vehicle.plate_number} is registered but has no active parking session.',
+        })
+
+    lot      = active_ticket.parking_space.parking_lot if active_ticket.parking_space else None
+    fee      = active_ticket.calculated_fee()
+    duration = active_ticket.duration_hours()
+
+    # Owner display name
+    if active_ticket.user:
+        owner = active_ticket.user.get_full_name() or active_ticket.user.username
+        owner_email = active_ticket.user.email or '—'
+    else:
+        owner = vehicle.owner_name or '—'
+        owner_email = '—'
+
+    entry_local = timezone.localtime(active_ticket.entry_time)
+
+    return JsonResponse({
+        'success':      True,
+        'ticket_id':    active_ticket.ticket_id,
+        'plate':        vehicle.plate_number,
+        'vehicle_type': vehicle.vehicle_type,
+        'owner':        owner,
+        'owner_email':  owner_email,
+        'location':     lot.location if lot else '—',
+        'space_id':     active_ticket.parking_space.space_id if active_ticket.parking_space else '—',
+        'entry_time':   entry_local.strftime('%d %b %Y %H:%M'),
+        'duration_h':   round(duration, 2),
+        'fee':          str(fee),
+        'hourly_rate':  str(lot.hourly_rate) if lot else '0',
+    })
+
+
+@_admin_required
+def api_admin_close_session(request):
+    """
+    POST /api/admin-close-session/
+    Close an active parking ticket identified by ticket_id.
+    Frees the space, records payment, notifies the user.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
+
+    ticket_id      = request.POST.get('ticket_id', '').strip()
+    payment_method = request.POST.get('payment_method', 'Cash')
+
+    try:
+        t = ParkingTicket.objects.select_related(
+            'vehicle', 'parking_space__parking_lot', 'user'
+        ).get(ticket_id=ticket_id, exit_time__isnull=True)
+    except ParkingTicket.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Ticket not found or already closed.'})
+
+    with transaction.atomic():
+        t.exit_time = timezone.now()
+        rate = t.parking_space.parking_lot.hourly_rate if t.parking_space else 0
+        t.fee = Decimal(str(round(t.duration_hours() * float(rate), 2)))
+        t.save()
+
+        space_id = None
+        lot      = None
+        if t.parking_space:
+            space_id = t.parking_space.space_id
+            t.parking_space.is_occupied       = False
+            t.parking_space.occupied_by_plate = ''
+            t.parking_space.save(update_fields=['is_occupied', 'occupied_by_plate'])
+            lot = t.parking_space.parking_lot
+            lot.available_spaces = lot.spaces.filter(is_occupied=False).count()
+            lot.save(update_fields=['available_spaces'])
+
+        Payment.objects.create(
+            amount=t.fee or Decimal('0'),
+            payment_method=payment_method,
+            ticket=t,
+        )
+
+        if t.user:
+            fee_str = f'${t.fee}' if t.fee else '$0.00'
+            UserNotification.objects.create(
+                user=t.user,
+                title=f'Session ended — {t.vehicle.plate_number}',
+                message=(
+                    f'Your parking session at {lot.location if lot else "the lot"} '
+                    f'has ended. Duration: {t.duration_hours():.1f}h · '
+                    f'Fee: {fee_str} · Payment: {payment_method}. '
+                    f'Thank you for using PARMS!'
+                ),
+                notif_type='session_ended',
+                lot=lot,
+            )
+
+        if lot and lot.available_spaces == 1:
+            _notify_space_available(lot)
+
+    return JsonResponse({
+        'success':        True,
+        'ticket_id':      t.ticket_id,
+        'plate':          t.vehicle.plate_number,
+        'fee':            str(t.fee),
+        'payment_method': payment_method,
+        'space_id':       space_id,
+        'duration_h':     round(t.duration_hours(), 2),
+    })
+
+
 # -- Admin: License Plate Detection -------------------------------------------
 
 @_admin_required

@@ -209,6 +209,15 @@
         /* ── Badges ──────────────────────────────────────────────────────────── */
         .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; gap: 4px; }
         .b-green  { background: #dcfce7; color: #166534; }
+        /* LP payment pills */
+        .lp-pay-pill { flex:1; padding:8px 6px; border:1.5px solid var(--border); border-radius:8px; background:white; color:var(--muted); font-size:0.75rem; font-weight:600; cursor:pointer; transition:all 0.15s; text-align:center; }
+        .lp-pay-pill.active { border-color:var(--green); background:#f0fdf4; color:#166534; }
+        .lp-pay-pill:hover { border-color:var(--green); }
+        /* LP session grid cells */
+        .lp-cell { font-size:0.8rem; }
+        .lp-cell .lbl { font-size:0.68rem; color:var(--muted); margin-bottom:2px; }
+        .lp-cell .val { font-weight:700; color:var(--text); }
+        @keyframes lpPop { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
         .b-amber  { background: #fef9c3; color: #854d0e; }
         .b-red    { background: #fee2e2; color: #b91c1c; }
         .b-blue   { background: #dbeafe; color: #1e40af; }
@@ -1080,19 +1089,81 @@
                     </div>
                 </div>
 
-                <!-- Right: result -->
-                <div class="card">
+                <!-- Right: result + session lookup + payment -->
+                <div class="card" style="display:flex;flex-direction:column;">
                     <div class="card-hdr">
-                        <h4 style="font-size:0.95rem;"><i class="fas fa-id-card" style="color:var(--teal);"></i> Step 2 — Result</h4>
+                        <h4 style="font-size:0.95rem;"><i class="fas fa-id-card" style="color:var(--teal);"></i> Step 2 — Detection &amp; Session</h4>
                         <span id="lp-status-badge" style="padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;background:#f1f5f9;color:var(--muted);">Waiting for photo</span>
                     </div>
-                    <div class="card-body" id="lp-result-panel" style="min-height:280px;display:flex;align-items:center;justify-content:center;">
+
+                    <!-- Detection result area -->
+                    <div class="card-body" id="lp-result-panel" style="min-height:200px;display:flex;align-items:center;justify-content:center;">
                         <div style="text-align:center;color:var(--muted);">
                             <div style="width:72px;height:72px;background:var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:2rem;">
                                 <i class="fas fa-arrow-left" style="opacity:0.25;"></i>
                             </div>
                             <p style="font-size:0.9rem;font-weight:600;margin-bottom:4px;">No result yet</p>
-                            <p style="font-size:0.82rem;">Upload or capture a photo of a vehicle to see the license plate here.</p>
+                            <p style="font-size:0.82rem;">Upload or capture a photo to detect a plate.</p>
+                        </div>
+                    </div>
+
+                    <!-- Manual plate override (shown after detection) -->
+                    <div id="lp-manual-override" style="display:none;padding:0 16px 12px;">
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <input id="lp-override-input" type="text" placeholder="Correct plate if needed…"
+                                   style="flex:1;padding:7px 11px;border:1.5px solid var(--border);border-radius:7px;font-family:monospace;font-size:0.95rem;font-weight:700;text-transform:uppercase;outline:none;"
+                                   onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'"
+                                   oninput="this.value=this.value.toUpperCase()">
+                            <button onclick="lpLookupSession(document.getElementById('lp-override-input').value)"
+                                    style="padding:7px 14px;background:var(--green);border:none;border-radius:7px;color:white;font-weight:700;cursor:pointer;font-size:0.84rem;white-space:nowrap;">
+                                <i class="fas fa-search"></i> Look Up
+                            </button>
+                        </div>
+                        <p style="font-size:0.74rem;color:var(--muted);margin:5px 0 0;">Edit the plate above if OCR made a mistake, then click Look Up.</p>
+                    </div>
+
+                    <!-- Session details + payment (shown after successful lookup) -->
+                    <div id="lp-session-panel" style="display:none;border-top:1px solid var(--border);">
+                        <div style="padding:14px 16px 10px;background:#f0fdf4;border-bottom:1px solid #bbf7d0;">
+                            <div style="font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#166534;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+                                <i class="fas fa-user-check"></i> Registered Owner &amp; Active Session
+                            </div>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="lp-session-grid"></div>
+                        </div>
+
+                        <!-- Payment confirmation -->
+                        <div style="padding:14px 16px;" id="lp-pay-section">
+                            <div style="font-size:0.78rem;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;">Confirm Payment &amp; Complete Session</div>
+                            <div style="display:flex;gap:6px;margin-bottom:10px;" id="lp-pay-pills">
+                                <button class="lp-pay-pill active" onclick="lpSelectPay(this,'Cash')">
+                                    <i class="fas fa-money-bill-wave"></i><br>Cash
+                                </button>
+                                <button class="lp-pay-pill" onclick="lpSelectPay(this,'MTN MoMo')">
+                                    <i class="fas fa-mobile-alt"></i><br>MTN MoMo
+                                </button>
+                                <button class="lp-pay-pill" onclick="lpSelectPay(this,'Card')">
+                                    <i class="fas fa-credit-card"></i><br>Card
+                                </button>
+                            </div>
+                            <button id="lp-complete-btn" onclick="lpCompleteSession()"
+                                    style="width:100%;padding:12px;background:var(--green);border:none;border-radius:9px;color:white;font-size:0.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;transition:background 0.2s;"
+                                    onmouseover="this.style.background='var(--green-dark,#234d39)'" onmouseout="this.style.background='var(--green)'">
+                                <i class="fas fa-check-circle"></i> Complete Session &amp; Confirm Payment
+                            </button>
+                        </div>
+
+                        <!-- Success message (shown after completion) -->
+                        <div id="lp-success-msg" style="display:none;padding:20px 16px;text-align:center;">
+                            <div style="width:64px;height:64px;background:#dcfce7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:2rem;animation:lpPop 0.5s cubic-bezier(.34,1.56,.64,1) both;">
+                                <i class="fas fa-check-circle" style="color:#16a34a;"></i>
+                            </div>
+                            <div style="font-size:1rem;font-weight:800;color:#166534;margin-bottom:6px;">Session Completed!</div>
+                            <div style="font-size:0.88rem;color:#2e6644;line-height:1.6;">
+                                Your parking session has ended successfully.<br>
+                                Thank you for using <strong>PARMS Smart Parking System</strong>.<br>
+                                <strong>Have a safe journey! 🚗</strong>
+                            </div>
+                            <div id="lp-success-detail" style="margin-top:12px;font-size:0.8rem;color:var(--muted);background:#f8fafc;border-radius:8px;padding:10px;text-align:left;"></div>
                         </div>
                     </div>
                 </div>
@@ -1126,48 +1197,6 @@
                 </div>
             </div>
 
-            <!-- For curious users: technical details hidden by default -->
-            <div style="text-align:center;margin-bottom:12px;">
-                <button onclick="var d=document.getElementById('lp-tech');d.style.display=d.style.display==='none'?'block':'none'"
-                        style="background:none;border:none;color:var(--muted);font-size:0.82rem;cursor:pointer;text-decoration:underline;">
-                    <i class="fas fa-info-circle"></i> How does this work? (Technical details)
-                </button>
-            </div>
-            <div id="lp-tech" style="display:none;">
-                <div class="card" style="margin-bottom:12px;">
-                    <div class="card-hdr"><h4 style="font-size:0.88rem;"><i class="fas fa-microchip" style="color:var(--purple);"></i> Detection Algorithm</h4></div>
-                    <div class="card-body" style="font-size:0.84rem;color:var(--muted);line-height:1.7;">
-                        The system uses <strong>Haar Cascade</strong> (a machine learning technique trained on thousands of license plate images) as the primary detector.
-                        If that doesn't find a plate, it falls back to <strong>contour detection</strong> — finding rectangular shapes with the right proportions.
-                        The detected region is then processed and passed to <strong>OCR (text recognition)</strong> to read the characters.
-                        This approach was developed and evaluated in the Computer Intelligence semester project, achieving <strong>99.3% accuracy</strong> with the Random Forest model.
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-hdr"><h4 style="font-size:0.88rem;"><i class="fas fa-flask" style="color:var(--purple);"></i> CI Project Model Results</h4></div>
-                    <div class="tbl-wrap">
-                        <table>
-                            <thead><tr><th>Model</th><th>Accuracy</th><th>F1 Score</th><th>Speed</th></tr></thead>
-                            <tbody>
-                                <tr style="background:#f0fdf4;"><td><strong>Random Forest ✓</strong></td><td><strong style="color:var(--green);">99.3%</strong></td><td>99.2%</td><td>Fast (0.8s)</td></tr>
-                                <tr><td>DNN</td><td>98.7%</td><td>98.6%</td><td>Slow (12s)</td></tr>
-                                <tr><td>ViT-MLP</td><td>98.7%</td><td>98.6%</td><td>Slow (28s)</td></tr>
-                                <tr><td>Gradient Boosting</td><td>96.0%</td><td>95.9%</td><td>Medium (3s)</td></tr>
-                            </tbody>
-                        </table>
-                        <table style="margin-top:12px;">
-                            <thead><tr><th>LP Model</th><th>Accuracy</th><th>F1 Score</th><th>Speed</th></tr></thead>
-                            <tbody>
-                                <tr style="background:#ecfeff;"><td><strong>SVM ✓</strong></td><td><strong style="color:var(--teal);">98.6%</strong></td><td>98.5%</td><td>Fast (0.3s)</td></tr>
-                                <tr><td>Random Forest</td><td>95.9%</td><td>95.8%</td><td>Fast (0.6s)</td></tr>
-                                <tr><td>KNN</td><td>94.6%</td><td>94.5%</td><td>Very fast</td></tr>
-                                <tr><td>Gradient Boosting</td><td>93.2%</td><td>93.1%</td><td>Slow (3s)</td></tr>
-                                <tr><td>MLP</td><td>90.5%</td><td>90.4%</td><td>Slow (66s)</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
         </div>
                 <!-- ══════════════════ PANEL: SETTINGS ══════════════════ -->
         <div class="panel" id="panel-settings">
@@ -1720,22 +1749,34 @@ function lpReset() {
     document.getElementById('lp-dropzone').style.display = 'block';
     lpResetResult();
 }
+var _lpSelectedPay = 'Cash';
+var _lpActiveTicketId = null;
+
 function lpResetResult() {
-    document.getElementById('lp-status-badge').className = 'badge b-gray';
-    document.getElementById('lp-status-badge').textContent = 'Waiting';
+    var badge = document.getElementById('lp-status-badge');
+    badge.style.background='#f1f5f9'; badge.style.color='var(--muted)'; badge.textContent='Waiting for photo';
+    document.getElementById('lp-result-panel').style.display = 'flex';
     document.getElementById('lp-result-panel').innerHTML =
-        '<div style="text-align:center;padding:40px 20px;color:var(--muted);"><i class="fas fa-car" style="font-size:2.5rem;opacity:0.2;display:block;margin-bottom:10px;"></i><p style="font-size:0.88rem;">Upload or capture an image to detect a license plate.</p></div>';
+        '<div style="text-align:center;color:var(--muted);"><div style="width:72px;height:72px;background:var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:2rem;"><i class="fas fa-arrow-left" style="opacity:0.25;"></i></div><p style="font-size:0.9rem;font-weight:600;margin-bottom:4px;">No result yet</p><p style="font-size:0.82rem;">Upload or capture a photo to detect a plate.</p></div>';
+    document.getElementById('lp-manual-override').style.display = 'none';
+    document.getElementById('lp-session-panel').style.display   = 'none';
+    _lpActiveTicketId = null;
 }
+
+/* ── Step 1: detect plate from image ── */
 function lpDetect(blob) {
     var fd = new FormData();
-    if (blob)   fd.append('image', blob, 'capture.jpg');
+    if (blob)        fd.append('image', blob, 'capture.jpg');
     else if (_lpFile) fd.append('image', _lpFile);
     else return;
 
     var badge = document.getElementById('lp-status-badge');
-    badge.style.background='#f1f5f9';badge.style.color='var(--muted)';badge.textContent='Scanning…';
+    badge.style.background='#f1f5f9'; badge.style.color='var(--muted)'; badge.textContent='Scanning…';
+    document.getElementById('lp-result-panel').style.display = 'flex';
     document.getElementById('lp-result-panel').innerHTML =
-        '<div style="text-align:center;padding:32px;color:var(--muted);"><i class="fas fa-spinner fa-spin" style="font-size:1.8rem;"></i><p style="margin-top:10px;font-size:0.88rem;">Detecting plate &amp; reading text…</p></div>';
+        '<div style="text-align:center;color:var(--muted);"><i class="fas fa-spinner fa-spin" style="font-size:1.8rem;"></i><p style="margin-top:10px;font-size:0.88rem;">Reading licence plate…</p></div>';
+    document.getElementById('lp-manual-override').style.display = 'none';
+    document.getElementById('lp-session-panel').style.display   = 'none';
 
     var csrf = document.querySelector('[name=csrfmiddlewaretoken]');
     fetch('/api/detect-plate/', {
@@ -1745,47 +1786,172 @@ function lpDetect(blob) {
     })
     .then(function(r) { return r.json(); })
     .then(function(res) {
-        if (res.success) {
-            badge.style.background='#dcfce7';badge.style.color='#166534';badge.textContent='✓ Plate Found';
-            var html = '<div style="padding:8px;">';
+        if (res.success && res.plates && res.plates.length > 0) {
+            /* ── Show annotated image + plate crops ── */
+            var html = '<div style="padding:8px;width:100%;">';
             if (res.annotated_b64) {
-                html += '<img src="data:image/jpeg;base64,' + res.annotated_b64 + '" style="max-width:100%;border-radius:8px;border:1px solid var(--border);margin-bottom:12px;" alt="Annotated">';
+                html += '<img src="data:image/jpeg;base64,' + res.annotated_b64
+                     + '" style="max-width:100%;border-radius:8px;border:1px solid var(--border);margin-bottom:10px;" alt="Detected">';
             }
-            if (res.plates && res.plates.length > 0) {
-                res.plates.forEach(function(p, i) {
-                    html += '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px;margin-bottom:10px;">';
-                    var detLabel = 'Plate ' + (i+1) + ' · ' + (p.method||'Detected');
-                    html += '<div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">' + detLabel + '</div>';
-                    if (p.crop_b64) html += '<img src="data:image/jpeg;base64,' + p.crop_b64 + '" style="max-height:60px;border-radius:4px;margin-bottom:8px;border:1px solid var(--border);" alt="Plate crop">';
-                    if (p.text) {
-                        html += '<div style="font-family:monospace;font-size:1.5rem;font-weight:800;color:var(--green);letter-spacing:0.1em;background:#dcfce7;display:inline-block;padding:4px 14px;border-radius:6px;">' + p.text + '</div>';
-                        var confRow = '<span style="margin-left:10px;font-size:0.75rem;color:var(--muted);">Confidence: ' + (p.confidence||'—') + '</span>';
-                        var engRow  = p.ocr_engine ? '<span style="margin-left:8px;font-size:0.72rem;font-weight:700;padding:2px 7px;border-radius:20px;background:#e0f2fe;color:#0369a1;">' + p.ocr_engine + '</span>' : '';
-                        html += '<div style="margin-top:6px;">' + confRow + engRow + '</div>';
-                    } else {
-                        html += '<div style="font-size:0.84rem;color:var(--muted);background:#fef9c3;border-radius:6px;padding:10px;">Plate region detected — no text could be read.<br><span style="font-size:0.78rem;">Try a clearer, well-lit photo.</span></div>';
-                    }
-                    html += '</div>';
-                });
-            }
-            var detMethod = res.method || 'Haar Cascade';
-            var ocrEng    = res.ocr_engine ? ' · OCR: ' + res.ocr_engine : '';
-            html += '<div style="font-size:0.75rem;color:var(--muted);margin-top:4px;"><i class="fas fa-info-circle"></i> Detection: ' + detMethod + ocrEng + ' · ' + (res.plates ? res.plates.length : 0) + ' plate(s)</div>';
+            res.plates.forEach(function(p, i) {
+                html += '<div style="display:flex;align-items:center;gap:10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px;margin-bottom:8px;">';
+                if (p.crop_b64) {
+                    html += '<img src="data:image/jpeg;base64,' + p.crop_b64
+                         + '" style="height:48px;border-radius:4px;border:1px solid var(--border);" alt="Crop">';
+                }
+                html += '<div>';
+                if (p.text) {
+                    html += '<div style="font-family:monospace;font-size:1.3rem;font-weight:800;color:var(--green);letter-spacing:0.1em;">' + p.text + '</div>';
+                    html += '<div style="font-size:0.72rem;color:var(--muted);">Confidence: ' + (p.confidence||'—') + '</div>';
+                } else {
+                    html += '<div style="font-size:0.82rem;color:#92400e;">Region detected — text unclear</div>';
+                }
+                html += '</div></div>';
+            });
             html += '</div>';
+            document.getElementById('lp-result-panel').style.display = 'block';
             document.getElementById('lp-result-panel').innerHTML = html;
+
+            /* ── Show manual override bar ── */
+            var firstText = res.plates[0].text || '';
+            document.getElementById('lp-override-input').value = firstText;
+            document.getElementById('lp-manual-override').style.display = 'block';
+
+            if (firstText) {
+                badge.style.background='#dcfce7'; badge.style.color='#166534'; badge.textContent='✓ Plate Read';
+                /* ── Auto-trigger session lookup ── */
+                lpLookupSession(firstText);
+            } else {
+                badge.style.background='#fef9c3'; badge.style.color='#854d0e'; badge.textContent='Plate unclear — type manually';
+            }
         } else {
-            badge.style.background='#fef2f2';badge.style.color='#b91c1c';badge.textContent='No plate found';
+            badge.style.background='#fef2f2'; badge.style.color='#b91c1c'; badge.textContent='Not detected';
+            document.getElementById('lp-result-panel').style.display = 'flex';
             document.getElementById('lp-result-panel').innerHTML =
-                '<div style="padding:20px;text-align:center;color:var(--muted);">' +
-                '<i class="fas fa-exclamation-circle" style="font-size:1.8rem;margin-bottom:10px;display:block;opacity:0.4;"></i>' +
-                '<p style="font-size:0.88rem;">' + (res.error || 'No license plate detected in this image.') + '</p>' +
-                '<p style="font-size:0.78rem;margin-top:8px;">Try a clearer photo with the plate visible and well-lit.</p>' +
-                '</div>';
+                '<div style="text-align:center;color:var(--muted);padding:20px;">'
+              + '<i class="fas fa-exclamation-circle" style="font-size:1.8rem;opacity:0.4;display:block;margin-bottom:8px;"></i>'
+              + '<p style="font-size:0.88rem;">' + (res.error || 'No plate detected.') + '</p>'
+              + '<p style="font-size:0.78rem;margin-top:6px;">Try a closer, well-lit photo — or type the plate manually below.</p>'
+              + '</div>';
+            document.getElementById('lp-override-input').value = '';
+            document.getElementById('lp-manual-override').style.display = 'block';
         }
     })
     .catch(function(err) {
-        badge.style.background='#fef2f2';badge.style.color='#b91c1c';badge.textContent='Error';
+        badge.style.background='#fef2f2'; badge.style.color='#b91c1c'; badge.textContent='Error';
+        document.getElementById('lp-result-panel').style.display = 'flex';
         document.getElementById('lp-result-panel').innerHTML = '<div style="padding:20px;color:var(--red);font-size:0.86rem;">Request failed: ' + err.message + '</div>';
+    });
+}
+
+/* ── Step 2: look up the session by plate number ── */
+function lpLookupSession(plate) {
+    plate = (plate || '').trim().toUpperCase();
+    if (!plate) { alert('Please enter a plate number.'); return; }
+
+    document.getElementById('lp-session-panel').style.display = 'block';
+    document.getElementById('lp-session-grid').innerHTML =
+        '<div style="grid-column:span 2;text-align:center;padding:12px;color:var(--muted);">'
+      + '<i class="fas fa-spinner fa-spin"></i> Looking up session…</div>';
+    document.getElementById('lp-pay-section').style.display    = 'none';
+    document.getElementById('lp-success-msg').style.display    = 'none';
+    _lpActiveTicketId = null;
+
+    var csrf = document.querySelector('[name=csrfmiddlewaretoken]');
+    var fd   = new FormData();
+    fd.append('plate_number', plate);
+
+    /* Re-use the same lookup API used by the user exit flow */
+    fetch('/api/admin-lookup-plate/', {
+        method: 'POST',
+        headers: csrf ? {'X-CSRFToken': csrf.value} : {},
+        body: fd
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.success) {
+            _lpActiveTicketId = res.ticket_id;
+            /* Build session grid */
+            var cells = [
+                ['Plate',         '<span style="font-family:monospace;font-size:1rem;font-weight:800;letter-spacing:0.06em;color:var(--green);">' + res.plate + '</span>'],
+                ['Owner',         res.owner],
+                ['Vehicle Type',  res.vehicle_type],
+                ['Location',      res.location],
+                ['Space',         '#' + res.space_id],
+                ['Entry Time',    res.entry_time],
+                ['Duration',      res.duration_h + ' hrs'],
+                ['Fee',           '<span style="font-size:1.1rem;font-weight:800;color:var(--green);">$' + res.fee + '</span>'],
+            ];
+            var gridHtml = '';
+            cells.forEach(function(c) {
+                gridHtml += '<div class="lp-cell"><div class="lbl">' + c[0] + '</div><div class="val">' + c[1] + '</div></div>';
+            });
+            document.getElementById('lp-session-grid').innerHTML = gridHtml;
+            document.getElementById('lp-pay-section').style.display = 'block';
+
+            var badge = document.getElementById('lp-status-badge');
+            badge.style.background='#dcfce7'; badge.style.color='#166534'; badge.textContent='✓ Session Found';
+        } else {
+            document.getElementById('lp-session-grid').innerHTML =
+                '<div style="grid-column:span 2;padding:10px;background:#fef2f2;border-radius:8px;font-size:0.84rem;color:#b91c1c;">'
+              + '<i class="fas fa-exclamation-circle"></i> ' + (res.error || 'No active session found.')
+              + '<br><span style="font-size:0.76rem;color:#7a1f18;">Check the plate or verify the vehicle is registered.</span></div>';
+        }
+    })
+    .catch(function(err) {
+        document.getElementById('lp-session-grid').innerHTML =
+            '<div style="grid-column:span 2;color:var(--red);font-size:0.84rem;">Lookup error: ' + err.message + '</div>';
+    });
+}
+
+/* ── Payment pill selection ── */
+function lpSelectPay(btn, method) {
+    _lpSelectedPay = method;
+    document.querySelectorAll('.lp-pay-pill').forEach(function(p){ p.classList.remove('active'); });
+    btn.classList.add('active');
+}
+
+/* ── Step 3: complete the session ── */
+function lpCompleteSession() {
+    if (!_lpActiveTicketId) return;
+    var btn  = document.getElementById('lp-complete-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing…';
+
+    var csrf = document.querySelector('[name=csrfmiddlewaretoken]');
+    var fd   = new FormData();
+    fd.append('ticket_id',      _lpActiveTicketId);
+    fd.append('payment_method', _lpSelectedPay);
+
+    fetch('/api/admin-close-session/', {
+        method: 'POST',
+        headers: csrf ? {'X-CSRFToken': csrf.value} : {},
+        body: fd
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.success) {
+            document.getElementById('lp-pay-section').style.display  = 'none';
+            document.getElementById('lp-success-msg').style.display  = 'block';
+            document.getElementById('lp-success-detail').innerHTML   =
+                '<strong>Plate:</strong> ' + res.plate
+              + ' &nbsp;·&nbsp; <strong>Fee:</strong> $' + res.fee
+              + ' &nbsp;·&nbsp; <strong>Payment:</strong> ' + res.payment_method
+              + '<br><strong>Space freed:</strong> #' + res.space_id
+              + ' &nbsp;·&nbsp; <strong>Duration:</strong> ' + res.duration_h + ' hrs';
+            var badge = document.getElementById('lp-status-badge');
+            badge.style.background='#dcfce7'; badge.style.color='#166534'; badge.textContent='✓ Completed';
+            _lpActiveTicketId = null;
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> Complete Session &amp; Confirm Payment';
+            alert('Error: ' + (res.error || 'Could not complete session.'));
+        }
+    })
+    .catch(function(err) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle"></i> Complete Session &amp; Confirm Payment';
+        alert('Network error: ' + err.message);
     });
 }
 
