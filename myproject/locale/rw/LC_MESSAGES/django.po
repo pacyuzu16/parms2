@@ -184,3 +184,646 @@ msgstr "Nimero y'imodoka"
 
 msgid "Vehicle Type"
 msgstr "Ubwoko bw'imodoka"
+
+# Public nav
+msgid "Home"
+msgstr "Ahabanza"
+
+msgid "Features"
+msgstr "Ibikorwa"
+
+msgid "How it works"
+msgstr "Uburyo bikora"
+
+msgid "About"
+msgstr "Ibyerekeye"
+
+msgid "Contact"
+msgstr "Twandikire"
+
+msgid "Get started"
+msgstr "Tangira"
+
+msgid "Sign up"
+msgstr "Iyandikishe"
+
+# Hero
+msgid "Smart parking for modern cities"
+msgstr "Parkage ya none ku mujyi wa none"
+
+msgid "Find Your"
+msgstr "Shaka"
+
+msgid "Perfect Space"
+msgstr "Ahantu hagukwiye"
+
+msgid "In Seconds"
+msgstr "Mu masegonda make"
+
+msgid "PARMS connects you to real-time parking availability across thousands of locations. Book, pay, and park — from one calm, simple platform."
+msgstr "PARMS ikuhuza n'ahantu ho guhagarara imodoka mu bihe byose. Bika, wishyure uhagarare — ukoresheje urubuga rumwe rworoheje."
+
+msgid "Get started free"
+msgstr "Tangira ubuntu"
+
+msgid "See how it works"
+msgstr "Reba uburyo bikora"
+
+msgid "Trusted by 50,000+ drivers"
+msgstr "Yizirwa n'abaganduza barenga 50,000"
+
+# Stats
+msgid "Active Users"
+msgstr "Abakoresha bakora"
+
+msgid "Growing daily"
+msgstr "Bagwira buri munsi"
+
+msgid "Parking Locations"
+msgstr "Aho hagarariwe imodoka"
+
+msgid "Nationwide"
+msgstr "Mu Rwanda rwose"
+
+msgid "Success Rate"
+msgstr "Igipimo cy'ibikorwa"
+
+msgid "Customer satisfaction"
+msgstr "Ibyishimo by'abakiriya"
+
+msgid "Saved per Week"
+msgstr "Byanywanye mu cyumweru"
+
+msgid "Per user average"
+msgstr "Hagati ku mukoresha"
+
+# Features section
+msgid "Everything you need to park smarter"
+msgstr "Byose ukeneye guhagarara neza"
+
+msgid "From real-time availability to automated billing — PARMS handles every aspect of your parking experience without friction."
+msgstr "Kuva ku makuru y'igihe nyacyo kugeza ku bwishyu bwa kazi — PARMS ikurikirana byose ku guhagarara imodoka yawe nta ngorane."
+
+msgid "Real-time Availability"
+msgstr "Amakuru y'igihe nyacyo"
+
+msgid "See live space counts across all locations. No refresh needed — the data comes to you."
+msgstr "Reba umubare w'ahantu hafungutse mu bihe byose. Nta gukanda nanone — amakuru yaza kukuri."
+
+msgid "Instant QR Tickets"
+msgstr "Indagisho za QR zo gutura"
+
+msgid "Generate and scan QR-coded parking tickets in seconds. No paper, no queues."
+msgstr "Kora ukasuzuma indagisho za QR mu masegonda make. Nta mpapuro, nta murunga."
+
+msgid "Smart Payments"
+msgstr "Kwishyura neza"
+
+msgid "Pay via MTN Mobile Money, PayPal, or card. Fee calculated on actual time parked."
+msgstr "Ishyura ukoresheje MTN Mobile Money, PayPal, cyangwa ikarita. Igiciro gibarwa ku gihe nyacyo."
+
+msgid "Analytics Dashboard"
+msgstr "Ikibaho cy'imibare"
+
+msgid "Revenue tracking, occupancy rates, and detailed usage reports — all in one view."
+msgstr "Gukurikirana amafaranga, igipimo cy'imikoreshereze, n'raporo zirambuye — byose mu buryo bumwe."
+
+msgid "Secure by Design"
+msgstr "Ufite umutekano"
+
+msgid "Role-based access, encrypted data, and full audit logging built in from the start."
+msgstr "Uburenganzira bufatiye ku nshingano, amakuru acumbikiwe, n'inyandiko z'igenzura zuzuye kuva ntangiriro."
+
+msgid "Mobile First"
+msgstr "Terefone mbere"
+
+msgid "Find parking, view history, manage vehicles — fully optimised for your phone."
+msgstr "Shaka parking, reba amateka, genzura imodoka — yateguwe neza ku terefone."
+
+# How it works
+msgid "Three steps to parked"
+msgstr "Intambwe eshatu zo guhagarara"
+
+msgid "PARMS is designed to get out of your way. Find, book, and park — then get on with your day."
+msgstr "PARMS yateguwe kugira ngo ikurehere. Shaka, bika, uhagarare — nuko ukomeze umunsi wawe."
+
+msgid "Search & Discover"
+msgstr "Shakisha no Kumenya"
+
+msgid "Browse available parking lots near your destination with live slot counts and pricing."
+msgstr "Shakisha ahantu ho guhagarara hafi y'aho ugende n'umubare w'ahantu hafungutse n'ibiciro bya kazi."
+
+msgid "Book Your Space"
+msgstr "Bika Ahantu Hawe"
+
+msgid "Reserve a space in seconds. Your QR-coded ticket is ready before you even start driving."
+msgstr "Fata ahantu mu masegonda make. Indagisho yawe ya QR iteguye mbere yo gutangira gutwara."
+
+msgid "Park & Pay"
+msgstr "Hagarara no Kwishyura"
+
+msgid "Scan your QR code at the gate. Payment is calculated automatically on exit."
+msgstr "Suzuma kode ya QR ku irembo. Kwishyura bibarwa by'akazi iyo usohotse."
+
+# CTA section
+msgid "Ready to park smarter?"
+msgstr "Witeguye guhagarara neza?"
+
+msgid "Join thousands of drivers who save time every day with PARMS."
+msgstr "Injira mu bagabuzi ibihumbi bavunana igihe buri munsi bakoresheje PARMS."
+
+msgid "Create free account"
+msgstr "Fungura konti ubuntu"
+
+msgid "Talk to us"
+msgstr "Tuganire"
+
+# Mobile App + Team
+msgid "Mobile App"
+msgstr "Porogaramu ya terefone"
+
+msgid "Take PARMS wherever you go"
+msgstr "Twara PARMS aho ugiye hose"
+
+msgid "Download the app for instant parking search, ticket generation, and payment — right from your pocket."
+msgstr "Pakurura porogaramu yo gushaka parking, gukora indagisho no kwishyura — mu nkweto yawe."
+
+msgid "Our team"
+msgstr "Itsinda ryacu"
+
+msgid "The people behind PARMS"
+msgstr "Abantu bari inyuma ya PARMS"
+
+# Footer
+msgid "Smart parking management for modern cities. Find and book effortlessly."
+msgstr "Gucunga parkage neza mu mujyi wa none. Shaka ubike nta ngorane."
+
+msgid "Platform"
+msgstr "Urubuga"
+
+msgid "Live Map"
+msgstr "Ikarita ya Kazi"
+
+msgid "Stay Updated"
+msgstr "Komeza guhabwa amakuru"
+
+msgid "Get parking tips and new features. No spam."
+msgstr "Bona inama z'parking n'ibikorwa bishya. Nta spam."
+
+msgid "Subscribe"
+msgstr "Iyandikishe"
+
+# Contact page
+msgid "Get in touch"
+msgstr "Twandikire"
+
+msgid "We'd love to hear from you. Send us a message and we'll respond as soon as possible — usually within 24 hours."
+msgstr "Byatwurjisha gutuganirira. Turongere ubutumwa kandi tuzagusubiza vuba — muri rusange mu masaha 24."
+
+msgid "Visit us"
+msgstr "Tubeho"
+
+msgid "Call us"
+msgstr "Tuhamagare"
+
+msgid "Email us"
+msgstr "Twohereze imeyili"
+
+msgid "Support hours"
+msgstr "Amasaha y'ubufasha"
+
+msgid "24 / 7 — every day"
+msgstr "24/7 — buri munsi"
+
+msgid "Send us a message"
+msgstr "Turongere ubutumwa"
+
+msgid "Fill out the form below and we'll get back to you shortly."
+msgstr "Uzuza urutonde ruri hepfo tuzagusubira vuba."
+
+msgid "Full name"
+msgstr "Amazina yose"
+
+msgid "Your full name"
+msgstr "Amazina yawe yose"
+
+msgid "Subject"
+msgstr "Ingingo"
+
+msgid "What's this about?"
+msgstr "Ni iki?"
+
+msgid "Message"
+msgstr "Ubutumwa"
+
+msgid "Tell us more details…"
+msgstr "Tunabeho birambuye…"
+
+msgid "Send message"
+msgstr "Ohereza ubutumwa"
+
+msgid "Find us here"
+msgstr "Ntubeho aha"
+
+msgid "Visit our office or locate us on the map below"
+msgstr "Sura ibiro byacu cyangwa ntubeho ku ikarita iri hepfo"
+
+msgid "Frequently asked questions"
+msgstr "Ibibazo bikunze kubazwa"
+
+msgid "Quick answers to common questions"
+msgstr "Ibisubizo byihuse ku bibazo bisanzwe"
+
+msgid "How does PARMS work?"
+msgstr "PARMS ikora bite?"
+
+msgid "PARMS connects you with real-time parking availability across registered lots. Search for your destination, view available spaces, book instantly, and pay — all in one place."
+msgstr "PARMS ikuhuza n'ahantu hafungutse mu bihe byose mu maparking yanditswe. Shakisha aho ugiye, reba ahantu hafungutse, bika ako kanya, wishyure — byose ahantu hamwe."
+
+msgid "Is PARMS available 24/7?"
+msgstr "PARMS iraboneka 24/7?"
+
+msgid "Yes. PARMS runs around the clock, and our support team is available whenever you need help — day or night."
+msgstr "Yego. PARMS ikora iminota yose, kandi itsinda ryacu ry'ubufasha riraboneka igihe cyose ukeneye ubufasha — umurango cyangwa nijoro."
+
+msgid "What payment methods are accepted?"
+msgstr "Uburyo bwo kwishyura bubiwe ni ubuhe?"
+
+msgid "We accept MTN Mobile Money, PayPal, major credit/debit cards, and cash payments at the lot. More methods are being added regularly."
+msgstr "Twakira MTN Mobile Money, PayPal, ikarita nkuru zo kwishyura, n'amafaranga asanzwe ku maparking. Uburyo bwindi bwongerwa kenshi."
+
+msgid "Can I cancel or modify a booking?"
+msgstr "Nshobora guhagarika cyangwa guhindura kubika?"
+
+msgid "Yes — active bookings can be managed from your dashboard. If you have trouble, contact our support team and we'll assist you promptly."
+msgstr "Yego — kubika gushoboka bishobora gucungwa ukoresheje ikibaho cyawe. Niba ufite ingorane, wamagana itsinda ryacu ry'ubufasha kandi tuzakufasha vuba."
+
+# Profile / Account settings
+msgid "Account Settings"
+msgstr "Igenamiterere y'ikonti"
+
+msgid "Update your profile information"
+msgstr "Hindura amakuru y'umwirondoro wawe"
+
+msgid "Change your password"
+msgstr "Hindura ijambo ryibanga"
+
+msgid "Current password"
+msgstr "Ijambo ryibanga ryerekeza"
+
+msgid "New password"
+msgstr "Ijambo ryibanga rishya"
+
+msgid "Confirm new password"
+msgstr "Emeza ijambo ryibanga rishya"
+
+msgid "Save Changes"
+msgstr "Kubika Uhindura"
+
+msgid "Account type"
+msgstr "Ubwoko bw'ikonti"
+
+msgid "Administrator"
+msgstr "Umwiyobozi"
+
+msgid "Driver"
+msgstr "Umweganyaji"
+
+msgid "Account Status"
+msgstr "Leta y'ikonti"
+
+msgid "Joined"
+msgstr "Yinjiye"
+
+msgid "Last Login"
+msgstr "Kinjira k'ikigera"
+
+# Billing / Payment history
+msgid "Billing History"
+msgstr "Amateka y'ubwishyu"
+
+msgid "All payment transactions in the system"
+msgstr "Gucunga ubwishyu byose mu sisitemu"
+
+msgid "Invoice"
+msgstr "Imbi y'ubwishyu"
+
+msgid "Transaction ID"
+msgstr "Nimero y'umuntu w'ubwishyu"
+
+msgid "Date"
+msgstr "Ubukiyunge"
+
+msgid "Amount"
+msgstr "Umubare w'amafaranga"
+
+msgid "Status"
+msgstr "Leta"
+
+msgid "Paid"
+msgstr "Kwishyuwe"
+
+msgid "Pending"
+msgstr "Kuri gereza"
+
+msgid "Refunded"
+msgstr "Igarutswe"
+
+msgid "Download Invoice"
+msgstr "Pakurura Imbi y'ubwishyu"
+
+msgid "No transactions yet"
+msgstr "Nta gucunga ubwishyu kwacu"
+
+# Notifications
+msgid "Your Notifications"
+msgstr "Amatangazo yawe"
+
+msgid "You have no new notifications"
+msgstr "Nta matangazo amashya"
+
+msgid "Mark all as read"
+msgstr "Menya byose nk'iyo byasomwe"
+
+msgid "Clear all"
+msgstr "Rehera byose"
+
+msgid "Session Started"
+msgstr "Igikorwa Kyatangiriye"
+
+msgid "Session Ended"
+msgstr "Igikorwa Kyarangiye"
+
+msgid "Payment Received"
+msgstr "Kwishyura Kwakiriwwe"
+
+msgid "Booking Confirmed"
+msgstr "Kubika Kwemezwe"
+
+# Map / Parking locations
+msgid "Find Parking"
+msgstr "Shaka Ahantu Hagarariwe"
+
+msgid "Search by location"
+msgstr "Shakisha ahantu"
+
+msgid "Hourly Rate"
+msgstr "Igiciro cy'isaha"
+
+msgid "Total Spaces"
+msgstr "Ahantu yose"
+
+msgid "Available Now"
+msgstr "Irafunguke nonaha"
+
+msgid "Occupancy Rate"
+msgstr "Igipimo cy'imikoreshereze"
+
+msgid "View Details"
+msgstr "Reba Ibigenewe"
+
+msgid "Book Now"
+msgstr "Bika Nonaha"
+
+msgid "View More Lots"
+msgstr "Reba Ahantu Amagera"
+
+# Parkings / Tickets
+msgid "My Tickets"
+msgstr "Indagisho Zanjye"
+
+msgid "Active Tickets"
+msgstr "Indagisho Ifite Imodoka"
+
+msgid "Completed Tickets"
+msgstr "Indagisho Iri Impezi"
+
+msgid "Ticket Status"
+msgstr "Leta y'Indagisho"
+
+msgid "In Progress"
+msgstr "Iracyakora"
+
+msgid "Completed"
+msgstr "Byarangiye"
+
+msgid "View Ticket"
+msgstr "Reba Indagisho"
+
+msgid "No active tickets"
+msgstr "Nta ndagisho ifite imodoka"
+
+msgid "No completed tickets"
+msgstr "Nta ndagisho iri impezi"
+
+# Exit / Session completion
+msgid "End Session"
+msgstr "Soza Igikorwa"
+
+msgid "Current Session"
+msgstr "Igikorwa Gishoboka"
+
+msgid "Time Remaining"
+msgstr "Igihe Kisigaye"
+
+msgid "Exit & Pay"
+msgstr "Sohoka no Kwishyura"
+
+msgid "Confirm Payment"
+msgstr "Emeza Kwishyura"
+
+msgid "Payment Method"
+msgstr "Urburyo Bwo Kwishyura"
+
+msgid "Select payment method"
+msgstr "Hitamo Uburyo Bwo Kwishyura"
+
+msgid "Mobile Money"
+msgstr "Mobile Money"
+
+msgid "Credit Card"
+msgstr "Ikarita y'Ubukira"
+
+msgid "Debit Card"
+msgstr "Ikarita y'Ubwishyu"
+
+# Success messages
+msgid "Session completed successfully!"
+msgstr "Igikorwa Cyarangiye neza!"
+
+msgid "Thank you for parking with us!"
+msgstr "Murakoze kuhagarira kumwe nacu!"
+
+msgid "Receipt sent to your email"
+msgstr "Ibigeneranya biringiriye ku imeyili yawe"
+
+msgid "Booking confirmed!"
+msgstr "Kubika Kwemezwe!"
+
+msgid "Your space is reserved"
+msgstr "Ahantu hawe harabitswe"
+
+# Error messages
+msgid "Something went wrong"
+msgstr "Ikintu Kinaniwe"
+
+msgid "Please try again"
+msgstr "Gerageza Noneho"
+
+msgid "Session not found"
+msgstr "Igikorwa Ntibibarangoje"
+
+msgid "Invalid payment method"
+msgstr "Urburyo Bwo Kwishyura Bwita"
+
+msgid "Payment failed"
+msgstr "Kwishyura Kwananiwe"
+
+msgid "Please check your connection"
+msgstr "Verifikaha Ubushingantahe Bwawe"
+
+# Vehicles
+msgid "My Vehicles"
+msgstr "Imodoka Zanjye"
+
+msgid "Registered Vehicles"
+msgstr "Imodoka Yanditswe"
+
+msgid "Add New Vehicle"
+msgstr "Ongeraho Imodoka Rishya"
+
+msgid "Edit Vehicle"
+msgstr "Hindura Imodoka"
+
+msgid "Delete Vehicle"
+msgstr "Siba Imodoka"
+
+msgid "Plate Number"
+msgstr "Nimero y'Imodoka"
+
+msgid "Vehicle Type"
+msgstr "Ubwoko bw'Imodoka"
+
+msgid "Owner Name"
+msgstr "Izina ry'Umwina"
+
+msgid "Registration Date"
+msgstr "Ubukiyunge bw'Andikishiriza"
+
+msgid "No vehicles registered"
+msgstr "Nta modoka yanditswe"
+
+msgid "Add your first vehicle"
+msgstr "Ongeraho Imodoka Yawe Yambere"
+
+# General UI elements
+msgid "Loading..."
+msgstr "Gukanga..."
+
+msgid "Back"
+msgstr "Inyuma"
+
+msgid "Next"
+msgstr "Inyukirije"
+
+msgid "Previous"
+msgstr "Inyambi"
+
+msgid "Close"
+msgstr "Funga"
+
+msgid "Cancel"
+msgstr "Hanya"
+
+msgid "Delete"
+msgstr "Siba"
+
+msgid "Edit"
+msgstr "Hindura"
+
+msgid "Save"
+msgstr "Kubika"
+
+msgid "Submit"
+msgstr "Yohereza"
+
+msgid "Download"
+msgstr "Pakurura"
+
+msgid "Print"
+msgstr "Shirimpurira"
+
+msgid "Share"
+msgstr "Gusangira"
+
+msgid "More"
+msgstr "Amagera"
+
+msgid "Less"
+msgstr "Bike"
+
+msgid "Confirm"
+msgstr "Emeza"
+
+msgid "OK"
+msgstr "Bweyakire"
+
+msgid "Copy"
+msgstr "Gukoporanya"
+
+msgid "Copied!"
+msgstr "Gukoporanywe!"
+
+# Alerts and confirmations
+msgid "Are you sure?"
+msgstr "Wemeza?"
+
+msgid "This action cannot be undone."
+msgstr "Iki kikorwa ntigihinduka inyuma."
+
+msgid "Confirm Delete"
+msgstr "Emeza Gusiba"
+
+msgid "Yes, delete"
+msgstr "Yego, siba"
+
+msgid "No, cancel"
+msgstr "Oya, hanya"
+
+msgid "Success!"
+msgstr "Ibyago!"
+
+msgid "Warning"
+msgstr "Inyigibi"
+
+msgid "Error"
+msgstr "Igakosa"
+
+msgid "Information"
+msgstr "Amakuru"
+
+# Testimonials
+msgid "Testimonials"
+msgstr "Ibisobanuro by'ababigira serivisi"
+
+msgid "What drivers are saying"
+msgstr "Ibi abayobozi bavauga"
+
+msgid "PARMS has made finding parking so much easier. I book ahead and know exactly where to go. No more circling the block."
+msgstr "PARMS yamukiye gahunda yo gushaka ihindagiza. Ndahoze mbigize ahigiye kandi nzi neza aho nzambuza. Ntakindi gatiro k'ibicara."
+
+msgid "Software Developer"
+msgstr "Umushyi wa porogaramu"
+
+msgid "Simple, reliable, and effective. The app is user-friendly and finding parking is genuinely no longer stressful."
+msgstr "Yoroshye, itekanwaho, kandi ifungura. Applikiyoni irakora neza kandi gushaka ihindagiza ntibikora inzira."
+
+msgid "Business Owner"
+msgstr "Wacu wa ubwigenge"
+
+msgid "The QR ticket system is exactly right. I scan and go — no fumbling for paper tickets or dealing with attendants."
+msgstr "Sisitemu ya QR ticket ni nzira nziza. Ndascanye kandi ndamuva — nta kibazo cya tiketi za papiyeri."
+
+msgid "Nurse, Kigali"
+msgstr "Muganga w'indwara, Kigali"
+

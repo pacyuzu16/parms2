@@ -5,10 +5,13 @@ Call send_session_email() whenever a parking session ends.
 Falls back silently if email is not configured (EMAIL_BACKEND = console).
 """
 
+import logging
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 
 def send_session_email(ticket, payment_method='Cash'):
@@ -55,6 +58,6 @@ def send_session_email(ticket, payment_method='Cash'):
             to=[ticket.user.email],
         )
         msg.attach_alternative(html_body, 'text/html')
-        msg.send(fail_silently=True)
-    except Exception:
-        pass   # never crash the main flow due to email failure
+        msg.send(fail_silently=False)
+    except Exception as e:
+        logger.error(f'Failed to send session email for ticket {ticket.id}: {str(e)}', exc_info=True)

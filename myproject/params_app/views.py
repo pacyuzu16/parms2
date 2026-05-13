@@ -12,6 +12,7 @@ from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
 from io import BytesIO
+import logging
 import qrcode, datetime, random
 
 from .models import (
@@ -20,6 +21,7 @@ from .models import (
 )
 from .forms import ContactMessageForm
 
+logger = logging.getLogger(__name__)
 
 # -- helpers -------------------------------------------------------------------
 
@@ -643,8 +645,8 @@ def exit_parking(request):
             try:
                 from .email_utils import send_session_email
                 send_session_email(t, payment_method)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error(f'Failed to send session email: {str(e)}', exc_info=True)
 
         return render(request, 'exit_success.html', {
             'ticket': t,
@@ -2171,6 +2173,110 @@ def admin_detection_events(request):
     events = ParkingDetectionEvent.objects.select_related('lot', 'space').order_by('-detected_at')[:100]
     context = {'events': events, 'total': events.count(), 'active_tab': 'detection'}
     return render(request, 'dashboard.html', context)
+
+
+# -- Chatbot API ---------------------------------------------------------------
+
+def chatbot_message(request):
+    """Handle chatbot messages using Anthropic Claude API."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
+
+    import json
+    try:
+        data = json.loads(request.body)
+        user_message = data.get('message', '').strip()
+        
+        if not user_message:
+            return JsonResponse({'success': False, 'error': 'Empty message'}, status=400)
+        
+        # Get Anthropic API key from settings
+        from decouple import config
+        api_key = config('ANTHROPIC_API_KEY', default='')
+        
+        if not api_key:
+            return JsonResponse({'success': False, 'error': 'Chatbot not configured'}, status=500)
+        
+        # Call Anthropic API
+        import anthropic
+        client = anthropic.Anthropic(api_key=api_key)
+        
+        system_prompt = """You are a helpful assistant for PARMS - a Smart Parking Management System.
+        
+PARMS is an innovative platform that helps drivers find, book, and pay for parking spaces in real-time.
+
+Key features to mention:
+- Real-time parking availability across multiple locations
+- Instant QR-coded tickets (no paper needed)
+- Smart payment system (MTN Mobile Money, PayPal, cards, cash)
+- Automatic fee calculation based on actual time parked
+- Analytics dashboard for parking lot managers
+- Mobile-first design for easy use on phones
+- 24/7 support available
+
+When users ask questions about parking, PARMS features, payment, bookings, or how the system works, provide clear, helpful explanations.
+
+Be friendly, professional, and concise. Always encourage users to try PARMS and offer to help them get started.
+If the user seems interested in using PARMS or has other needs, ask for their contact information (name, email, phone) at the end so we can follow up with them."""
+        
+        message = client.messages.create(
+            model="claude-opus-4-1",
+            max_tokens=500,
+            system=system_prompt,
+            messages=[
+                {"role": "user", "content": user_message}
+            ]
+        )
+        
+        bot_response = message.content[0].text
+        
+        return JsonResponse({
+            'success': True,
+            'message': bot_response
+        })
+    
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except ImportError:
+        return JsonResponse({'success': False, 'error': 'Anthropic library not installed'}, status=500)
+    except Exception as e:
+        logger.error(f'Chatbot error: {str(e)}', exc_info=True)
+        return JsonResponse({'success': False, 'error': 'Error processing message'}, status=500)
+
+
+def chatbot_contact_submit(request):
+    """Handle contact submission from chatbot."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
+    
+    import json
+    try:
+        data = json.loads(request.body)
+        name = data.get('name', '').strip()
+        email = data.get('email', '').strip()
+        phone = data.get('phone', '').strip()
+        message = data.get('message', '').strip()
+        
+        # Validate
+        if not all([name, email, message]):
+            return JsonResponse({'success': False, 'error': 'Name, email, and message required'}, status=400)
+        
+        # Save to ContactMessage model
+        ContactMessage.objects.create(
+            full_name=name,
+            email=email,
+            phone=phone or None,
+            message=message,
+            subject='Chatbot Inquiry'
+        )
+        
+        return JsonResponse({'success': True, 'message': 'Contact info saved! We will reach out soon.'})
+    
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        logger.error(f'Chatbot contact submit error: {str(e)}', exc_info=True)
+        return JsonResponse({'success': False, 'error': 'Error saving contact'}, status=500)
 
 
 # -- Error handlers ------------------------------------------------------------

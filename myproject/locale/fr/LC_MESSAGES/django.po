@@ -184,3 +184,646 @@ msgstr "Numéro de plaque"
 
 msgid "Vehicle Type"
 msgstr "Type de véhicule"
+
+# Public nav
+msgid "Home"
+msgstr "Accueil"
+
+msgid "Features"
+msgstr "Fonctionnalités"
+
+msgid "How it works"
+msgstr "Comment ça marche"
+
+msgid "About"
+msgstr "À propos"
+
+msgid "Contact"
+msgstr "Contact"
+
+msgid "Get started"
+msgstr "Commencer"
+
+msgid "Sign up"
+msgstr "S'inscrire"
+
+# Hero
+msgid "Smart parking for modern cities"
+msgstr "Stationnement intelligent pour les villes modernes"
+
+msgid "Find Your"
+msgstr "Trouvez votre"
+
+msgid "Perfect Space"
+msgstr "Espace idéal"
+
+msgid "In Seconds"
+msgstr "En quelques secondes"
+
+msgid "PARMS connects you to real-time parking availability across thousands of locations. Book, pay, and park — from one calm, simple platform."
+msgstr "PARMS vous connecte à la disponibilité en temps réel sur des milliers de sites. Réservez, payez et garez-vous — depuis une plateforme simple et efficace."
+
+msgid "Get started free"
+msgstr "Commencer gratuitement"
+
+msgid "See how it works"
+msgstr "Voir comment ça marche"
+
+msgid "Trusted by 50,000+ drivers"
+msgstr "Approuvé par plus de 50 000 conducteurs"
+
+# Stats
+msgid "Active Users"
+msgstr "Utilisateurs actifs"
+
+msgid "Growing daily"
+msgstr "En croissance chaque jour"
+
+msgid "Parking Locations"
+msgstr "Sites de stationnement"
+
+msgid "Nationwide"
+msgstr "À l'échelle nationale"
+
+msgid "Success Rate"
+msgstr "Taux de satisfaction"
+
+msgid "Customer satisfaction"
+msgstr "Satisfaction client"
+
+msgid "Saved per Week"
+msgstr "Économisé par semaine"
+
+msgid "Per user average"
+msgstr "Moyenne par utilisateur"
+
+# Features section
+msgid "Everything you need to park smarter"
+msgstr "Tout ce dont vous avez besoin pour mieux vous garer"
+
+msgid "From real-time availability to automated billing — PARMS handles every aspect of your parking experience without friction."
+msgstr "De la disponibilité en temps réel à la facturation automatisée — PARMS gère chaque aspect de votre stationnement sans friction."
+
+msgid "Real-time Availability"
+msgstr "Disponibilité en temps réel"
+
+msgid "See live space counts across all locations. No refresh needed — the data comes to you."
+msgstr "Consultez le nombre de places disponibles en direct. Pas besoin d'actualiser — les données viennent à vous."
+
+msgid "Instant QR Tickets"
+msgstr "Tickets QR instantanés"
+
+msgid "Generate and scan QR-coded parking tickets in seconds. No paper, no queues."
+msgstr "Générez et scannez des tickets de parking en quelques secondes. Sans papier, sans file d'attente."
+
+msgid "Smart Payments"
+msgstr "Paiements intelligents"
+
+msgid "Pay via MTN Mobile Money, PayPal, or card. Fee calculated on actual time parked."
+msgstr "Payez via MTN Mobile Money, PayPal ou carte. Frais calculés sur la durée réelle."
+
+msgid "Analytics Dashboard"
+msgstr "Tableau de bord analytique"
+
+msgid "Revenue tracking, occupancy rates, and detailed usage reports — all in one view."
+msgstr "Suivi des revenus, taux d'occupation et rapports détaillés — tout en une vue."
+
+msgid "Secure by Design"
+msgstr "Sécurisé par conception"
+
+msgid "Role-based access, encrypted data, and full audit logging built in from the start."
+msgstr "Accès basé sur les rôles, données chiffrées et journalisation complète intégrés dès le départ."
+
+msgid "Mobile First"
+msgstr "Priorité mobile"
+
+msgid "Find parking, view history, manage vehicles — fully optimised for your phone."
+msgstr "Trouvez un parking, consultez l'historique, gérez vos véhicules — optimisé pour votre téléphone."
+
+# How it works
+msgid "Three steps to parked"
+msgstr "Trois étapes pour se garer"
+
+msgid "PARMS is designed to get out of your way. Find, book, and park — then get on with your day."
+msgstr "PARMS est conçu pour simplifier votre quotidien. Trouvez, réservez et garez-vous — puis continuez votre journée."
+
+msgid "Search & Discover"
+msgstr "Rechercher et découvrir"
+
+msgid "Browse available parking lots near your destination with live slot counts and pricing."
+msgstr "Parcourez les parkings disponibles près de votre destination avec les disponibilités et tarifs en temps réel."
+
+msgid "Book Your Space"
+msgstr "Réservez votre place"
+
+msgid "Reserve a space in seconds. Your QR-coded ticket is ready before you even start driving."
+msgstr "Réservez une place en quelques secondes. Votre ticket QR est prêt avant même de démarrer."
+
+msgid "Park & Pay"
+msgstr "Garez-vous et payez"
+
+msgid "Scan your QR code at the gate. Payment is calculated automatically on exit."
+msgstr "Scannez votre QR code à l'entrée. Le paiement est calculé automatiquement à la sortie."
+
+# CTA section
+msgid "Ready to park smarter?"
+msgstr "Prêt à stationner plus intelligemment ?"
+
+msgid "Join thousands of drivers who save time every day with PARMS."
+msgstr "Rejoignez des milliers de conducteurs qui gagnent du temps chaque jour avec PARMS."
+
+msgid "Create free account"
+msgstr "Créer un compte gratuit"
+
+msgid "Talk to us"
+msgstr "Nous contacter"
+
+# Mobile App + Team
+msgid "Mobile App"
+msgstr "Application mobile"
+
+msgid "Take PARMS wherever you go"
+msgstr "Emportez PARMS partout avec vous"
+
+msgid "Download the app for instant parking search, ticket generation, and payment — right from your pocket."
+msgstr "Téléchargez l'application pour rechercher un parking, générer un ticket et payer — directement depuis votre poche."
+
+msgid "Our team"
+msgstr "Notre équipe"
+
+msgid "The people behind PARMS"
+msgstr "L'équipe derrière PARMS"
+
+# Footer
+msgid "Smart parking management for modern cities. Find and book effortlessly."
+msgstr "Gestion intelligente du stationnement pour les villes modernes. Trouvez et réservez sans effort."
+
+msgid "Platform"
+msgstr "Plateforme"
+
+msgid "Live Map"
+msgstr "Carte en direct"
+
+msgid "Stay Updated"
+msgstr "Restez informé"
+
+msgid "Get parking tips and new features. No spam."
+msgstr "Recevez des conseils et les nouvelles fonctionnalités. Pas de spam."
+
+msgid "Subscribe"
+msgstr "S'abonner"
+
+# Contact page
+msgid "Get in touch"
+msgstr "Contactez-nous"
+
+msgid "We'd love to hear from you. Send us a message and we'll respond as soon as possible — usually within 24 hours."
+msgstr "Nous serions ravis de vous entendre. Envoyez-nous un message et nous vous répondrons dès que possible — généralement dans les 24 heures."
+
+msgid "Visit us"
+msgstr "Nous rendre visite"
+
+msgid "Call us"
+msgstr "Nous appeler"
+
+msgid "Email us"
+msgstr "Nous écrire"
+
+msgid "Support hours"
+msgstr "Heures d'assistance"
+
+msgid "24 / 7 — every day"
+msgstr "24h/24, 7j/7 — tous les jours"
+
+msgid "Send us a message"
+msgstr "Envoyez-nous un message"
+
+msgid "Fill out the form below and we'll get back to you shortly."
+msgstr "Remplissez le formulaire ci-dessous et nous vous répondrons rapidement."
+
+msgid "Full name"
+msgstr "Nom complet"
+
+msgid "Your full name"
+msgstr "Votre nom complet"
+
+msgid "Subject"
+msgstr "Sujet"
+
+msgid "What's this about?"
+msgstr "De quoi s'agit-il ?"
+
+msgid "Message"
+msgstr "Message"
+
+msgid "Tell us more details…"
+msgstr "Donnez-nous plus de détails…"
+
+msgid "Send message"
+msgstr "Envoyer le message"
+
+msgid "Find us here"
+msgstr "Trouvez-nous ici"
+
+msgid "Visit our office or locate us on the map below"
+msgstr "Visitez notre bureau ou trouvez-nous sur la carte ci-dessous"
+
+msgid "Frequently asked questions"
+msgstr "Questions fréquemment posées"
+
+msgid "Quick answers to common questions"
+msgstr "Réponses rapides aux questions courantes"
+
+msgid "How does PARMS work?"
+msgstr "Comment fonctionne PARMS ?"
+
+msgid "PARMS connects you with real-time parking availability across registered lots. Search for your destination, view available spaces, book instantly, and pay — all in one place."
+msgstr "PARMS vous connecte à la disponibilité en temps réel dans les parkings enregistrés. Recherchez votre destination, consultez les places disponibles, réservez instantanément et payez — le tout en un seul endroit."
+
+msgid "Is PARMS available 24/7?"
+msgstr "PARMS est-il disponible 24h/24 ?"
+
+msgid "Yes. PARMS runs around the clock, and our support team is available whenever you need help — day or night."
+msgstr "Oui. PARMS fonctionne en permanence, et notre équipe d'assistance est disponible à tout moment — jour et nuit."
+
+msgid "What payment methods are accepted?"
+msgstr "Quels modes de paiement sont acceptés ?"
+
+msgid "We accept MTN Mobile Money, PayPal, major credit/debit cards, and cash payments at the lot. More methods are being added regularly."
+msgstr "Nous acceptons MTN Mobile Money, PayPal, les principales cartes de crédit/débit et les paiements en espèces sur place. D'autres méthodes sont régulièrement ajoutées."
+
+msgid "Can I cancel or modify a booking?"
+msgstr "Puis-je annuler ou modifier une réservation ?"
+
+msgid "Yes — active bookings can be managed from your dashboard. If you have trouble, contact our support team and we'll assist you promptly."
+msgstr "Oui — les réservations actives peuvent être gérées depuis votre tableau de bord. En cas de problème, contactez notre équipe d'assistance et nous vous aiderons rapidement."
+
+# Profile / Account settings
+msgid "Account Settings"
+msgstr "Paramètres du compte"
+
+msgid "Update your profile information"
+msgstr "Mettez à jour vos informations de profil"
+
+msgid "Change your password"
+msgstr "Changer votre mot de passe"
+
+msgid "Current password"
+msgstr "Mot de passe actuel"
+
+msgid "New password"
+msgstr "Nouveau mot de passe"
+
+msgid "Confirm new password"
+msgstr "Confirmer le nouveau mot de passe"
+
+msgid "Save Changes"
+msgstr "Enregistrer les modifications"
+
+msgid "Account type"
+msgstr "Type de compte"
+
+msgid "Administrator"
+msgstr "Administrateur"
+
+msgid "Driver"
+msgstr "Conducteur"
+
+msgid "Account Status"
+msgstr "Statut du compte"
+
+msgid "Joined"
+msgstr "Inscrit"
+
+msgid "Last Login"
+msgstr "Dernière connexion"
+
+# Billing / Payment history
+msgid "Billing History"
+msgstr "Historique de facturation"
+
+msgid "All payment transactions in the system"
+msgstr "Toutes les transactions de paiement du système"
+
+msgid "Invoice"
+msgstr "Facture"
+
+msgid "Transaction ID"
+msgstr "ID de transaction"
+
+msgid "Date"
+msgstr "Date"
+
+msgid "Amount"
+msgstr "Montant"
+
+msgid "Status"
+msgstr "Statut"
+
+msgid "Paid"
+msgstr "Payé"
+
+msgid "Pending"
+msgstr "En attente"
+
+msgid "Refunded"
+msgstr "Remboursé"
+
+msgid "Download Invoice"
+msgstr "Télécharger la facture"
+
+msgid "No transactions yet"
+msgstr "Aucune transaction pour le moment"
+
+# Notifications
+msgid "Your Notifications"
+msgstr "Vos notifications"
+
+msgid "You have no new notifications"
+msgstr "Vous n'avez pas de nouvelles notifications"
+
+msgid "Mark all as read"
+msgstr "Marquer tout comme lu"
+
+msgid "Clear all"
+msgstr "Effacer tout"
+
+msgid "Session Started"
+msgstr "Session démarrée"
+
+msgid "Session Ended"
+msgstr "Session terminée"
+
+msgid "Payment Received"
+msgstr "Paiement reçu"
+
+msgid "Booking Confirmed"
+msgstr "Réservation confirmée"
+
+# Map / Parking locations
+msgid "Find Parking"
+msgstr "Trouver un parking"
+
+msgid "Search by location"
+msgstr "Rechercher par localisation"
+
+msgid "Hourly Rate"
+msgstr "Tarif horaire"
+
+msgid "Total Spaces"
+msgstr "Total des places"
+
+msgid "Available Now"
+msgstr "Disponible maintenant"
+
+msgid "Occupancy Rate"
+msgstr "Taux d'occupation"
+
+msgid "View Details"
+msgstr "Voir les détails"
+
+msgid "Book Now"
+msgstr "Réserver maintenant"
+
+msgid "View More Lots"
+msgstr "Voir plus de parkings"
+
+# Parkings / Tickets
+msgid "My Tickets"
+msgstr "Mes tickets"
+
+msgid "Active Tickets"
+msgstr "Tickets actifs"
+
+msgid "Completed Tickets"
+msgstr "Tickets terminés"
+
+msgid "Ticket Status"
+msgstr "Statut du ticket"
+
+msgid "In Progress"
+msgstr "En cours"
+
+msgid "Completed"
+msgstr "Terminé"
+
+msgid "View Ticket"
+msgstr "Afficher le ticket"
+
+msgid "No active tickets"
+msgstr "Aucun ticket actif"
+
+msgid "No completed tickets"
+msgstr "Aucun ticket terminé"
+
+# Exit / Session completion
+msgid "End Session"
+msgstr "Terminer la session"
+
+msgid "Current Session"
+msgstr "Session actuelle"
+
+msgid "Time Remaining"
+msgstr "Temps restant"
+
+msgid "Exit & Pay"
+msgstr "Quitter et payer"
+
+msgid "Confirm Payment"
+msgstr "Confirmer le paiement"
+
+msgid "Payment Method"
+msgstr "Mode de paiement"
+
+msgid "Select payment method"
+msgstr "Sélectionner le mode de paiement"
+
+msgid "Mobile Money"
+msgstr "Mobile Money"
+
+msgid "Credit Card"
+msgstr "Carte de crédit"
+
+msgid "Debit Card"
+msgstr "Carte de débit"
+
+# Success messages
+msgid "Session completed successfully!"
+msgstr "Session terminée avec succès !"
+
+msgid "Thank you for parking with us!"
+msgstr "Merci d'avoir stationné avec nous !"
+
+msgid "Receipt sent to your email"
+msgstr "Reçu envoyé à votre email"
+
+msgid "Booking confirmed!"
+msgstr "Réservation confirmée !"
+
+msgid "Your space is reserved"
+msgstr "Votre place est réservée"
+
+# Error messages
+msgid "Something went wrong"
+msgstr "Une erreur s'est produite"
+
+msgid "Please try again"
+msgstr "Veuillez réessayer"
+
+msgid "Session not found"
+msgstr "Session non trouvée"
+
+msgid "Invalid payment method"
+msgstr "Mode de paiement invalide"
+
+msgid "Payment failed"
+msgstr "Le paiement a échoué"
+
+msgid "Please check your connection"
+msgstr "Veuillez vérifier votre connexion"
+
+# Vehicles
+msgid "My Vehicles"
+msgstr "Mes véhicules"
+
+msgid "Registered Vehicles"
+msgstr "Véhicules enregistrés"
+
+msgid "Add New Vehicle"
+msgstr "Ajouter un nouveau véhicule"
+
+msgid "Edit Vehicle"
+msgstr "Modifier le véhicule"
+
+msgid "Delete Vehicle"
+msgstr "Supprimer le véhicule"
+
+msgid "Plate Number"
+msgstr "Numéro de plaque"
+
+msgid "Vehicle Type"
+msgstr "Type de véhicule"
+
+msgid "Owner Name"
+msgstr "Nom du propriétaire"
+
+msgid "Registration Date"
+msgstr "Date d'enregistrement"
+
+msgid "No vehicles registered"
+msgstr "Aucun véhicule enregistré"
+
+msgid "Add your first vehicle"
+msgstr "Ajoutez votre premier véhicule"
+
+# General UI elements
+msgid "Loading..."
+msgstr "Chargement..."
+
+msgid "Back"
+msgstr "Retour"
+
+msgid "Next"
+msgstr "Suivant"
+
+msgid "Previous"
+msgstr "Précédent"
+
+msgid "Close"
+msgstr "Fermer"
+
+msgid "Cancel"
+msgstr "Annuler"
+
+msgid "Delete"
+msgstr "Supprimer"
+
+msgid "Edit"
+msgstr "Modifier"
+
+msgid "Save"
+msgstr "Enregistrer"
+
+msgid "Submit"
+msgstr "Soumettre"
+
+msgid "Download"
+msgstr "Télécharger"
+
+msgid "Print"
+msgstr "Imprimer"
+
+msgid "Share"
+msgstr "Partager"
+
+msgid "More"
+msgstr "Plus"
+
+msgid "Less"
+msgstr "Moins"
+
+msgid "Confirm"
+msgstr "Confirmer"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Copy"
+msgstr "Copier"
+
+msgid "Copied!"
+msgstr "Copié !"
+
+# Alerts and confirmations
+msgid "Are you sure?"
+msgstr "Êtes-vous sûr ?"
+
+msgid "This action cannot be undone."
+msgstr "Cette action ne peut pas être annulée."
+
+msgid "Confirm Delete"
+msgstr "Confirmer la suppression"
+
+msgid "Yes, delete"
+msgstr "Oui, supprimer"
+
+msgid "No, cancel"
+msgstr "Non, annuler"
+
+msgid "Success!"
+msgstr "Succès !"
+
+msgid "Warning"
+msgstr "Avertissement"
+
+msgid "Error"
+msgstr "Erreur"
+
+msgid "Information"
+msgstr "Information"
+
+# Testimonials
+msgid "Testimonials"
+msgstr "Témoignages"
+
+msgid "What drivers are saying"
+msgstr "Ce que disent les conducteurs"
+
+msgid "PARMS has made finding parking so much easier. I book ahead and know exactly where to go. No more circling the block."
+msgstr "PARMS a rendu la recherche de stationnement beaucoup plus facile. Je réserve à l'avance et je sais exactement où aller. Plus de tours inutiles."
+
+msgid "Software Developer"
+msgstr "Développeur de logiciels"
+
+msgid "Simple, reliable, and effective. The app is user-friendly and finding parking is genuinely no longer stressful."
+msgstr "Simple, fiable et efficace. L'application est conviviale et la recherche de stationnement n'est plus stressante."
+
+msgid "Business Owner"
+msgstr "Propriétaire d'entreprise"
+
+msgid "The QR ticket system is exactly right. I scan and go — no fumbling for paper tickets or dealing with attendants."
+msgstr "Le système de ticket QR est parfait. Je scanne et je vais — pas de confusion avec les tickets papier ou les préposés."
+
+msgid "Nurse, Kigali"
+msgstr "Infirmière, Kigali"
+

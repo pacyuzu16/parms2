@@ -1,6 +1,7 @@
-{% load static %}
+{% load static i18n %}
+{% get_current_language as CURRENT_LANG %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ CURRENT_LANG }}"
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -637,16 +638,39 @@
             </button>
             <div class="collapse navbar-collapse" id="navMenu">
                 <ul class="navbar-nav ms-auto align-items-lg-center" style="gap:2px;">
-                    <li class="nav-item"><a class="nav-link active-link" href="/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#how-it-works">How it works</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
-                    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
-                        <a href="/login" class="btn btn-outline-secondary btn-sm">Sign in</a>
+                    <li class="nav-item"><a class="nav-link active-link" href="/">{% trans "Home" %}</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#features">{% trans "Features" %}</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#how-it-works">{% trans "How it works" %}</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#about">{% trans "About" %}</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/contact">{% trans "Contact" %}</a></li>
+
+                    <!-- Language switcher -->
+                    <li class="nav-item" style="position:relative;" id="pub-lang-wrap">
+                        <button onclick="togglePubLang()" style="display:flex;align-items:center;gap:5px;padding:5px 10px;border:1.5px solid #dde3e0;border-radius:7px;background:white;font-size:0.78rem;font-weight:600;color:#4f5a55;cursor:pointer;margin:2px 4px;">
+                            <i class="fas fa-globe" style="color:#2c5f47;font-size:0.8rem;"></i>
+                            {% if CURRENT_LANG == 'fr' %}FR{% elif CURRENT_LANG == 'rw' %}RW{% else %}EN{% endif %}
+                            <i class="fas fa-chevron-down" style="font-size:0.6rem;opacity:0.5;"></i>
+                        </button>
+                        <div id="pub-lang-menu" style="display:none;position:absolute;top:calc(100% + 4px);right:0;background:white;border:1px solid #dde3e0;border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,0.10);overflow:hidden;min-width:130px;z-index:9999;">
+                            <form action="{% url 'set_language' %}" method="post" id="pub-lang-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.path }}">
+                                <input type="hidden" name="language" id="pub-lang-input" value="en">
+                            </form>
+                            <button onclick="setPubLang('en')" style="width:100%;padding:9px 14px;border:none;background:none;text-align:left;font-size:0.83rem;cursor:pointer;display:flex;align-items:center;gap:8px;{% if CURRENT_LANG == 'en' %}font-weight:700;color:#2c5f47;{% endif %}"
+                                onmouseover="this.style.background='#f7f8f7'" onmouseout="this.style.background='none'">🇬🇧 English</button>
+                            <button onclick="setPubLang('fr')" style="width:100%;padding:9px 14px;border:none;background:none;text-align:left;font-size:0.83rem;cursor:pointer;display:flex;align-items:center;gap:8px;{% if CURRENT_LANG == 'fr' %}font-weight:700;color:#2c5f47;{% endif %}"
+                                onmouseover="this.style.background='#f7f8f7'" onmouseout="this.style.background='none'">🇫🇷 Français</button>
+                            <button onclick="setPubLang('rw')" style="width:100%;padding:9px 14px;border:none;background:none;text-align:left;font-size:0.83rem;cursor:pointer;display:flex;align-items:center;gap:8px;{% if CURRENT_LANG == 'rw' %}font-weight:700;color:#2c5f47;{% endif %}"
+                                onmouseover="this.style.background='#f7f8f7'" onmouseout="this.style.background='none'">🇷🇼 Kinyarwanda</button>
+                        </div>
+                    </li>
+
+                    <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+                        <a href="/login" class="btn btn-outline-secondary btn-sm">{% trans "Sign in" %}</a>
                     </li>
                     <li class="nav-item mt-2 mt-lg-0" style="margin-left:6px;">
-                        <a href="/signup" class="btn btn-primary btn-sm">Get started</a>
+                        <a href="/signup" class="btn btn-primary btn-sm">{% trans "Get started" %}</a>
                     </li>
                 </ul>
             </div>
@@ -661,28 +685,28 @@
             <div class="container position-relative" style="z-index:1;">
                 <div class="row align-items-center g-5">
                     <div class="col-lg-6 fade-left">
-                        <div class="hero-tag">Smart parking for modern cities</div>
+                        <div class="hero-tag">{% trans "Smart parking for modern cities" %}</div>
                         <h1 class="hero-title">
-                            Find Your<br>
-                            <em>Perfect Space</em><br>
-                            In Seconds
+                            {% trans "Find Your" %}<br>
+                            <em>{% trans "Perfect Space" %}</em><br>
+                            {% trans "In Seconds" %}
                         </h1>
                         <p class="hero-lead">
-                            PARMS connects you to real-time parking availability across thousands of locations. Book, pay, and park — from one calm, simple platform.
+                            {% trans "PARMS connects you to real-time parking availability across thousands of locations. Book, pay, and park — from one calm, simple platform." %}
                         </p>
                         <div class="hero-cta">
                             <a href="/signup" class="btn btn-primary btn-lg">
-                                Get started free
+                                {% trans "Get started free" %}
                             </a>
                             <a href="#how-it-works" class="btn btn-outline-secondary btn-lg">
-                                See how it works
+                                {% trans "See how it works" %}
                             </a>
                         </div>
                         <div class="hero-trust">
                             <span class="stars">★★★★★</span>
                             <span>4.9 / 5</span>
                             <span class="divider"></span>
-                            <span>Trusted by 50,000+ drivers</span>
+                            <span>{% trans "Trusted by 50,000+ drivers" %}</span>
                         </div>
                     </div>
                     <div class="col-lg-6 fade-right">
@@ -701,26 +725,26 @@
                 <div class="d-flex align-items-center justify-content-center flex-wrap" style="gap:0;">
                     <div class="stat-item">
                         <div class="stat-number count" data-count="50000">0<span class="suffix">+</span></div>
-                        <div class="stat-label">Active Users</div>
-                        <div class="stat-sub">Growing daily</div>
+                        <div class="stat-label">{% trans "Active Users" %}</div>
+                        <div class="stat-sub">{% trans "Growing daily" %}</div>
                     </div>
                     <div class="stat-rule d-none d-md-block" style="height:52px;"></div>
                     <div class="stat-item">
                         <div class="stat-number count" data-count="15000">0<span class="suffix">+</span></div>
-                        <div class="stat-label">Parking Locations</div>
-                        <div class="stat-sub">Nationwide</div>
+                        <div class="stat-label">{% trans "Parking Locations" %}</div>
+                        <div class="stat-sub">{% trans "Nationwide" %}</div>
                     </div>
                     <div class="stat-rule d-none d-md-block" style="height:52px;"></div>
                     <div class="stat-item">
                         <div class="stat-number">99<span class="suffix">%</span></div>
-                        <div class="stat-label">Success Rate</div>
-                        <div class="stat-sub">Customer satisfaction</div>
+                        <div class="stat-label">{% trans "Success Rate" %}</div>
+                        <div class="stat-sub">{% trans "Customer satisfaction" %}</div>
                     </div>
                     <div class="stat-rule d-none d-md-block" style="height:52px;"></div>
                     <div class="stat-item">
                         <div class="stat-number">24<span class="suffix">h</span></div>
-                        <div class="stat-label">Saved per Week</div>
-                        <div class="stat-sub">Per user average</div>
+                        <div class="stat-label">{% trans "Saved per Week" %}</div>
+                        <div class="stat-sub">{% trans "Per user average" %}</div>
                     </div>
                 </div>
             </div>
@@ -732,54 +756,54 @@
                 <!-- Left-aligned header — not centered — breaks the template look -->
                 <div class="row mb-5">
                     <div class="col-lg-5 fade-left">
-                        <p class="section-eyebrow">Features</p>
-                        <h2 class="section-heading">Everything you need to park smarter</h2>
+                        <p class="section-eyebrow">{% trans "Features" %}</p>
+                        <h2 class="section-heading">{% trans "Everything you need to park smarter" %}</h2>
                     </div>
                     <div class="col-lg-5 offset-lg-1 d-flex align-items-end fade-right">
-                        <p class="section-sub">From real-time availability to automated billing — PARMS handles every aspect of your parking experience without friction.</p>
+                        <p class="section-sub">{% trans "From real-time availability to automated billing — PARMS handles every aspect of your parking experience without friction." %}</p>
                     </div>
                 </div>
                 <div class="row g-3">
                     <div class="col-lg-4 col-md-6 fade-up">
                         <div class="feature-card">
                             <div class="fi-wrap fi-g"><i class="fas fa-map-marker-alt"></i></div>
-                            <h5>Real-time Availability</h5>
-                            <p>See live space counts across all locations. No refresh needed — the data comes to you.</p>
+                            <h5>{% trans "Real-time Availability" %}</h5>
+                            <p>{% trans "See live space counts across all locations. No refresh needed — the data comes to you." %}</p>
                         </div>
                     </div>
                     <div class="col-lg-4 col-md-6 fade-up">
                         <div class="feature-card">
                             <div class="fi-wrap fi-t"><i class="fas fa-qrcode"></i></div>
-                            <h5>Instant QR Tickets</h5>
-                            <p>Generate and scan QR-coded parking tickets in seconds. No paper, no queues.</p>
+                            <h5>{% trans "Instant QR Tickets" %}</h5>
+                            <p>{% trans "Generate and scan QR-coded parking tickets in seconds. No paper, no queues." %}</p>
                         </div>
                     </div>
                     <div class="col-lg-4 col-md-6 fade-up">
                         <div class="feature-card">
                             <div class="fi-wrap fi-b"><i class="fas fa-credit-card"></i></div>
-                            <h5>Smart Payments</h5>
-                            <p>Pay via MTN Mobile Money, PayPal, or card. Fee calculated on actual time parked.</p>
+                            <h5>{% trans "Smart Payments" %}</h5>
+                            <p>{% trans "Pay via MTN Mobile Money, PayPal, or card. Fee calculated on actual time parked." %}</p>
                         </div>
                     </div>
                     <div class="col-lg-4 col-md-6 fade-up">
                         <div class="feature-card">
                             <div class="fi-wrap fi-o"><i class="fas fa-chart-line"></i></div>
-                            <h5>Analytics Dashboard</h5>
-                            <p>Revenue tracking, occupancy rates, and detailed usage reports — all in one view.</p>
+                            <h5>{% trans "Analytics Dashboard" %}</h5>
+                            <p>{% trans "Revenue tracking, occupancy rates, and detailed usage reports — all in one view." %}</p>
                         </div>
                     </div>
                     <div class="col-lg-4 col-md-6 fade-up">
                         <div class="feature-card">
                             <div class="fi-wrap fi-p"><i class="fas fa-shield-alt"></i></div>
-                            <h5>Secure by Design</h5>
-                            <p>Role-based access, encrypted data, and full audit logging built in from the start.</p>
+                            <h5>{% trans "Secure by Design" %}</h5>
+                            <p>{% trans "Role-based access, encrypted data, and full audit logging built in from the start." %}</p>
                         </div>
                     </div>
                     <div class="col-lg-4 col-md-6 fade-up">
                         <div class="feature-card">
                             <div class="fi-wrap fi-r"><i class="fas fa-mobile-alt"></i></div>
-                            <h5>Mobile First</h5>
-                            <p>Find parking, view history, manage vehicles — fully optimised for your phone.</p>
+                            <h5>{% trans "Mobile First" %}</h5>
+                            <p>{% trans "Find parking, view history, manage vehicles — fully optimised for your phone." %}</p>
                         </div>
                     </div>
                 </div>
@@ -790,9 +814,9 @@
         <section id="how-it-works" class="how-section">
             <div class="container">
                 <div class="text-center mb-5 fade-up">
-                    <p class="section-eyebrow">How it works</p>
-                    <h2 class="section-heading">Three steps to parked</h2>
-                    <p class="section-sub mx-auto">PARMS is designed to get out of your way. Find, book, and park — then get on with your day.</p>
+                    <p class="section-eyebrow">{% trans "How it works" %}</p>
+                    <h2 class="section-heading">{% trans "Three steps to parked" %}</h2>
+                    <p class="section-sub mx-auto">{% trans "PARMS is designed to get out of your way. Find, book, and park — then get on with your day." %}</p>
                 </div>
                 <div class="row justify-content-center">
                     <div class="col-lg-10">
@@ -800,22 +824,22 @@
                             <div class="col-md-4 fade-up">
                                 <div class="step-wrap">
                                     <div class="step-num">1</div>
-                                    <h5>Search & Discover</h5>
-                                    <p>Browse available parking lots near your destination with live slot counts and pricing.</p>
+                                    <h5>{% trans "Search & Discover" %}</h5>
+                                    <p>{% trans "Browse available parking lots near your destination with live slot counts and pricing." %}</p>
                                 </div>
                             </div>
                             <div class="col-md-4 fade-up">
                                 <div class="step-wrap">
                                     <div class="step-num">2</div>
-                                    <h5>Book Your Space</h5>
-                                    <p>Reserve a space in seconds. Your QR-coded ticket is ready before you even start driving.</p>
+                                    <h5>{% trans "Book Your Space" %}</h5>
+                                    <p>{% trans "Reserve a space in seconds. Your QR-coded ticket is ready before you even start driving." %}</p>
                                 </div>
                             </div>
                             <div class="col-md-4 fade-up">
                                 <div class="step-wrap">
                                     <div class="step-num">3</div>
-                                    <h5>Park &amp; Pay</h5>
-                                    <p>Scan your QR code at the gate. Payment is calculated automatically on exit.</p>
+                                    <h5>{% trans "Park & Pay" %}</h5>
+                                    <p>{% trans "Scan your QR code at the gate. Payment is calculated automatically on exit." %}</p>
                                 </div>
                             </div>
                         </div>
@@ -828,19 +852,19 @@
         <section class="testimonials-section">
             <div class="container">
                 <div class="text-center mb-5 fade-up">
-                    <p class="section-eyebrow">Testimonials</p>
-                    <h2 class="section-heading">What drivers are saying</h2>
+                    <p class="section-eyebrow">{% trans "Testimonials" %}</p>
+                    <h2 class="section-heading">{% trans "What drivers are saying" %}</h2>
                 </div>
                 <div class="row g-4">
                     <div class="col-lg-4 col-md-6 fade-up">
                         <div class="tcard">
                             <span class="tcard-quote">"</span>
-                            <p>PARMS has made finding parking so much easier. I book ahead and know exactly where to go. No more circling the block.</p>
+                            <p>{% trans "PARMS has made finding parking so much easier. I book ahead and know exactly where to go. No more circling the block." %}</p>
                             <div class="tcard-author d-flex align-items-center gap-3">
                                 <img src="{% static 'imgs/user1.png' %}" alt="Happy Tumukunde">
                                 <div>
                                     <div class="name">Happy Tumukunde</div>
-                                    <div class="role">Software Developer</div>
+                                    <div class="role">{% trans "Software Developer" %}</div>
                                 </div>
                                 <div class="ms-auto tcard-stars">★★★★★</div>
                             </div>
@@ -849,12 +873,12 @@
                     <div class="col-lg-4 col-md-6 fade-up">
                         <div class="tcard">
                             <span class="tcard-quote">"</span>
-                            <p>Simple, reliable, and effective. The app is user-friendly and finding parking is genuinely no longer stressful.</p>
+                            <p>{% trans "Simple, reliable, and effective. The app is user-friendly and finding parking is genuinely no longer stressful." %}</p>
                             <div class="tcard-author d-flex align-items-center gap-3">
                                 <img src="{% static 'imgs/user2.png' %}" alt="John Doe">
                                 <div>
                                     <div class="name">John Doe</div>
-                                    <div class="role">Business Owner</div>
+                                    <div class="role">{% trans "Business Owner" %}</div>
                                 </div>
                                 <div class="ms-auto tcard-stars">★★★★★</div>
                             </div>
@@ -863,13 +887,13 @@
                     <div class="col-lg-4 col-md-6 fade-up">
                         <div class="tcard">
                             <span class="tcard-quote">"</span>
-                            <p>The QR ticket system is exactly right. I scan and go — no fumbling for paper tickets or dealing with attendants.</p>
+                            <p>{% trans "The QR ticket system is exactly right. I scan and go — no fumbling for paper tickets or dealing with attendants." %}</p>
                             <div class="tcard-author d-flex align-items-center gap-3">
                                 <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
                                      style="width:40px;height:40px;background:var(--forest);font-size:0.875rem;">M</div>
                                 <div>
                                     <div class="name">Marie Uwera</div>
-                                    <div class="role">Nurse, Kigali</div>
+                                    <div class="role">{% trans "Nurse, Kigali" %}</div>
                                 </div>
                                 <div class="ms-auto tcard-stars">★★★★½</div>
                             </div>
@@ -882,11 +906,11 @@
         <!-- ══════ CTA ══════ -->
         <section class="cta-section">
             <div class="container text-center position-relative" style="z-index:1;">
-                <h2>Ready to park smarter?</h2>
-                <p>Join thousands of drivers who save time every day with PARMS.</p>
+                <h2>{% trans "Ready to park smarter?" %}</h2>
+                <p>{% trans "Join thousands of drivers who save time every day with PARMS." %}</p>
                 <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    <a href="/signup" class="btn-cta-primary btn">Create free account</a>
-                    <a href="/contact" class="btn-cta-ghost btn">Talk to us</a>
+                    <a href="/signup" class="btn-cta-primary btn">{% trans "Create free account" %}</a>
+                    <a href="/contact" class="btn-cta-ghost btn">{% trans "Talk to us" %}</a>
                 </div>
             </div>
         </section>
@@ -896,10 +920,10 @@
             <div class="container">
                 <div class="row align-items-center g-5">
                     <div class="col-lg-6 fade-left">
-                        <p class="section-eyebrow">Mobile App</p>
-                        <h2 class="section-heading">Take PARMS<br>wherever you go</h2>
+                        <p class="section-eyebrow">{% trans "Mobile App" %}</p>
+                        <h2 class="section-heading">{% trans "Take PARMS wherever you go" %}</h2>
                         <p style="color:var(--steel);font-size:1rem;margin-bottom:28px;line-height:1.7;">
-                            Download the app for instant parking search, ticket generation, and payment — right from your pocket.
+                            {% trans "Download the app for instant parking search, ticket generation, and payment — right from your pocket." %}
                         </p>
                         <div class="d-flex gap-3 flex-wrap">
                             <a href="#" class="app-btn">
@@ -931,8 +955,8 @@
         <section class="team-section">
             <div class="container">
                 <div class="text-center mb-5 fade-up">
-                    <p class="section-eyebrow">Our team</p>
-                    <h2 class="section-heading">The people behind PARMS</h2>
+                    <p class="section-eyebrow">{% trans "Our team" %}</p>
+                    <h2 class="section-heading">{% trans "The people behind PARMS" %}</h2>
                 </div>
                 <div class="row g-4 justify-content-center">
                     <div class="col-lg-3 col-md-4 col-sm-6 fade-up">
@@ -1041,6 +1065,26 @@
                 });
             });
         });
+
+        /* ── Public page language switcher ── */
+        function togglePubLang() {
+            var m = document.getElementById('pub-lang-menu');
+            m.style.display = m.style.display === 'none' ? 'block' : 'none';
+        }
+        function setPubLang(code) {
+            document.getElementById('pub-lang-input').value = code;
+            document.getElementById('pub-lang-form').submit();
+        }
+        document.addEventListener('click', function(e) {
+            var wrap = document.getElementById('pub-lang-wrap');
+            if (wrap && !wrap.contains(e.target)) {
+                var m = document.getElementById('pub-lang-menu');
+                if (m) m.style.display = 'none';
+            }
+        });
     </script>
+
+    <!-- PARMS Chatbot Widget -->
+    <script src="{% static 'js/chatbot.js' %}"></script>
 </body>
 </html>

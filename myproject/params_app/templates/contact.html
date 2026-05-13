@@ -1,5 +1,5 @@
 ﻿{% extends 'index.html' %}
-{% load static %}
+{% load static i18n %}
 
 {% block content %}
 <style>
@@ -280,10 +280,10 @@
     <div class="container">
         <div class="contact-header-inner">
             <div class="contact-header-eyebrow">
-                <span></span>Contact
+                <span></span>{% trans "Contact" %}
             </div>
-            <h1>Get in touch</h1>
-            <p>We'd love to hear from you. Send us a message and we'll respond as soon as possible — usually within 24 hours.</p>
+            <h1>{% trans "Get in touch" %}</h1>
+            <p>{% trans "We'd love to hear from you. Send us a message and we'll respond as soon as possible — usually within 24 hours." %}</p>
         </div>
     </div>
 </section>
@@ -299,29 +299,29 @@
                     <div class="contact-info-item">
                         <div class="contact-info-icon"><i class="fas fa-map-marker-alt"></i></div>
                         <div class="contact-info-text">
-                            <h6>Visit us</h6>
+                            <h6>{% trans "Visit us" %}</h6>
                             <p>123 Parking Street, Kigali, Rwanda</p>
                         </div>
                     </div>
                     <div class="contact-info-item">
                         <div class="contact-info-icon"><i class="fas fa-phone"></i></div>
                         <div class="contact-info-text">
-                            <h6>Call us</h6>
+                            <h6>{% trans "Call us" %}</h6>
                             <p>+250 788 123 456</p>
                         </div>
                     </div>
                     <div class="contact-info-item">
                         <div class="contact-info-icon"><i class="fas fa-envelope"></i></div>
                         <div class="contact-info-text">
-                            <h6>Email us</h6>
+                            <h6>{% trans "Email us" %}</h6>
                             <p>support@parms.rw</p>
                         </div>
                     </div>
                     <div class="contact-info-item">
                         <div class="contact-info-icon"><i class="fas fa-clock"></i></div>
                         <div class="contact-info-text">
-                            <h6>Support hours</h6>
-                            <p>24 / 7 — every day</p>
+                            <h6>{% trans "Support hours" %}</h6>
+                            <p>{% trans "24 / 7 — every day" %}</p>
                         </div>
                     </div>
                 </div>
@@ -330,8 +330,8 @@
             <!-- Form column -->
             <div class="col-lg-8">
                 <div class="contact-form-card">
-                    <h3>Send us a message</h3>
-                    <p>Fill out the form below and we'll get back to you shortly.</p>
+                    <h3>{% trans "Send us a message" %}</h3>
+                    <p>{% trans "Fill out the form below and we'll get back to you shortly." %}</p>
 
                     {% if messages %}
                     {% for message in messages %}
@@ -347,32 +347,32 @@
 
                         <div class="field-row">
                             <div>
-                                <label class="field-label" for="c_name">Full name</label>
+                                <label class="field-label" for="c_name">{% trans "Full name" %}</label>
                                 <input type="text" class="field-input" id="c_name" name="name"
-                                       placeholder="Your full name" required>
+                                       placeholder="{% trans 'Your full name' %}" required>
                             </div>
                             <div>
-                                <label class="field-label" for="c_email">Email address</label>
+                                <label class="field-label" for="c_email">{% trans "Email address" %}</label>
                                 <input type="email" class="field-input" id="c_email" name="email"
                                        placeholder="you@example.com" required>
                             </div>
                         </div>
 
                         <div class="field-group">
-                            <label class="field-label" for="c_subject">Subject</label>
+                            <label class="field-label" for="c_subject">{% trans "Subject" %}</label>
                             <input type="text" class="field-input" id="c_subject" name="subject"
-                                   placeholder="What's this about?" required>
+                                   placeholder="{% trans "What's this about?" %}" required>
                         </div>
 
                         <div class="field-group">
-                            <label class="field-label" for="c_message">Message</label>
+                            <label class="field-label" for="c_message">{% trans "Message" %}</label>
                             <textarea class="field-input" id="c_message" name="message"
-                                      placeholder="Tell us more details…" required></textarea>
+                                      placeholder="{% trans 'Tell us more details…' %}" required></textarea>
                         </div>
 
                         <button type="submit" class="contact-submit" id="contactBtn">
                             <i class="fas fa-paper-plane"></i>
-                            Send message
+                            {% trans "Send message" %}
                         </button>
                     </form>
                 </div>
@@ -385,8 +385,8 @@
 <!-- ── Map section ── -->
 <section class="contact-map-section">
     <div class="container">
-        <p class="section-label">Find us here</p>
-        <p class="section-sub">Visit our office or locate us on the map below</p>
+        <p class="section-label">{% trans "Find us here" %}</p>
+        <p class="section-sub">{% trans "Visit our office or locate us on the map below" %}</p>
         <div class="map-wrap">
             <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.8354345099476!2d144.95373631531633!3d-37.8162791797517!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad642af0f11fd81%3A0xf577c6b7a6d1d4ab!2sMelbourne%20VIC%2C%20Australia!5e0!3m2!1sen!2sus!4v1617635826406!5m2!1sen!2sus"
@@ -405,8 +405,8 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-7">
-                <p class="section-label">Frequently asked questions</p>
-                <p class="section-sub" style="margin-bottom:32px;">Quick answers to common questions</p>
+                <p class="section-label">{% trans "Frequently asked questions" %}</p>
+                <p class="section-sub" style="margin-bottom:32px;">{% trans "Quick answers to common questions" %}</p>
 
                 <div class="accordion" id="faqAccordion">
 
@@ -414,12 +414,12 @@
                         <h2 class="accordion-header">
                             <button class="accordion-button" type="button"
                                     data-bs-toggle="collapse" data-bs-target="#faq1">
-                                How does PARMS work?
+                                {% trans "How does PARMS work?" %}
                             </button>
                         </h2>
                         <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
                             <div class="accordion-body">
-                                PARMS connects you with real-time parking availability across registered lots. Search for your destination, view available spaces, book instantly, and pay — all in one place.
+                                {% trans "PARMS connects you with real-time parking availability across registered lots. Search for your destination, view available spaces, book instantly, and pay — all in one place." %}
                             </div>
                         </div>
                     </div>
@@ -428,12 +428,12 @@
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button"
                                     data-bs-toggle="collapse" data-bs-target="#faq2">
-                                Is PARMS available 24/7?
+                                {% trans "Is PARMS available 24/7?" %}
                             </button>
                         </h2>
                         <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                             <div class="accordion-body">
-                                Yes. PARMS runs around the clock, and our support team is available whenever you need help — day or night.
+                                {% trans "Yes. PARMS runs around the clock, and our support team is available whenever you need help — day or night." %}
                             </div>
                         </div>
                     </div>
@@ -442,12 +442,12 @@
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button"
                                     data-bs-toggle="collapse" data-bs-target="#faq3">
-                                What payment methods are accepted?
+                                {% trans "What payment methods are accepted?" %}
                             </button>
                         </h2>
                         <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                             <div class="accordion-body">
-                                We accept MTN Mobile Money, PayPal, major credit/debit cards, and cash payments at the lot. More methods are being added regularly.
+                                {% trans "We accept MTN Mobile Money, PayPal, major credit/debit cards, and cash payments at the lot. More methods are being added regularly." %}
                             </div>
                         </div>
                     </div>
@@ -456,12 +456,12 @@
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button"
                                     data-bs-toggle="collapse" data-bs-target="#faq4">
-                                Can I cancel or modify a booking?
+                                {% trans "Can I cancel or modify a booking?" %}
                             </button>
                         </h2>
                         <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                             <div class="accordion-body">
-                                Yes — active bookings can be managed from your dashboard. If you have trouble, contact our support team and we'll assist you promptly.
+                                {% trans "Yes — active bookings can be managed from your dashboard. If you have trouble, contact our support team and we'll assist you promptly." %}
                             </div>
                         </div>
                     </div>

@@ -50,6 +50,10 @@ urlpatterns = [
     path("api/admin-lookup-plate/",           views.api_admin_lookup_plate,     name="api_admin_lookup_plate"),
     path("api/admin-close-session/",          views.api_admin_close_session,    name="api_admin_close_session"),
 
+    # -- Chatbot --
+    path("api/chatbot/message/",              views.chatbot_message,            name="chatbot_message"),
+    path("api/chatbot/contact-submit/",       views.chatbot_contact_submit,     name="chatbot_contact_submit"),
+
     # -- Legacy redirects --
     path("users/",      views.user_list, name="users"),
     path("user-list/",  views.user_list, name="user_list"),
