@@ -281,26 +281,27 @@
         </a>
 
         <div class="auth-brand-content">
-            <h2>Smart parking for drivers who value their time</h2>
-            <p>Find available spaces, book instantly, and pay automatically — all from one platform.</p>
+            <h2>{% trans "In-house parking made simple for your facility" %}</h2>
+            <p>{% trans "Manage your parking facility with real-time availability, automatic entry/exit via license plates, and instant billing." %}</p>
+            <img src="{% static 'imgs/license-plate-recognition.png' %}" alt="License Plate Recognition" style="max-width: 100%; height: auto; margin: 20px 0; border-radius: 8px;">
             <div class="auth-stat-row">
                 <div class="auth-stat">
-                    <div class="val">50K+</div>
-                    <div class="lbl">Active Users</div>
+                    <div class="val">500+</div>
+                    <div class="lbl">{% trans "Active Users" %}</div>
                 </div>
                 <div class="auth-stat">
-                    <div class="val">15K+</div>
-                    <div class="lbl">Parking Spots</div>
+                    <div class="val">150+</div>
+                    <div class="lbl">{% trans "Parking Spots" %}</div>
                 </div>
                 <div class="auth-stat">
                     <div class="val">99%</div>
-                    <div class="lbl">Success Rate</div>
+                    <div class="lbl">{% trans "Success Rate" %}</div>
                 </div>
             </div>
         </div>
 
         <div class="auth-brand-footer">
-            &copy; 2025 PARMS — All rights reserved
+            &copy; 2025 PARMS — {% trans "All rights reserved" %}
         </div>
     </div>
 
@@ -308,9 +309,9 @@
     <div class="auth-form-panel">
         <div class="auth-form-inner">
 
-            <h1 class="auth-form-title">Welcome back</h1>
+            <h1 class="auth-form-title">{% trans "Welcome back" %}</h1>
             <p class="auth-form-sub">
-                Don't have an account? <a href="/signup">Create one free</a>
+                {% trans "Don't have an account?" %} <a href="/signup">{% trans "Create one free" %}</a>
             </p>
 
             {% if messages %}
@@ -326,32 +327,32 @@
                 {% csrf_token %}
 
                 <div class="field-group">
-                    <label class="field-label" for="email">Email address</label>
+                    <label class="field-label" for="email">{% trans "Email address" %}</label>
                     <input type="email" class="field-input" id="email" name="email"
                            placeholder="you@example.com" autocomplete="email" required>
                 </div>
 
                 <div class="field-group" style="margin-bottom:0;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
-                        <label class="field-label" for="password" style="margin:0;">Password</label>
+                        <label class="field-label" for="password" style="margin:0;">{% trans "Password" %}</label>
                         <a href="#" style="font-size:0.8125rem;color:var(--forest);text-decoration:none;font-weight:500;">
-                            Forgot password?
+                            {% trans "Forgot password?" %}
                         </a>
                     </div>
                     <input type="password" class="field-input" id="password" name="password"
-                           placeholder="Enter your password" autocomplete="current-password" required>
+                           placeholder="{% trans 'Enter your password' %}" autocomplete="current-password" required>
                 </div>
 
                 <button type="submit" class="auth-submit" id="submitBtn">
-                    Sign in to PARMS
+                    {% trans "Sign in to PARMS" %}
                 </button>
             </form>
 
-            <div class="auth-divider">or</div>
+            <div class="auth-divider">{% trans "or" %}</div>
 
             <a href="/accounts/google/login/?process=login" class="btn-google-auth">
                 <img src="{% static 'imgs/flat-color-icons_google.svg' %}" width="18" alt="">
-                Continue with Google
+                {% trans "Continue with Google" %}
             </a>
 
         </div>
@@ -362,7 +363,7 @@
 <script>
 document.getElementById('loginForm').addEventListener('submit', function () {
     var btn = document.getElementById('submitBtn');
-    btn.textContent = 'Signing in…';
+    btn.textContent = '{% trans "Signing in…" %}';
     btn.disabled = true;
 });
 </script>

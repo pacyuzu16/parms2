@@ -283,19 +283,19 @@
         </a>
 
         <div class="auth-brand-content">
-            <h2>Your parking journey starts here</h2>
-            <p>Register your vehicle once — enter and exit automatically using license plate recognition.</p>
+            <h2>{% trans "Set up your in-house parking system" %}</h2>
+            <p>{% trans "Register your facility and manage parking with license plate recognition, real-time monitoring, and automated billing." %}</p>
             <ul class="auth-feature-list">
-                <li><i class="fas fa-check"></i> Plate-based automatic entry &amp; exit</li>
-                <li><i class="fas fa-check"></i> Real-time space availability</li>
-                <li><i class="fas fa-check"></i> Instant booking confirmation</li>
-                <li><i class="fas fa-check"></i> Automatic fee calculation on exit</li>
-                <li><i class="fas fa-check"></i> Full parking history &amp; receipts</li>
+                <li><i class="fas fa-check"></i> {% trans "Automatic LPR entry & exit for your facility" %}</li>
+                <li><i class="fas fa-check"></i> {% trans "Real-time occupancy monitoring" %}</li>
+                <li><i class="fas fa-check"></i> {% trans "Reserved space management" %}</li>
+                <li><i class="fas fa-check"></i> {% trans "Automatic billing on vehicle exit" %}</li>
+                <li><i class="fas fa-check"></i> {% trans "Complete parking audit & revenue reports" %}</li>
             </ul>
         </div>
 
         <div class="auth-brand-footer">
-            &copy; 2025 PARMS — All rights reserved
+            &copy; 2025 PARMS — {% trans "All rights reserved" %}
         </div>
     </div>
 
@@ -303,9 +303,9 @@
     <div class="auth-form-panel">
         <div class="auth-form-inner">
 
-            <h1 class="auth-form-title">Create your account</h1>
+            <h1 class="auth-form-title">{% trans "Create your account" %}</h1>
             <p class="auth-form-sub">
-                Already have an account? <a href="/login">Sign in</a>
+                {% trans "Already have an account?" %} <a href="/login">{% trans "Sign in" %}</a>
             </p>
 
             {% if messages %}
@@ -321,50 +321,50 @@
                 {% csrf_token %}
 
                 <div class="field-group">
-                    <label class="field-label" for="username">Username</label>
+                    <label class="field-label" for="username">{% trans "Username" %}</label>
                     <input type="text" class="field-input" id="username" name="username"
-                           placeholder="Choose a unique username" autocomplete="username" required>
+                           placeholder="{% trans 'Choose a unique username' %}" autocomplete="username" required>
                 </div>
 
                 <div class="field-group">
-                    <label class="field-label" for="email">Email address</label>
+                    <label class="field-label" for="email">{% trans "Email address" %}</label>
                     <input type="email" class="field-input" id="email" name="email"
                            placeholder="you@example.com" autocomplete="email" required>
                 </div>
 
                 <div class="field-group">
-                    <label class="field-label" for="password">Password</label>
+                    <label class="field-label" for="password">{% trans "Password" %}</label>
                     <input type="password" class="field-input" id="password" name="password"
-                           placeholder="Create a strong password" autocomplete="new-password" required>
+                           placeholder="{% trans 'Create a strong password' %}" autocomplete="new-password" required>
                     <div class="pw-strength-bar"><div class="pw-strength-fill" id="strengthFill"></div></div>
-                    <p class="pw-hint" id="strengthHint">At least 8 characters</p>
+                    <p class="pw-hint" id="strengthHint">{% trans "At least 8 characters" %}</p>
                 </div>
 
                 <div class="field-group" style="margin-bottom:0;">
-                    <label class="field-label" for="confirmPassword">Confirm password</label>
+                    <label class="field-label" for="confirmPassword">{% trans "Confirm password" %}</label>
                     <input type="password" class="field-input" id="confirmPassword" name="confirm_password"
-                           placeholder="Re-enter your password" autocomplete="new-password" required>
+                           placeholder="{% trans 'Re-enter your password' %}" autocomplete="new-password" required>
                     <p class="pw-hint" id="matchHint" style="min-height:16px;"></p>
                 </div>
 
                 <!-- Vehicle section -->
                 <div style="margin:18px 0 6px;padding:14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
                     <div style="font-size:0.78rem;font-weight:700;color:#166534;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
-                        <i class="fas fa-car"></i> Your Vehicle (required for parking)
+                        <i class="fas fa-car"></i> {% trans "Your Vehicle (required for parking)" %}
                     </div>
                     <div class="field-group" style="margin-bottom:10px;">
-                        <label class="field-label" for="plate_number">License Plate Number</label>
+                        <label class="field-label" for="plate_number">{% trans "License Plate Number" %}</label>
                         <input type="text" class="field-input" id="plate_number" name="plate_number"
-                               placeholder="e.g. RAC 123A" autocomplete="off" required
+                               placeholder="{% trans 'e.g. RAC 123A' %}" autocomplete="off" required
                                style="text-transform:uppercase;font-family:monospace;font-weight:600;letter-spacing:0.05em;">
-                        <p class="pw-hint">Used to identify your vehicle at entry &amp; exit gates</p>
+                        <p class="pw-hint">{% trans "Used to identify your vehicle at entry & exit gates" %}</p>
                     </div>
                     <div class="field-group" style="margin-bottom:0;">
-                        <label class="field-label" for="vehicle_type">Vehicle Type</label>
+                        <label class="field-label" for="vehicle_type">{% trans "Vehicle Type" %}</label>
                         <select class="field-input" id="vehicle_type" name="vehicle_type">
-                            <option value="Car">Car</option>
-                            <option value="Motorcycle">Motorcycle</option>
-                            <option value="Truck">Truck</option>
+                            <option value="Car">{% trans "Car" %}</option>
+                            <option value="Motorcycle">{% trans "Motorcycle" %}</option>
+                            <option value="Truck">{% trans "Truck" %}</option>
                         </select>
                     </div>
                 </div>
@@ -372,18 +372,18 @@
                 <div class="terms-row">
                     <input type="checkbox" id="agreeTerms" required>
                     <label for="agreeTerms">
-                        I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                        {% trans "I agree to the" %} <a href="#">{% trans "Terms of Service" %}</a> {% trans "and" %} <a href="#">{% trans "Privacy Policy" %}</a>
                     </label>
                 </div>
 
                 <button type="submit" class="auth-submit" id="submitBtn">
-                    Create account
+                    {% trans "Create account" %}
                 </button>
             </form>
 
             <div class="auth-divider" style="display:flex;align-items:center;gap:12px;margin:20px 0;color:#aab5b0;font-size:0.8125rem;">
                 <span style="flex:1;height:1px;background:#dde3e0;display:block;"></span>
-                or sign up with
+                {% trans "or sign up with" %}
                 <span style="flex:1;height:1px;background:#dde3e0;display:block;"></span>
             </div>
 
@@ -392,7 +392,7 @@
                onmouseover="this.style.background='#f7f8f7';this.style.borderColor='#3d7a5a';"
                onmouseout="this.style.background='white';this.style.borderColor='#dde3e0';">
                 <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-                Continue with Google
+                {% trans "Continue with Google" %}
             </a>
 
         </div>
@@ -426,9 +426,9 @@
         const color = s <= 2 ? '#d9534f' : s <= 3 ? '#c8a84e' : '#2c5f47';
         fill.style.width     = pct + '%';
         fill.style.background = color;
-        hint.textContent = s <= 2 ? 'Weak — add uppercase, numbers & symbols'
-                         : s <= 3 ? 'Medium — add more variety'
-                         : 'Strong password';
+        hint.textContent = s <= 2 ? "{% trans 'Weak — add uppercase, numbers & symbols' %}"
+                         : s <= 3 ? "{% trans 'Medium — add more variety' %}"
+                         : "{% trans 'Strong password' %}";
         hint.style.color = color;
         checkMatch();
     });
@@ -438,7 +438,7 @@
     function checkMatch() {
         if (!cfInput.value) { matchHint.textContent = ''; return; }
         const ok = pwInput.value === cfInput.value;
-        matchHint.textContent = ok ? 'Passwords match' : 'Passwords do not match';
+        matchHint.textContent = ok ? "{% trans 'Passwords match' %}" : "{% trans 'Passwords do not match' %}";
         matchHint.style.color = ok ? '#2c5f47' : '#d9534f';
     }
 
@@ -455,12 +455,12 @@
     form.addEventListener('submit', function (e) {
         if (pwInput.value !== cfInput.value) {
             e.preventDefault();
-            matchHint.textContent  = 'Passwords do not match';
+            matchHint.textContent  = "{% trans 'Passwords do not match' %}";
             matchHint.style.color  = '#d9534f';
             cfInput.focus();
             return;
         }
-        submitBtn.textContent = 'Creating account…';
+        submitBtn.textContent = "{% trans 'Creating account…' %}";
         submitBtn.disabled    = true;
     });
 }());

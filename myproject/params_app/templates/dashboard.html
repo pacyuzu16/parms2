@@ -11,6 +11,7 @@
     <link rel="icon" href="{% static 'imgs/weblogo.svg' %}" type="image/x-icon">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -83,6 +84,7 @@
             padding: 14px 12px 14px 16px;
             border-bottom: 1px solid rgba(44,95,71,0.18);
             text-decoration: none; flex-shrink: 0; position: relative;
+            padding-right: 1px;
         }
         .sb-logo span { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.1rem; font-weight: 800; color: #000000; letter-spacing: -0.02em; flex: 1; }
 
@@ -91,12 +93,27 @@
             width: 28px; height: 28px; flex-shrink: 0;
             background: none; border: none; border-radius: 6px;
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer; color: rgba(26,74,46,0.55);
+            cursor: pointer; color: #1a4a2e;
             transition: background 0.15s, color 0.15s;
             margin-left: auto;
         }
-        .sb-toggle:hover { background: rgba(44,95,71,0.14); color: var(--sb-white); }
+        .sb-toggle:hover { background: rgba(44,95,71,0.14); color: #0f3a23; }
         .sb-toggle svg { width: 16px; height: 16px; }
+        
+        .sidebar.collapsed .sb-toggle { 
+            position: absolute;
+            right: 8px;
+            top: 20%;
+            transform: translateY(-50%);
+            margin-left: 0;
+            background: rgba(44,95,71,0.10);
+        }
+        .sidebar.collapsed .sb-toggle:hover {
+            background: rgba(44,95,71,0.20);
+        }
+        .sidebar.collapsed .sb-logo {
+            padding-right: 40px;
+        }
 
         /* ── Profile section (bottom) ─────────────────────────────────────────── */
         .sb-bottom { margin-top: auto; border-top: 1px solid rgba(44,95,71,0.18); }
@@ -362,6 +379,120 @@
         .lot-bar span { font-size: 0.82rem; color: var(--text); min-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .lot-bar .count { font-size: 0.78rem; color: var(--muted); min-width: 28px; text-align: right; }
 
+        /* ── Reports: new analytics cards ───────────────────────────────────── */
+        .rpt-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .rpt-stat-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .rpt-stat-icon {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .rpt-stat-body { flex: 1; min-width: 0; }
+        .rpt-stat-val {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.75rem; font-weight: 800;
+            color: var(--text); line-height: 1;
+            margin-bottom: 3px;
+        }
+        .rpt-stat-label { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
+        .rpt-stat-trend {
+            font-size: 0.72rem; font-weight: 600;
+            display: inline-flex; align-items: center; gap: 3px;
+            margin-top: 4px;
+        }
+        .trend-up   { color: #2c9e5e; }
+        .trend-down { color: var(--red); }
+        .trend-neu  { color: var(--muted); }
+
+        .rpt-charts-row {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .rpt-chart-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .rpt-chart-hdr {
+            padding: 16px 20px 0;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .rpt-chart-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.9375rem; font-weight: 700;
+            color: var(--text);
+        }
+        .rpt-chart-sub { font-size: 0.775rem; color: var(--muted); margin-top: 2px; }
+        .rpt-chart-body { padding: 12px 16px 16px; }
+        .rpt-chart-body canvas { width: 100% !important; }
+
+        /* spots grid */
+        .spots-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 7px;
+        }
+        .spot-cell {
+            aspect-ratio: 1.6;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.64rem; font-weight: 700;
+            letter-spacing: 0.02em;
+            position: relative;
+            overflow: hidden;
+        }
+        .spot-cell.occupied {
+            background: #3b6fd4;
+            color: white;
+        }
+        .spot-cell.available {
+            background: #eef1f0;
+            color: var(--muted);
+        }
+        .spot-cell-icon {
+            font-size: 1rem; opacity: 0.25;
+            position: absolute;
+        }
+        .spot-cell-label { position: relative; z-index: 1; }
+        .spots-legend {
+            display: flex; gap: 14px;
+            align-items: center;
+            font-size: 0.75rem; color: var(--muted);
+        }
+        .spots-legend-dot {
+            width: 10px; height: 10px; border-radius: 3px; display: inline-block;
+        }
+
+        @media (max-width: 1100px) {
+            .rpt-stat-grid { grid-template-columns: repeat(2, 1fr); }
+            .rpt-charts-row { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+            .rpt-stat-grid { grid-template-columns: 1fr 1fr; }
+            .spots-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
         /* ── Responsive ──────────────────────────────────────────────────────── */
         @media (max-width: 991px) {
             .sidebar { transform: translateX(-100%); }
@@ -489,8 +620,8 @@
         <div class="topbar-left">
             <button class="tb-toggle" onclick="openSb()"><i class="fas fa-bars"></i></button>
             <div class="tb-title">
-                <h2 id="topbar-title">Dashboard</h2>
-                <p>Welcome, <strong>{{ request.user.username }}</strong></p>
+                <h2 id="topbar-title">In-house Parking Management</h2>
+                <p>Welcome, <strong>{{ request.user.username }}</strong> — Managing your facility</p>
             </div>
         </div>
         <div class="topbar-right">
@@ -990,82 +1121,165 @@
                 </div>
             </div>
 
-            <div class="three-col" style="margin-bottom:20px;">
-                <div class="card">
-                    <div class="card-body" style="text-align:center;">
-                        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">Total Sessions</div>
-                        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:2.2rem;font-weight:800;color:var(--green);">{{ total_tickets }}</div>
-                        <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">All time</div>
+            <!-- ── Stat cards ─────────────────────────────────────────────────── -->
+            <div class="rpt-stat-grid">
+                <div class="rpt-stat-card">
+                    <div class="rpt-stat-icon" style="background:#e8f5ee;">
+                        <i class="fas fa-chart-bar" style="color:#2c5f47;"></i>
+                    </div>
+                    <div class="rpt-stat-body">
+                        <div class="rpt-stat-val">{{ total_tickets }}</div>
+                        <div class="rpt-stat-label">Total Sessions</div>
+                        <div class="rpt-stat-trend trend-up"><i class="fas fa-arrow-up"></i> All time</div>
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-body" style="text-align:center;">
-                        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">Active Right Now</div>
-                        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:2.2rem;font-weight:800;color:var(--blue);">{{ active_tickets }}</div>
-                        <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">Live sessions</div>
+                <div class="rpt-stat-card">
+                    <div class="rpt-stat-icon" style="background:#eff4ff;">
+                        <i class="fas fa-users" style="color:#3b6fd4;"></i>
+                    </div>
+                    <div class="rpt-stat-body">
+                        <div class="rpt-stat-val">{{ total_users }}</div>
+                        <div class="rpt-stat-label">Registered Users</div>
+                        <div class="rpt-stat-trend {% if users_trend >= 0 %}trend-up{% else %}trend-down{% endif %}">
+                            <i class="fas fa-arrow-{% if users_trend >= 0 %}up{% else %}down{% endif %}"></i>
+                            {{ users_trend }}% (30 days)
+                        </div>
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-body" style="text-align:center;">
-                        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">Available Spaces</div>
-                        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:2.2rem;font-weight:800;color:var(--amber);">{{ available_spaces }}</div>
-                        <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">Across all lots</div>
+                <div class="rpt-stat-card">
+                    <div class="rpt-stat-icon" style="background:#fff7e8;">
+                        <i class="fas fa-square-parking" style="color:#b45309;"></i>
+                    </div>
+                    <div class="rpt-stat-body">
+                        <div class="rpt-stat-val">{{ available_spaces }}</div>
+                        <div class="rpt-stat-label">Available Spots</div>
+                        <div class="rpt-stat-trend trend-neu"><i class="fas fa-clock"></i> Live</div>
+                    </div>
+                </div>
+                <div class="rpt-stat-card">
+                    <div class="rpt-stat-icon" style="background:#f3efff;">
+                        <i class="fas fa-car" style="color:#6d4ed4;"></i>
+                    </div>
+                    <div class="rpt-stat-body">
+                        <div class="rpt-stat-val">{{ occupied_spaces_count }}</div>
+                        <div class="rpt-stat-label">Booked Spots</div>
+                        <div class="rpt-stat-trend trend-neu"><i class="fas fa-clock"></i> Live</div>
                     </div>
                 </div>
             </div>
 
-            <div class="two-col">
-                <!-- Popular lots -->
-                <div class="card">
-                    <div class="card-hdr"><h4><i class="fas fa-map-marker-alt" style="color:var(--green);"></i> Most Used Parking Lots</h4></div>
-                    <div class="card-body">
-                        {% for lot in popular_lots %}
-                        <div class="lot-bar">
-                            <span>{{ lot.location }}</span>
-                            <div class="progress-bar" style="flex:1;">
-                                <div class="progress-fill" style="width:{% if popular_lots.0.usage_count > 0 %}{% widthratio lot.usage_count popular_lots.0.usage_count 100 %}{% else %}0{% endif %}%;"></div>
-                            </div>
-                            <span class="count">{{ lot.usage_count }}</span>
+            <!-- ── Row 1: Daily Bookings + Spots Grid ────────────────────────── -->
+            <div class="rpt-charts-row">
+                <!-- Rate of Parking Spots -->
+                <div class="rpt-chart-card">
+                    <div class="rpt-chart-hdr">
+                        <div>
+                            <div class="rpt-chart-title">Rate of Parking Spots</div>
+                            <div class="rpt-chart-sub">Number of booked spots per day — last 30 days</div>
                         </div>
-                        {% empty %}
-                        <div class="empty-state" style="padding:20px;"><p>No data yet</p></div>
-                        {% endfor %}
+                        <a href="{% url 'admin_export_csv' 'tickets' %}" class="btn btn-outline btn-sm">
+                            <i class="fas fa-download"></i> Save Report
+                        </a>
+                    </div>
+                    <div class="rpt-chart-body">
+                        <canvas id="chartDailySpots" height="140"></canvas>
                     </div>
                 </div>
 
-                <!-- Vehicle types -->
-                <div class="card">
-                    <div class="card-hdr"><h4><i class="fas fa-car" style="color:var(--purple);"></i> Vehicle Type Breakdown</h4></div>
-                    <div class="card-body">
-                        {% for vt in vehicle_type_stats %}
-                        <div class="lot-bar">
-                            <span>{{ vt.vehicle_type }}</span>
-                            <div class="progress-bar" style="flex:1;">
-                                <div class="progress-fill" style="width:{% if total_vehicles > 0 %}{% widthratio vt.count total_vehicles 100 %}{% else %}0{% endif %}%;background:var(--purple);"></div>
-                            </div>
-                            <span class="count">{{ vt.count }}</span>
+                <!-- Popular Used Spots grid -->
+                <div class="rpt-chart-card">
+                    <div class="rpt-chart-hdr">
+                        <div class="rpt-chart-title">Popular Used Spots</div>
+                        <div class="spots-legend">
+                            <span><span class="spots-legend-dot" style="background:#3b6fd4;"></span> Used</span>
+                            <span><span class="spots-legend-dot" style="background:#eef1f0;border:1px solid #dde3e0;"></span> Available</span>
                         </div>
-                        {% empty %}
-                        <div class="empty-state" style="padding:20px;"><p>No vehicles yet</p></div>
-                        {% endfor %}
+                    </div>
+                    <div class="rpt-chart-body">
+                        <div class="spots-grid">
+                            {% for sp in spaces_grid %}
+                            <div class="spot-cell {% if sp.occupied %}occupied{% else %}available{% endif %}"
+                                 title="{{ sp.lot }}{% if sp.occupied %} — {{ sp.plate }}{% endif %}">
+                                <i class="fas fa-car spot-cell-icon"></i>
+                                <span class="spot-cell-label">{% if sp.occupied %}{{ sp.label }}{% endif %}</span>
+                            </div>
+                            {% empty %}
+                            <div style="grid-column:span 4;text-align:center;color:var(--muted);font-size:0.8rem;padding:20px;">
+                                No spaces configured yet
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Row 2: Revenue + Duration ─────────────────────────────────── -->
+            <div class="rpt-charts-row">
+                <!-- Total Revenue -->
+                <div class="rpt-chart-card">
+                    <div class="rpt-chart-hdr">
+                        <div>
+                            <div class="rpt-chart-title">Total Revenue</div>
+                            <div class="rpt-chart-sub">Monthly revenue — {{ chart_rev_prev_year }} vs {{ chart_rev_curr_year }}</div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;font-size:0.75rem;color:var(--muted);">
+                            <span><span style="display:inline-block;width:24px;height:3px;background:#3b6fd4;border-radius:2px;vertical-align:middle;margin-right:4px;"></span>{{ chart_rev_curr_year }}</span>
+                            <span><span style="display:inline-block;width:24px;height:3px;background:#f5a623;border-radius:2px;vertical-align:middle;margin-right:4px;"></span>{{ chart_rev_prev_year }}</span>
+                        </div>
+                    </div>
+                    <div class="rpt-chart-body">
+                        <canvas id="chartRevenue" height="140"></canvas>
                     </div>
                 </div>
 
+                <!-- Parking Duration by weekday -->
+                <div class="rpt-chart-card">
+                    <div class="rpt-chart-hdr">
+                        <div class="rpt-chart-title">Parking Duration</div>
+                        <span style="font-size:0.75rem;background:var(--light);border:1px solid var(--border);padding:3px 10px;border-radius:6px;color:var(--text);font-weight:500;">
+                            Weekly <i class="fas fa-chevron-down" style="font-size:0.6rem;margin-left:3px;"></i>
+                        </span>
+                    </div>
+                    <div class="rpt-chart-body">
+                        <canvas id="chartDuration" height="160"></canvas>
+                    </div>
+                </div>
+            </div>
 
-
-                <!-- Summary stats -->
-                <div class="card">
-                    <div class="card-hdr"><h4><i class="fas fa-chart-bar" style="color:var(--teal);"></i> System Summary</h4></div>
-                    <div class="card-body">
-                        {% for label,val,color in summary_rows %}{% endfor %}
-                        <div style="display:flex;flex-direction:column;gap:12px;">
-                            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:0.86rem;">Total Users</span><strong>{{ total_users }}</strong></div>
-                            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:0.86rem;">Total Vehicles</span><strong>{{ total_vehicles }}</strong></div>
-                            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:0.86rem;">Total Tickets</span><strong>{{ total_tickets }}</strong></div>
-                            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:0.86rem;">Active Sessions</span><strong style="color:var(--amber);">{{ active_tickets }}</strong></div>
-                            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:0.86rem;">Total Spaces</span><strong>{{ total_spaces }}</strong></div>
-                            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:0.86rem;">Available Now</span><strong style="color:var(--green);">{{ available_spaces }}</strong></div>
+            <!-- ── Bottom summary strip ───────────────────────────────────────── -->
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:4px;">
+                <div class="rpt-chart-card" style="padding:18px 20px;">
+                    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px;">Vehicle Types</div>
+                    {% for vt in vehicle_type_stats %}
+                    <div class="lot-bar">
+                        <span>{{ vt.vehicle_type }}</span>
+                        <div class="progress-bar" style="flex:1;">
+                            <div class="progress-fill" style="width:{% if total_vehicles > 0 %}{% widthratio vt.count total_vehicles 100 %}{% else %}0{% endif %}%;background:var(--purple);"></div>
                         </div>
+                        <span class="count">{{ vt.count }}</span>
+                    </div>
+                    {% empty %}<div style="font-size:0.8rem;color:var(--muted);">No data</div>{% endfor %}
+                </div>
+                <div class="rpt-chart-card" style="padding:18px 20px;">
+                    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px;">Top Lots by Usage</div>
+                    {% for lot in popular_lots|slice:":5" %}
+                    <div class="lot-bar">
+                        <span>{{ lot.location }}</span>
+                        <div class="progress-bar" style="flex:1;">
+                            <div class="progress-fill" style="width:{% if popular_lots.0.usage_count > 0 %}{% widthratio lot.usage_count popular_lots.0.usage_count 100 %}{% else %}0{% endif %}%;"></div>
+                        </div>
+                        <span class="count">{{ lot.usage_count }}</span>
+                    </div>
+                    {% empty %}<div style="font-size:0.8rem;color:var(--muted);">No data</div>{% endfor %}
+                </div>
+                <div class="rpt-chart-card" style="padding:18px 20px;">
+                    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px;">System Summary</div>
+                    <div style="display:flex;flex-direction:column;gap:9px;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.82rem;"><span style="color:var(--muted);">Total Vehicles</span><strong>{{ total_vehicles }}</strong></div>
+                        <div style="display:flex;justify-content:space-between;font-size:0.82rem;"><span style="color:var(--muted);">Total Spaces</span><strong>{{ total_spaces }}</strong></div>
+                        <div style="display:flex;justify-content:space-between;font-size:0.82rem;"><span style="color:var(--muted);">Active Sessions</span><strong style="color:var(--amber);">{{ active_tickets }}</strong></div>
+                        <div style="display:flex;justify-content:space-between;font-size:0.82rem;"><span style="color:var(--muted);">Total Revenue</span><strong style="color:var(--green);">${{ total_revenue }}</strong></div>
+                        <div style="display:flex;justify-content:space-between;font-size:0.82rem;"><span style="color:var(--muted);">Parking Lots</span><strong>{{ total_parking_lots }}</strong></div>
                     </div>
                 </div>
             </div>
@@ -2089,6 +2303,175 @@ function lpCapture() {
     canvas.getContext('2d').drawImage(video, 0, 0);
     canvas.toBlob(function(blob) { lpDetect(blob); }, 'image/jpeg', 0.92);
 }
+</script>
+
+<script>
+// ── Reports Charts (Chart.js 4) ──────────────────────────────────────────────
+(function () {
+    // Data injected from Django view
+    const dailyLabels   = {{ chart_daily_labels|safe }};
+    const dailyValues   = {{ chart_daily_values|safe }};
+    const revCurr       = {{ chart_rev_curr|safe }};
+    const revPrev       = {{ chart_rev_prev|safe }};
+    const months        = {{ chart_months|safe }};
+    const durValues     = {{ chart_duration|safe }};
+    const durLabels     = {{ chart_duration_labels|safe }};
+
+    const FONT_FAMILY = "'Inter', sans-serif";
+    const GREEN = '#2c5f47';
+    const BLUE  = '#3b6fd4';
+    const AMBER = '#f5a623';
+
+    Chart.defaults.font.family = FONT_FAMILY;
+    Chart.defaults.font.size   = 11;
+    Chart.defaults.color       = '#4f5a55';
+
+    // shared tick config
+    function axisTick() {
+        return { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { maxTicksLimit: 6 } };
+    }
+
+    // ── 1. Daily Parking Spots (area) ────────────────────────────────────────
+    const ctxSpots = document.getElementById('chartDailySpots');
+    if (ctxSpots) {
+        const gradSpots = ctxSpots.getContext('2d').createLinearGradient(0, 0, 0, 200);
+        gradSpots.addColorStop(0, 'rgba(59,111,212,0.22)');
+        gradSpots.addColorStop(1, 'rgba(59,111,212,0)');
+
+        new Chart(ctxSpots, {
+            type: 'line',
+            data: {
+                labels: dailyLabels,
+                datasets: [{
+                    label: 'Bookings',
+                    data: dailyValues,
+                    borderColor: BLUE,
+                    backgroundColor: gradSpots,
+                    borderWidth: 2.5,
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: BLUE,
+                    fill: true,
+                    tension: 0.45,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: items => items[0].label,
+                            label: item => ` ${item.raw} Parking Spots`,
+                        }
+                    }
+                },
+                scales: {
+                    x: { ...axisTick(), ticks: { maxTicksLimit: 8, maxRotation: 0 } },
+                    y: { ...axisTick(), beginAtZero: true },
+                }
+            }
+        });
+    }
+
+    // ── 2. Total Revenue (multi-line) ────────────────────────────────────────
+    const ctxRev = document.getElementById('chartRevenue');
+    if (ctxRev) {
+        const ctx2d = ctxRev.getContext('2d');
+        const gradCurr = ctx2d.createLinearGradient(0, 0, 0, 200);
+        gradCurr.addColorStop(0, 'rgba(59,111,212,0.12)');
+        gradCurr.addColorStop(1, 'rgba(59,111,212,0)');
+        const gradPrev = ctx2d.createLinearGradient(0, 0, 0, 200);
+        gradPrev.addColorStop(0, 'rgba(245,166,35,0.12)');
+        gradPrev.addColorStop(1, 'rgba(245,166,35,0)');
+
+        new Chart(ctxRev, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [
+                    {
+                        label: '{{ chart_rev_curr_year }}',
+                        data: revCurr,
+                        borderColor: BLUE,
+                        backgroundColor: gradCurr,
+                        borderWidth: 2.5,
+                        pointRadius: 3,
+                        pointBackgroundColor: BLUE,
+                        fill: true,
+                        tension: 0.45,
+                    },
+                    {
+                        label: '{{ chart_rev_prev_year }}',
+                        data: revPrev,
+                        borderColor: AMBER,
+                        backgroundColor: gradPrev,
+                        borderWidth: 2.5,
+                        pointRadius: 3,
+                        pointBackgroundColor: AMBER,
+                        fill: true,
+                        tension: 0.45,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: item => ` $${item.raw.toLocaleString()} — ${item.dataset.label}`,
+                        }
+                    }
+                },
+                scales: {
+                    x: axisTick(),
+                    y: { ...axisTick(), beginAtZero: true,
+                         ticks: { callback: v => '$' + (v >= 1000 ? (v/1000).toFixed(0)+'k' : v) } },
+                }
+            }
+        });
+    }
+
+    // ── 3. Parking Duration by weekday (bar) ────────────────────────────────
+    const ctxDur = document.getElementById('chartDuration');
+    if (ctxDur) {
+        new Chart(ctxDur, {
+            type: 'bar',
+            data: {
+                labels: durLabels,
+                datasets: [{
+                    label: 'Avg hours',
+                    data: durValues,
+                    backgroundColor: BLUE,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    barThickness: 18,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: item => ` ${item.raw}h avg` } }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: {
+                        ...axisTick(),
+                        beginAtZero: true,
+                        ticks: { callback: v => v + 'hr' }
+                    },
+                }
+            }
+        });
+    }
+})();
 </script>
 </body>
 </html>

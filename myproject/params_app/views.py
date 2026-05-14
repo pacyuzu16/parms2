@@ -6,13 +6,14 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db import transaction
 from django.urls import reverse
-from django.db.models import Sum, Count, Avg
-from django.db.models.functions import ExtractHour
+from django.db.models import Sum, Count, Avg, ExpressionWrapper, F, DurationField
+from django.db.models.functions import ExtractHour, TruncDay, TruncMonth, ExtractWeekDay
 from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
+from collections import defaultdict
 from io import BytesIO
-import logging
+import logging, json
 import qrcode, datetime, random
 
 from .models import (
@@ -251,6 +252,86 @@ def dashboard(request):
     vehicle_type_stats  = Vehicle.objects.values('vehicle_type').annotate(count=Count('vehicle_type')).order_by('-count')
     popular_lots = ParkingLot.objects.annotate(usage_count=Count('spaces__tickets')).order_by('-usage_count')[:8]
 
+    # ── Reports chart data ────────────────────────────────────────────────────
+    now_dt = timezone.now()
+
+    # 1. Daily bookings — last 30 days
+    last30_start = now_dt - timedelta(days=30)
+    _daily_qs = (
+        ParkingTicket.objects
+        .filter(entry_time__gte=last30_start)
+        .annotate(day=TruncDay('entry_time'))
+        .values('day')
+        .annotate(count=Count('ticket_id'))
+        .order_by('day')
+    )
+    _daily_map = {r['day'].date(): r['count'] for r in _daily_qs}
+    _chart_daily_labels, _chart_daily_values = [], []
+    for _i in range(30):
+        _d = (now_dt - timedelta(days=29 - _i)).date()
+        _chart_daily_labels.append(_d.strftime('%b %d'))
+        _chart_daily_values.append(_daily_map.get(_d, 0))
+
+    # 2. Monthly revenue — current year vs previous year
+    _curr_year = today.year
+    _prev_year = _curr_year - 1
+
+    def _monthly_rev(year):
+        qs = (
+            Payment.objects
+            .filter(date__year=year)
+            .annotate(mo=TruncMonth('date'))
+            .values('mo')
+            .annotate(total=Sum('amount'))
+        )
+        m = {r['mo'].month: float(r['total']) for r in qs}
+        return [round(m.get(i, 0), 2) for i in range(1, 13)]
+
+    _rev_curr = _monthly_rev(_curr_year)
+    _rev_prev = _monthly_rev(_prev_year)
+
+    # 3. Average parking duration by weekday (last 90 days completed tickets)
+    _completed_qs = (
+        ParkingTicket.objects
+        .filter(exit_time__isnull=False, entry_time__gte=now_dt - timedelta(days=90))
+        .values('entry_time', 'exit_time')
+    )
+    _wd_totals = defaultdict(list)
+    for _t in _completed_qs:
+        _wd = _t['entry_time'].weekday()        # 0=Mon … 6=Sun
+        _hrs = (_t['exit_time'] - _t['entry_time']).total_seconds() / 3600
+        if 0 < _hrs < 24:
+            _wd_totals[_wd].append(_hrs)
+    _chart_duration = [
+        round(sum(_wd_totals[_i]) / len(_wd_totals[_i]), 1) if _wd_totals.get(_i) else 0
+        for _i in range(7)
+    ]
+
+    # 4. Spaces grid (up to 60 spaces across all lots)
+    _spaces_grid = [
+        {
+            'label':    f"A{sp.space_id:02d}",
+            'occupied': sp.is_occupied,
+            'plate':    sp.occupied_by_plate or '',
+            'lot':      sp.parking_lot.location,
+        }
+        for sp in ParkingSpace.objects.select_related('parking_lot').all()[:60]
+    ]
+
+    # 5. Stat card trends
+    _thirty_ago = today - timedelta(days=30)
+    _sixty_ago  = today - timedelta(days=60)
+    _new_users_curr = User.objects.filter(date_joined__date__gte=_thirty_ago).count()
+    _new_users_prev = User.objects.filter(
+        date_joined__date__gte=_sixty_ago,
+        date_joined__date__lt=_thirty_ago,
+    ).count()
+    _users_trend = round(((_new_users_curr - _new_users_prev) / max(_new_users_prev, 1)) * 100)
+
+    _occupied_spaces_count = ParkingSpace.objects.filter(is_occupied=True).count()
+    _total_revenue = float(Payment.objects.aggregate(t=Sum('amount'))['t'] or 0)
+    # ── end reports data ──────────────────────────────────────────────────────
+
     context = {
         'active_tab': request.GET.get('tab', 'overview'),
         'total_users':             all_users.count(),
@@ -300,6 +381,21 @@ def dashboard(request):
                                        event_type='exit',
                                        detected_at__date=today
                                    ).count(),
+        # reports charts
+        'chart_daily_labels':      json.dumps(_chart_daily_labels),
+        'chart_daily_values':      json.dumps(_chart_daily_values),
+        'chart_rev_curr':          json.dumps(_rev_curr),
+        'chart_rev_prev':          json.dumps(_rev_prev),
+        'chart_rev_curr_year':     _curr_year,
+        'chart_rev_prev_year':     _prev_year,
+        'chart_duration':          json.dumps(_chart_duration),
+        'chart_duration_labels':   json.dumps(['Mon','Tue','Wed','Thu','Fri','Sat','Sun']),
+        'chart_months':            json.dumps(['Jan','Feb','Mar','Apr','May','Jun',
+                                               'Jul','Aug','Sep','Oct','Nov','Dec']),
+        'spaces_grid':             _spaces_grid,
+        'occupied_spaces_count':   _occupied_spaces_count,
+        'total_revenue':           round(_total_revenue, 2),
+        'users_trend':             _users_trend,
     }
     return render(request, 'dashboard.html', context)
 
